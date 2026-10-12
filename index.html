@@ -168,6 +168,7 @@
       .opt .opt-emoji { font-size: 62px; line-height: 1.1; }
       .opt .opt-emoji svg { width: 76px; height: 76px; }
       .opt .opt-num { font-size: 46px; font-weight: 800; }
+      .opt .rational-num { font-size: clamp(23px,5.5vw,36px); white-space: nowrap; }
       .opt .opt-word { font-size: clamp(24px, 6vw, 32px); font-weight: 800; }
       .opt .opt-text { font-size: clamp(19px, 5vw, 24px); font-weight: 700; line-height: 1.25; }
       .opt.right { border-color: var(--good); background: var(--good-bg); animation: bounce-ok 0.45s ease; }
@@ -2392,19 +2393,28 @@
     ];
     /* ================= TOÁN 7 ================= */
     function fmt(n){ return (Math.round(n*100)/100).toString().replace(".", ","); }
+    function g7Fraction(n,d){
+      if(!Number.isInteger(n)||!Number.isInteger(d)||d===0)throw Error('Invalid rational');
+      if(d<0){n=-n;d=-d;}var a=Math.abs(n),b=d;while(b){var r=a%b;a=b;b=r;}var g=a||1;return (n/g)+'/'+(d/g);
+    }
+    function g7FractionQuestion(prompt,n,d,candidates,explain,visual){
+      var answer=g7Fraction(n,d),values=[answer];
+      (candidates||[]).concat([[n+d,d],[n-d,d],[n+2*d,d],[n-2*d,d],[-n,d]]).forEach(function(p){
+        if(!p||p[1]===0||values.length>=4)return;var s=g7Fraction(p[0],p[1]);if(values.indexOf(s)<0)values.push(s);
+      });
+      for(var k=3;values.length<4;k++){var s=g7Fraction(n+k*d,d);if(values.indexOf(s)<0)values.push(s);}
+      var options=shuffle(values),q={prompt:prompt,visual:visual||'',options:options.map(function(s){return {html:'<span class="opt-num rational-num">'+s+'</span>'};}),answer:options.indexOf(answer),cols:2,explain:explain||('Kết quả chính xác, rút gọn: '+answer+'.')};
+      return identifyRoundFact(q,prompt+(visual?' | '+roundText(visual):''));
+    }
     function g7FracCalc(){
       var a=rand(1,9), b=pick([2,3,4,5,6]), c=rand(1,9), d=pick([2,3,4,5,6]);
       var add = Math.random()<0.5;
-      var ans = add? (a*d+c*b)/(b*d) : (a*d-c*b)/(b*d);
-      var rawOpts = [fmt(ans), fmt(ans+1), fmt(ans-1), fmt((a+c)/(b+d)), fmt(ans+2), fmt(ans-2), fmt(ans+0.5)];
-      var uniqOpts = [];
-      rawOpts.forEach(function(o){ if (uniqOpts.indexOf(o)===-1) uniqOpts.push(o); });
-      var opts = shuffle(uniqOpts.slice(0,4));
-      return { prompt:"Tính: "+a+"/"+b+(add?" + ":" − ")+c+"/"+d, visual:'<div class="expr">'+a+"/"+b+(add?" + ":" − ")+c+"/"+d+" = ?</div>", options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(fmt(ans)), cols:4, explain:"Quy đồng mẫu số chung "+(b*d)+": kết quả = "+fmt(ans)+"." };
+      var n=add?a*d+c*b:a*d-c*b,den=b*d;
+      return g7FractionQuestion('Tính: '+a+'/'+b+(add?' + ':' − ')+c+'/'+d,n,den,[[add?a+c:a-c,b+d]],'Quy đồng mẫu '+den+': '+n+'/'+den+' = '+g7Fraction(n,den)+'.');
     }
     function g7Power(){
       var base=pick([2,3,5]), e=pick([2,3]); var ans=Math.pow(base,e); var sup = e===2? "²" : "³";
-      return calcMCQ("Luỹ thừa",""+base+sup+" = ?", ans, 0, 200, base+sup+" = "+Array(e+1).join(base+"×").slice(0,-1)+" = "+ans+".");
+      return g7FractionQuestion('Tính '+base+sup+' và viết kết quả dưới dạng phân số.',ans,1,[[base*e,1],[Math.pow(base,e-1),1]],base+sup+' = '+Array(e+1).join(base+'×').slice(0,-1)+' = '+g7Fraction(ans,1)+'.');
     }
     function g7Sqrt(){
       var r=pick([3,4,5,6,7,8,9,11,12,15]); var n=r*r;
@@ -5427,22 +5437,16 @@ function g2PreSuccWord() {
 /* ---------- TOÁN 7: biến thể mới ---------- */
 function g7OppInvAbs() {
   var type = rand(0, 2);
-  if (type === 0) { var a = rand(2, 9), b = pick([2, 3, 4, 5]); var frac = a + "/" + b; return mcqQ("Số đối của " + frac + " là?", [b + "/" + a, "-" + b + "/" + a], "-" + frac, "Số đối của một số là số có cùng giá trị nhưng trái dấu."); }
-  if (type === 1) { var c = rand(2, 8), d = pick([3, 4, 5, 6]); return mcqQ("Số nghịch đảo của " + c + "/" + d + " là?", [c + "/" + d, "-" + d + "/" + c], d + "/" + c, "Nghịch đảo của a/b (a, b ≠ 0) là b/a."); }
+  if (type === 0) { var a = rand(2, 9), b = pick([2, 3, 4, 5]); return g7FractionQuestion('Số đối của '+a+'/'+b+' là phân số nào?',-a,b,[[b,a],[-b,a],[a,b]],'Hai số đối có tổng bằng 0. Số đối cần tìm: '+g7Fraction(-a,b)+'.'); }
+  if (type === 1) { var c = rand(2, 8), d = pick([3, 4, 5, 6]); return g7FractionQuestion('Số nghịch đảo của '+c+'/'+d+' là phân số nào?',d,c,[[c,d],[-d,c],[-c,d]],'Đổi tử và mẫu của phân số khác 0: '+g7Fraction(d,c)+'.'); }
   var e = rand(2, 12);
-  return mcqQ("Giá trị tuyệt đối của " + (-e) + " là?", [String(-e), "0"], String(e), "|" + (-e) + "| = " + e + " (giá trị tuyệt đối luôn không âm).");
+  return g7FractionQuestion('Giá trị tuyệt đối của '+(-e)+' viết dưới dạng phân số là bao nhiêu?',e,1,[[-e,1],[0,1]],'|'+(-e)+'| = '+g7Fraction(e,1)+'.');
 }
 function g7FracMulDiv() {
   var a = rand(1, 6), b = pick([2, 3, 4, 5]), c = rand(1, 6), d = pick([2, 3, 4, 5]), mul = Math.random() < 0.5;
   var num = mul ? a * c : a * d, den = mul ? b * d : b * c;
   function red(n, dd) { var g = 1; for (var i = 2; i <= Math.min(n, dd); i++) if (n % i === 0 && dd % i === 0) g = i; return (n / g) + "/" + (dd / g); }
-  var ans = red(num, den);
-  var raw = [ans, red(num + den, den), red(num, den + num), red(num + 1, den), red(num + 2, den + 1)];
-  var un = []; raw.forEach(function (o) { if (un.indexOf(o) === -1) un.push(o); });
-  var opts = shuffle(un.slice(0, 4));
-  return { prompt: "Tính: " + a + "/" + b + (mul ? " × " : " : ") + c + "/" + d, visual: '<div class="expr">' + a + "/" + b + (mul ? " × " : " : ") + c + "/" + d + " = ?</div>",
-    options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(ans), cols: 4,
-    explain: (mul ? "Nhân tử với tử, mẫu với mẫu" : "Chia là nhân với nghịch đảo") + " rồi rút gọn: kết quả " + ans + "." };
+  return g7FractionQuestion('Tính: '+a+'/'+b+(mul?' × ':' : ')+c+'/'+d,num,den,[[num+den,den],[num,den+num],[num+1,den]],(mul?'Nhân tử với tử, mẫu với mẫu':'Chia là nhân với nghịch đảo')+' rồi rút gọn: '+g7Fraction(num,den)+'.');
 }
 function g7PolyDegree() {
   var a = rand(2, 6), b = rand(2, 9), deg = pick([2, 3, 4]);
@@ -14944,9 +14948,39 @@ window.__MATH_KNOWLEDGE_NOTES={"m6-c1": ["N = {0; 1; 2; …}; N* không chứa 0
     t.sub=String(t.sub).replace(/ • \d+\+ câu(?: hỏi| · \d+\+ nâng cao)?/g,'')+' • 160+ câu · 60+ nâng cao';
   }
   var currentGradeBefore=currentGrade;
+  function rationalChapter(t) {
+    function question(prompt,n,d,ex){return g7FractionQuestion(prompt,n,d,[],ex);}
+    var normalGenerators=[g7FracCalc,g7FracMulDiv,g7Power,
+      function(){var a=rand(1,8),b=rand(2,9),c=rand(1,8),d=rand(2,9);return question('Tính: −'+a+'/'+b+' + '+c+'/'+d,c*b-a*d,b*d,'Quy đồng rồi cộng tử có dấu: '+g7Fraction(c*b-a*d,b*d)+'.');},
+      function(){var a=rand(-9,9),b=rand(2,9);return question('Số đối của '+a+'/'+b+' là phân số nào?',-a,b,'Đổi dấu của phân số: '+g7Fraction(-a,b)+'.');},
+      function(){var a=rand(1,9),b=rand(2,9);return question('Số nghịch đảo của '+a+'/'+b+' là phân số nào?',b,a,'Đổi tử và mẫu của phân số khác 0: '+g7Fraction(b,a)+'.');},
+      function(){var a=rand(-5,5),b=rand(2,7),e=pick([2,3]);return question('Tính: ('+a+'/'+b+')^'+e,Math.pow(a,e),Math.pow(b,e),'Nâng cả tử và mẫu lên luỹ thừa '+e+': '+g7Fraction(Math.pow(a,e),Math.pow(b,e))+'.');},
+      function(){var a=rand(-99,99),d=pick([10,100]),s=(a/d).toFixed(d===10?1:2).replace('.',',');return question('Viết số '+s+' dưới dạng phân số tối giản.',a,d,'Đưa số thập phân về mẫu '+d+' rồi rút gọn: '+g7Fraction(a,d)+'.');},
+      function(){var a=rand(-8,8),b=rand(2,9),c=rand(-8,8),d=rand(2,9);return question('Tìm x, biết x + '+a+'/'+b+' = '+c+'/'+d+'.',c*b-a*d,b*d,'Chuyển số hạng: x = '+c+'/'+d+' − ('+a+'/'+b+') = '+g7Fraction(c*b-a*d,b*d)+'.');}
+    ];
+    var advancedGenerators=[
+      function(){var a=rand(1,7),b=rand(2,9),c=rand(1,7),d=rand(2,9),e=rand(1,5),f=rand(2,7);return question('Tính: ('+a+'/'+b+' + '+c+'/'+d+') × '+e+'/'+f,(a*d+c*b)*e,b*d*f,'Tính trong ngoặc trước, sau đó nhân và rút gọn: '+g7Fraction((a*d+c*b)*e,b*d*f)+'.');},
+      function(){var a=rand(1,7),b=rand(2,9),c=rand(1,7),d=rand(2,9),e=rand(1,5),f=rand(2,7);return question('Tính: '+a+'/'+b+' − '+c+'/'+d+' × '+e+'/'+f,a*d*f-c*e*b,b*d*f,'Thực hiện phép nhân trước, rồi trừ: '+g7Fraction(a*d*f-c*e*b,b*d*f)+'.');},
+      function(){var a=rand(-7,7),b=rand(2,9),c=rand(-7,7),d=rand(2,9),e=rand(1,5),f=rand(2,7);return question('Tính: ('+a+'/'+b+' − ('+c+'/'+d+')) : '+e+'/'+f,(a*d-c*b)*f,b*d*e,'Tính trong ngoặc rồi nhân với nghịch đảo của số chia: '+g7Fraction((a*d-c*b)*f,b*d*e)+'.');},
+      function(){var a=rand(1,7),b=rand(2,9),c=rand(-7,7),d=rand(2,9);return question('Tìm x, biết x × '+a+'/'+b+' = '+c+'/'+d+'.',c*b,d*a,'Chia hai vế cho '+a+'/'+b+': x = '+g7Fraction(c*b,d*a)+'.');},
+      function(){var b=rand(3,9),a=rand(1,b-1),d=rand(3,9),c=rand(1,d-1);var q=question('Một bể có lượng nước bằng '+a+'/'+b+' dung tích bể. Người ta dùng '+c+'/'+d+' lượng nước đang có. Lượng nước còn lại bằng bao nhiêu phần dung tích bể?',a*(d-c),b*d,'Phần còn lại = '+a+'/'+b+' × (1 − '+c+'/'+d+') = '+g7Fraction(a*(d-c),b*d)+'.');q.rationalContext={type:'waterRemaining',a:a,b:b,c:c,d:d};return q;},
+      function(){var a=rand(1,2),b=rand(5,9),c=rand(1,2),d=rand(5,9);var q=question('Hà dùng '+a+'/'+b+' số tiền ban đầu để mua sách và '+c+'/'+d+' số tiền ban đầu để mua vở. Hà còn lại bao nhiêu phần số tiền ban đầu?',b*d-a*d-c*b,b*d,'Phần còn lại = 1 − '+a+'/'+b+' − '+c+'/'+d+' = '+g7Fraction(b*d-a*d-c*b,b*d)+'.');q.rationalContext={type:'moneyRemaining',a:a,b:b,c:c,d:d};return q;},
+      function(){var a=rand(-5,5),b=rand(2,7),c=rand(1,5),d=rand(2,7);return question('Tính: ('+a+'/'+b+')^2 × '+c+'/'+d,a*a*c,b*b*d,'Tính luỹ thừa trước rồi nhân: '+g7Fraction(a*a*c,b*b*d)+'.');}
+    ];
+    function freezeBank(gens,count,seed){return withSeed(seed,function(){var list=[],seen=Object.create(null);for(var k=0;k<10000&&list.length<count;k++){var q=gens[k%gens.length](),id=roundQuestionKey(q);if(!seen[id]){seen[id]=true;list.push(q);}}if(list.length!==count)throw Error('Rational bank incomplete');return list;});}
+    var normal=freezeBank(normalGenerators,160,70701),advanced=freezeBank(advancedGenerators,60,70702);
+    function generators(list){return list.map(function(q){return function(){return JSON.parse(JSON.stringify(q));};});}
+    var ng=generators(normal),ag=generators(advanced),facts=normal.slice(0,40).map(function(q){return {q:q.prompt,a:clean(q.options[q.answer].html),wrongs:q.options.filter(function(o,i){return i!==q.answer;}).map(function(o){return clean(o.html);}),ex:clean(q.explain),visual:q.visual||'',id:roundQuestionKey(q)};});
+    t.pools={choose:ng,blank:[],match:[],games:ng};t.advPools={choose:ag,blank:[],match:[],games:ag};t.bankB=160;t.advBankB=60;
+    t.rationalChapter={revision:'exact-fractions-single-question-v1',normalQuestions:normal,advancedQuestions:advanced};
+    t.phaseBComplete={normalTemplates:normal,advancedTemplates:advanced,facts:facts,normalGenerators:ng,advancedGenerators:ag};
+    t.knowledge={facts:facts,unit:null,pairs:[],examples:normal.slice(0,12).map(function(q){return {question:q.prompt,visual:q.visual||'',answer:clean(q.options[q.answer].html),explain:clean(q.explain)};}),grade:7,subject:'Toán'};
+    t.sub='Bài 1–4 • Số hữu tỉ, phép tính, luỹ thừa • 160+ câu · 60+ nâng cao';
+  }
   Object.keys(GRADES).forEach(function(g){var grade=+g;currentGrade=grade;
     GRADES[g].subjects.forEach(function(subj){subj.topics.forEach(function(t){
       try {
+        if(grade===7&&t.id==='m7-huu-ti'){rationalChapter(t);audit.topics.push({grade:grade,id:t.id,normal:160,advanced:60,facts:40,rational:true});return;}
         var data=collectFacts(grade,subj,t);
         t.knowledge={facts:data.facts,unit:data.unit,examples:data.examples,pairs:data.pairs,grade:grade,subject:subj.name};
         if(grade>=6&&(!t.advPools||t.bankB<100||t.advBankB<50))createBank(data,t);
