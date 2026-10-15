@@ -2664,5 +2664,6 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
   }
   [t.pools,t.advPools].forEach(function(pools){if(!pools)return;['choose','blank','match','games'].forEach(function(k){pools[k]=(pools[k]||[]).map(function(gen){return function(){return normalize(gen());};});});});
   if(t.knowledge){(t.knowledge.facts||[]).forEach(function(f){var v=numberFraction(f.a);if(v!==null)f.a=v;(f.wrongs||[]).forEach(function(w,i){var v=numberFraction(w);if(v!==null)f.wrongs[i]=v;});});(t.knowledge.examples||[]).forEach(function(e){var v=numberFraction(e.answer);if(v!==null)e.answer=v;});}
+  if(t.knowledge&&t.knowledge.pairs)t.knowledge.pairs.forEach(function(p){var v=numberFraction(p[1]);if(v!==null)p[1]=v;});
   t.exactRationalResults=true;
 })();
