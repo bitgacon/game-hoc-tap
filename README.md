@@ -1,26 +1,13 @@
-# Game học tập lớp 1–9
+# Game học tập lớp 1–12
 
-Nội dung xây dựng trên cơ sở bộ sách kết nối tri thức - NXBGD.
+Bản chơi thử: https://bitgacon.github.io/game-hoc-tap/
 
-Bản chơi thử miễn phí, nội dung bằng tiếng Việt. Mở `index.html` hoặc truy cập link GitHub Pages sau khi bật xuất bản.
+Nguồn: bản v8 muse.ai bàn giao, tiếp nhận ngày 15/10/2026. `index.html` chứa giao diện và cơ chế chơi; `assets/data/lop1.js` đến `lop12.js` chứa dữ liệu từng lớp, chỉ tải khi cần. Khi cập nhật phải giữ đủ các tệp này và đường dẫn tương đối.
 
-## Bật GitHub Pages
+Đợt này sửa phép tính số hữu tỉ Toán 7 về phân số tối giản chính xác, mẫu dương; số nguyên viết n/1, số không viết 0/1. Các lựa chọn tương đương được loại bỏ. Không thay toàn bộ ngân hàng của muse bằng ngân hàng cũ.
 
-Trong kho `game-hoc-tap`, mở **Settings → Pages**:
+Giữ các tính năng v8: kiến thức ghi nhớ, thường/nâng cao, bài kiểm tra, sổ câu sai, hồ sơ tiến bộ, phiếu bài tập, tìm chương và tiếp tục học. Tên, sao và tiến độ lưu trong trình duyệt trên thiết bị. Không có đồng bộ hồ sơ giữa thiết bị.
 
-1. Source: **Deploy from a branch**.
-2. Branch: **main**, thư mục **/(root)**.
-3. Bấm **Save**, chờ GitHub xuất bản và lấy URL từ chính màn hình Pages.
+GitHub Pages: Settings → Pages → Deploy from a branch → main → /(root). Cập nhật index và dữ liệu các lớp trong cùng một phiên bản.
 
-Tên và sao của người chơi được lưu trong trình duyệt trên thiết bị. Không có tài khoản máy chủ, đồng bộ điểm hoặc bảng xếp hạng chung. Sang địa chỉ web hoặc thiết bị khác, hồ sơ cũ không tự chuyển sang.
-
-## Cập nhật
-
-Thay `index.html` bằng bản `game-hoc-tap.html` mới nhất từ dự án gốc, giữ tên `index.html`. Các bản phát hành cho muse.ai vẫn tiếp tục dùng tên `game-hoc-tap.html`.
-
-Bản ngày 12/10/2026 có sửa chống lặp, sửa câu thiếu dữ kiện, hỗ trợ giảm chuyển động, ngân hàng thường/nâng cao lớp 6–9 và mục kiến thức ghi nhớ lớp 1–9. Ngân hàng có câu tổ hợp từ dữ kiện hiện có; nội dung cần tiếp tục được giáo viên thẩm định.
-
-## Góp ý
-
-Khi báo lỗi qua Issues, ghi lớp, môn, chương, thường/nâng cao, trình duyệt và ảnh câu hỏi. Tránh đưa tên hoặc thông tin riêng của học sinh vào ảnh công khai.
-
+Kiểm thử kỹ thuật không thay thế duyệt nội dung của giáo viên. Khi góp ý, ghi lớp, môn, chương, thường/nâng cao, nội dung câu hỏi và đáp án; có thể dùng Issues của kho này.
