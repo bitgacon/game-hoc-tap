@@ -2901,7 +2901,13 @@
   /* ---------- làm mới giao diện giống các khối lớp trong master ---------- */
   try {
     if (typeof renderGradeTabs === "function") {
-      renderGradeTabs("login-grades", (typeof loginGrade !== "undefined" && loginGrade) || 10);
+      /* Sửa F1 (v13): trước đây gọi renderGradeTabs thiếu callback onPick —
+         bấm nút lớp khác trong cùng phiên sẽ văng lỗi "onPick is not a
+         function". Nay truyền đủ callback như các khối lớp 3–9 đang làm. */
+      var reloginTabs10 = function () {
+        renderGradeTabs("login-grades", (typeof loginGrade !== "undefined" && loginGrade) || 10, function (g) { loginGrade = g; reloginTabs10(); }, function (g) { el("login-err").textContent = "Lớp " + g + " sắp ra mắt — hiện đã có Lớp 1 đến Lớp 12 nhé!"; });
+      };
+      reloginTabs10();
       var note = document.querySelector("#login-screen .login-note");
       if (note) note.innerHTML = "Game đã có đủ Lớp 1 đến Lớp 10. Lớp 11–12 đang được xây dựng tiếp.";
     }

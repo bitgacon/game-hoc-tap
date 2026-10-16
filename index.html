@@ -398,7 +398,7 @@
           <label class="field-label" for="login-name">Tên của em</label>
           <input class="text-input" id="login-name" type="text" maxlength="30" placeholder="Ví dụ: Minh Anh" autocomplete="off" />
           <span class="field-label">Em học lớp mấy?</span>
-          <div class="grade-pick" id="login-grades"></div>
+          <div class="grade-pick" id="login-grades"><p class="login-loading" id="login-loading">⏳ Đang tải dữ liệu…</p></div>
           <label class="field-label" for="login-class">Tên lớp học (không bắt buộc)</label>
           <input class="text-input" id="login-class" type="text" maxlength="10" placeholder="Ví dụ: 2A, 7B" autocomplete="off" />
           <div class="login-err" id="login-err"></div>
@@ -453,10 +453,22 @@
           <button class="back-btn" id="btn-cd-back" aria-label="Quay lại">⬅️</button>
           <div>
             <h2>🧠 Chuyên đề nâng cao</h2>
-            <div class="sub">Toán tư duy theo cấp học — luyện suy luận, không tính vào Kiểm tra năng lực</div>
+            <div class="sub">Thư mục các nhánh nâng cao theo cấp học — không tính vào Kiểm tra năng lực</div>
           </div>
         </div>
         <div id="cd-body"></div>
+      </section>
+
+      <!-- GÓC GIẢI TRÍ (thư mục + các mục giải trí; dữ liệu nạp lười từ assets/data/giaitri.js) -->
+      <section class="screen" id="scr-giaitri">
+        <div class="topbar">
+          <button class="back-btn" id="btn-gt-back" aria-label="Quay lại">⬅️</button>
+          <div>
+            <h2>🎉 Góc giải trí</h2>
+            <div class="sub">Chơi mà học — đố vui dân gian, khám phá lịch sử và nhiều mục nữa đang được xây dựng dần</div>
+          </div>
+        </div>
+        <div id="gt-body"></div>
       </section>
 
       <!-- TOPICS -->
@@ -9331,6 +9343,9 @@ window.__ensureGrade = function (g, cb) {
       /* Chuyên đề nâng cao (Toán tư duy): chủ đề không nằm trong GRADES —
          uỷ quyền cho chuyende.js tra registry riêng khi đã nạp. */
       if (parts[1] === "chuyende" && typeof window.__cdTopicContext === "function") { var cdx = window.__cdTopicContext(parts); if (cdx) return cdx; }
+      /* Góc giải trí: registry riêng trong giaitri.js (nạp lười) — uỷ quyền
+         tương tự chuyên đề; ctx có thể mang cờ noCapture (đố vui dân gian). */
+      if (parts[1] === "giaitri" && typeof window.__gtTopicContext === "function") { var gtx = window.__gtTopicContext(parts); if (gtx) return gtx; }
       var g = parseInt(parts[0], 10);
       var G = (typeof GRADES !== "undefined") ? GRADES[g] : null;
       if (!G) return null;
@@ -9352,6 +9367,7 @@ window.__ensureGrade = function (g, cb) {
       if (!q.options || typeof q.answer !== "number" || !q.options[q.answer]) return;
       if (inA1Session()) return;
       var ctx = topicContext(); if (!ctx) return;
+      if (ctx.noCapture) return; /* Mục được đánh dấu không nạp kho câu sai (Đố vui dân gian). */
       q.__a1CapDone = true;
       var type = (q.kind === "blank" || q.blankText) ? "blank" : "choose";
       captureWrong({ grade: ctx.grade, subjectId: ctx.subj.id, subjectName: ctx.subj.name,
@@ -9367,6 +9383,7 @@ window.__ensureGrade = function (g, cb) {
       if (!q || !r || typeof r.truth !== "boolean" || r.__a1CapDone) return;
       if (inA1Session()) return;
       var ctx = topicContext(); if (!ctx) return;
+      if (ctx.noCapture) return; /* Mục được đánh dấu không nạp kho câu sai (Đố vui dân gian). */
       r.__a1CapDone = true;
       captureWrong({ grade: ctx.grade, subjectId: ctx.subj.id, subjectName: ctx.subj.name,
         topicId: ctx.topic.id, topicName: ctx.topic.name,
@@ -10755,7 +10772,16 @@ window.__ensureGrade = function (g, cb) {
     ".cd-band.current .cd-band-head{border-color:#12a37c;background:#e7f7f1}" +
     ".cd-band-name{font-size:19px;font-weight:800}" +
     ".cd-band-tag{font-size:13px;font-weight:800;color:#0e7a5f;background:#d8f3e8;border-radius:999px;padding:3px 10px}" +
-    ".cd-band-note{margin:0 0 10px;color:var(--ink-soft);font-weight:600}";
+    ".cd-band-note{margin:0 0 10px;color:var(--ink-soft);font-weight:600}" +
+    ".cd-branch-card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin:0 0 14px;padding:16px;border:3px solid var(--line);border-radius:20px;background:var(--card);cursor:pointer;font-family:inherit}" +
+    ".cd-branch-card:hover{border-color:#12a37c}" +
+    ".cd-branch-emoji{font-size:38px;line-height:1}" +
+    ".cd-branch-main{flex:1;display:flex;flex-direction:column;gap:3px}" +
+    ".cd-branch-name{font-size:20px;font-weight:800;color:var(--ink)}" +
+    ".cd-branch-desc{font-size:15px;font-weight:600;color:var(--ink-soft)}" +
+    ".cd-branch-meta{font-size:13px;font-weight:700;color:#0e7a5f}" +
+    ".cd-branch-arrow{font-size:30px;font-weight:800;color:var(--ink-soft)}" +
+    ".cd-backbar{margin:0 0 14px;padding:9px 16px;border:3px solid var(--line);border-radius:999px;background:var(--card);font-family:inherit;font-size:15px;font-weight:800;color:#0e7a5f;cursor:pointer}";
   document.head.appendChild(style);
 
   try { if (typeof screens !== "undefined" && screens.indexOf("scr-chuyende") === -1) screens.push("scr-chuyende"); } catch (e) {}
@@ -10783,17 +10809,98 @@ window.__ensureGrade = function (g, cb) {
     (document.body || document.head).appendChild(sc);
   };
 
-  window.__openChuyenDe = function () {
-    window.__ensureChuyenDe(function (ok) {
-      show("scr-chuyende");
-      var body = el("cd-body");
-      if (ok && window.__CD) {
-        try { window.__CD.render(); }
-        catch (e) { if (body) body.innerHTML = '<p class="cd-band-note">Chưa mở được chuyên đề — em thử lại nhé!</p>'; }
-      } else if (body) {
-        body.innerHTML = '<p class="cd-band-note">Chưa tải được dữ liệu chuyên đề — em kiểm tra mạng rồi thử lại nhé!</p>';
-      }
+  window.__enScript = window.__enScript || "";
+  window.__enWaiters = [];
+  window.__ensureTiengAnh = function (cb) {
+    if (window.__EN) { if (cb) cb(true); return; }
+    if (window.__enScript === "loading") { window.__enWaiters.push(cb); return; }
+    if (window.__enScript === "error") { if (cb) cb(false); return; }
+    window.__enScript = "loading";
+    var waiters = window.__enWaiters = [].concat(cb || []);
+    var sc = document.createElement("script");
+    sc.src = "assets/data/tienganh.js";
+    sc.onload = function () {
+      window.__enScript = "loaded";
+      var ws = waiters.slice(); waiters.length = 0;
+      ws.forEach(function (f) { if (f) try { f(!!window.__EN); } catch (e) {} });
+    };
+    sc.onerror = function () {
+      window.__enScript = "error";
+      var ws = waiters.slice(); waiters.length = 0;
+      ws.forEach(function (f) { if (f) try { f(false); } catch (e) {} });
+    };
+    (document.body || document.head).appendChild(sc);
+  };
+
+  /* --- Thư mục chuyên đề (v12, vu chốt 2026-10-16): vào chuyên đề thấy
+     DANH SÁCH NHÁNH trước; bấm từng nhánh mới vào nội dung của nhánh đó,
+     để khu chuyên đề mở rộng dần mà không rối màn hình. --- */
+  window.__cdView = "dir";
+  var CD_BRANCHES = [
+    { id: "toan", emoji: "🧮", name: "Toán tư duy",
+      desc: "Dãy số, logic, đếm hình, tổ hợp… — câu hỏi suy luận có giải thích cách nghĩ.",
+      meta: "3 dải • 15 chủ đề — Tiểu học (Lớp 1–5) • THCS (6–9) • THPT (10–12)" },
+    { id: "en", emoji: "🌍", name: "Tiếng Anh luyện thi",
+      desc: "Từ vựng, ngữ pháp, đọc hiểu và nghe — luyện theo khung thi quốc tế.",
+      meta: "Tiểu học: Cambridge Starters • Movers • Flyers — THCS: KET • PET — THPT: TOEIC • IELTS" }
+  ];
+  function escS(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function attachBranchChrome() {
+    var body = el("cd-body"); if (!body) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cd-backbar";
+    btn.textContent = "← Tất cả chuyên đề";
+    btn.addEventListener("click", function () { window.__openChuyenDe(); });
+    body.insertBefore(btn, body.firstChild);
+  }
+  function renderCDDirectory() {
+    var body = el("cd-body"); if (!body) return;
+    body.innerHTML = "";
+    var intro = document.createElement("p");
+    intro.className = "topics-sub";
+    intro.style.cssText = "text-align:center;margin:2px 0 14px";
+    intro.textContent = "Chọn một nhánh chuyên đề để luyện thêm ngoài sách giáo khoa — mỗi câu đều có giải thích.";
+    body.appendChild(intro);
+    CD_BRANCHES.forEach(function (b) {
+      var card = document.createElement("button");
+      card.className = "cd-branch-card";
+      card.setAttribute("data-branch", b.id);
+      card.innerHTML = '<span class="cd-branch-emoji">' + b.emoji + '</span><span class="cd-branch-main"><span class="cd-branch-name">' + escS(b.name) + '</span><span class="cd-branch-desc">' + escS(b.desc) + '</span><span class="cd-branch-meta">' + escS(b.meta) + '</span></span><span class="cd-branch-arrow">›</span>';
+      card.addEventListener("click", function () { window.__openCDBranch(b.id); });
+      body.appendChild(card);
     });
+  }
+  window.__openChuyenDe = function () {
+    window.__cdView = "dir";
+    show("scr-chuyende");
+    renderCDDirectory();
+  };
+  window.__openCDBranch = function (which) {
+    var body = el("cd-body");
+    if (which === "toan") {
+      window.__ensureChuyenDe(function (ok) {
+        show("scr-chuyende");
+        if (ok && window.__CD) {
+          window.__cdView = "toan";
+          try { window.__CD.render(); attachBranchChrome(); }
+          catch (e) { if (body) body.innerHTML = '<p class="cd-band-note">Chưa mở được chuyên đề — em thử lại nhé!</p>'; }
+        } else if (body) {
+          body.innerHTML = '<p class="cd-band-note">Chưa tải được dữ liệu chuyên đề — em kiểm tra mạng rồi thử lại nhé!</p>';
+        }
+      });
+    } else if (which === "en") {
+      window.__ensureTiengAnh(function (ok) {
+        show("scr-chuyende");
+        if (ok && window.__EN) {
+          window.__cdView = "en";
+          try { window.__EN.render(); attachBranchChrome(); }
+          catch (e) { if (body) body.innerHTML = '<p class="cd-band-note">Chưa mở được chuyên đề — em thử lại nhé!</p>'; }
+        } else if (body) {
+          body.innerHTML = '<p class="cd-band-note">Chưa tải được dữ liệu chuyên đề — em kiểm tra mạng rồi thử lại nhé!</p>';
+        }
+      });
+    }
   };
 
   function injectCDCard() {
@@ -10803,7 +10910,7 @@ window.__ensureGrade = function (g, cb) {
       if (grid.querySelector(".cd-card")) return;
       var card = document.createElement("button");
       card.className = "subj-card cd-card";
-      card.innerHTML = '<span class="big-emoji">🧠</span><span class="name">Chuyên đề nâng cao</span><span class="desc">Toán tư duy theo cấp: Tiểu học • THCS • THPT — câu hỏi suy luận có giải thích</span>';
+      card.innerHTML = '<span class="big-emoji">🧠</span><span class="name">Chuyên đề nâng cao</span><span class="desc">Toán tư duy • Tiếng Anh luyện thi — theo cấp, câu hỏi có giải thích</span>';
       card.addEventListener("click", function () { window.__openChuyenDe(); });
       grid.appendChild(card);
     } catch (e) {}
@@ -10815,9 +10922,162 @@ window.__ensureGrade = function (g, cb) {
   injectCDCard();
 
   var back = el("btn-cd-back");
-  if (back) back.addEventListener("click", function () { show("scr-home"); });
+  if (back) back.addEventListener("click", function () {
+    if (window.__cdView === "toan" || window.__cdView === "en") window.__openChuyenDe();
+    else show("scr-home");
+  });
 })();
 /*__CHUYENDE_SHELL_END__*/
+/*__GIAITRI_SHELL_BEGIN__*/
+/* ============================================================
+   GÓC GIẢI TRÍ (vu mở đợt 2026-10-16) — thư mục giải trí mở rộng dần:
+   - Thẻ "🎉 Góc giải trí" trên màn hình chính của MỌI lớp, cạnh thẻ
+     Chuyên đề nâng cao; vào thư mục mới thấy các mục; dữ liệu nằm riêng
+     ở assets/data/giaitri.js, nạp lười khi mở từng mục.
+   - Registry riêng (KHÔNG nằm trong GRADES) nên đứng ngoài Kiểm tra
+     năng lực, Thử thách mỗi ngày, In phiếu và tìm kiếm chủ đề.
+   - Vòng chơi dùng lại launchTopic/startGame/buildPlaylist của game;
+     ngữ cảnh Ôn câu sai qua móc window.__gtTopicContext ở topicContext()
+     (điểm sao theo khóa "<lớp>|giaitri|<id>").
+   ============================================================ */
+(function () {
+  if (window.__gtShellInstalled) return;
+  window.__gtShellInstalled = true;
+
+  var style = document.createElement("style");
+  style.textContent =
+    ".subj-card.gt-card{grid-column:1/-1;background:linear-gradient(135deg,#b45309,#e8871e);min-height:0;padding:16px 12px}" +
+    ".login-loading{grid-column:1/-1;text-align:center;font-weight:800;color:var(--ink-soft);font-size:16px;margin:8px 0}" +
+    ".gt-soon{opacity:.55;cursor:not-allowed}" +
+    ".gt-soon .cd-branch-meta{color:#b45309}" +
+    ".gt-cards-title{margin:18px 0 10px;font-size:18px}" +
+    ".gt-card-grid{display:flex;flex-direction:column;gap:10px}" +
+    ".gt-explore-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;border:3px solid var(--line);border-radius:16px;background:var(--card);cursor:pointer;font-family:inherit}" +
+    ".gt-explore-card:hover{border-color:#e8871e}" +
+    ".gt-explore-ic{font-size:30px;line-height:1}" +
+    ".gt-explore-tx{display:flex;flex-direction:column;gap:2px}" +
+    ".gt-explore-tx b{font-size:16px;color:var(--ink)}" +
+    ".gt-explore-tx small{font-size:13px;font-weight:600;color:var(--ink-soft)}" +
+    ".gt-story{font-size:17px;line-height:1.65;background:var(--card);border:3px solid var(--line);border-radius:16px;padding:16px 18px;margin:12px 0;text-align:justify}" +
+    ".gt-factbox{background:#fdf3e3;border:3px solid #e8871e;border-radius:16px;padding:12px 16px;margin:0 0 14px;font-size:16px;line-height:1.7}";
+  document.head.appendChild(style);
+
+  try { if (typeof screens !== "undefined" && screens.indexOf("scr-giaitri") === -1) screens.push("scr-giaitri"); } catch (e) {}
+
+  window.__gtScript = window.__gtScript || "";
+  window.__gtWaiters = [];
+  window.__ensureGiaiTri = function (cb) {
+    if (window.__GT) { if (cb) cb(true); return; }
+    if (window.__gtScript === "loading") { window.__gtWaiters.push(cb); return; }
+    if (window.__gtScript === "error") { if (cb) cb(false); return; }
+    window.__gtScript = "loading";
+    var waiters = window.__gtWaiters = [].concat(cb || []);
+    var sc = document.createElement("script");
+    sc.src = "assets/data/giaitri.js";
+    sc.onload = function () {
+      window.__gtScript = "loaded";
+      var ws = waiters.slice(); waiters.length = 0;
+      ws.forEach(function (f) { if (f) try { f(!!window.__GT); } catch (e) {} });
+    };
+    sc.onerror = function () {
+      window.__gtScript = "error";
+      var ws = waiters.slice(); waiters.length = 0;
+      ws.forEach(function (f) { if (f) try { f(false); } catch (e) {} });
+    };
+    (document.body || document.head).appendChild(sc);
+  };
+
+  window.__gtView = "dir";
+  var GT_ITEMS = [
+    { id: "dovui", emoji: "🌾", name: "Đố vui dân gian",
+      desc: "Những câu đố truyền thống quen thuộc của ông cha — đoán đáp án và khám phá cách giải mã hình ảnh ẩn dụ.",
+      meta: "Câu đố về đồ vật • con vật • thiên nhiên • cây quả • con người" },
+    { id: "lichsu", emoji: "🏯", name: "Tìm hiểu lịch sử",
+      desc: "12 thẻ khám phá theo dòng thời gian cùng ngân hàng câu hỏi từ bảng sự kiện đã kiểm chứng.",
+      meta: "Từ Hùng Vương dựng nước đến Đại thắng mùa Xuân 1975" }
+  ];
+  function escG(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function attachGTChrome() {
+    var body = el("gt-body"); if (!body) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cd-backbar";
+    btn.textContent = "← Tất cả mục giải trí";
+    btn.addEventListener("click", function () { window.__openGiaiTri(); });
+    body.insertBefore(btn, body.firstChild);
+  }
+  function renderGTDirectory() {
+    var body = el("gt-body"); if (!body) return;
+    body.innerHTML = "";
+    var intro = document.createElement("p");
+    intro.className = "topics-sub";
+    intro.style.cssText = "text-align:center;margin:2px 0 14px";
+    intro.textContent = "Học nhiều rồi, ghé góc giải trí thư giãn một chút nhé — chơi mà vẫn học thêm bao điều hay!";
+    body.appendChild(intro);
+    GT_ITEMS.forEach(function (b) {
+      var card = document.createElement("button");
+      card.className = "cd-branch-card";
+      card.setAttribute("data-gt-item", b.id);
+      card.innerHTML = '<span class="cd-branch-emoji">' + b.emoji + '</span><span class="cd-branch-main"><span class="cd-branch-name">' + escG(b.name) + '</span><span class="cd-branch-desc">' + escG(b.desc) + '</span><span class="cd-branch-meta">' + escG(b.meta) + '</span></span><span class="cd-branch-arrow">›</span>';
+      card.addEventListener("click", function () { window.__openGTItem(b.id); });
+      body.appendChild(card);
+    });
+    var soon = document.createElement("div");
+    soon.className = "cd-branch-card gt-soon";
+    soon.setAttribute("data-gt-soon", "rungchuong");
+    soon.setAttribute("aria-disabled", "true");
+    soon.innerHTML = '<span class="cd-branch-emoji">🔔</span><span class="cd-branch-main"><span class="cd-branch-name">Rung chuông vàng</span><span class="cd-branch-desc">Thi đấu vượt qua từng câu hỏi để rung chiếc chuông vàng — mục thi đấu kịch tính cho các bạn nhỏ tự tin.</span><span class="cd-branch-meta">🔔 Sắp mở — đang xây dựng</span></span>';
+    body.appendChild(soon);
+  }
+  window.__openGiaiTri = function () {
+    window.__gtView = "dir";
+    show("scr-giaitri");
+    renderGTDirectory();
+  };
+  window.__openGTItem = function (which) {
+    var body = el("gt-body");
+    window.__ensureGiaiTri(function (ok) {
+      show("scr-giaitri");
+      if (ok && window.__GT) {
+        try {
+          if (which === "dovui") window.__GT.renderDovui();
+          else if (which === "lichsu") window.__GT.renderLichSu();
+          else { window.__openGiaiTri(); return; }
+          attachGTChrome();
+        } catch (e) { if (body) body.innerHTML = '<p class="cd-band-note">Chưa mở được mục này — em thử lại nhé!</p>'; }
+      } else if (body) {
+        body.innerHTML = '<p class="cd-band-note">Chưa tải được dữ liệu giải trí — em kiểm tra mạng rồi thử lại nhé!</p>';
+      }
+    });
+  };
+
+  function injectGTCard() {
+    try {
+      if (typeof profile === "undefined" || !profile || !profile.name) return;
+      var grid = el("subject-dynamic"); if (!grid) return;
+      if (grid.querySelector(".gt-card")) return;
+      var card = document.createElement("button");
+      card.className = "subj-card gt-card";
+      card.innerHTML = '<span class="big-emoji">🎉</span><span class="name">Góc giải trí</span><span class="desc">Đố vui dân gian • Tìm hiểu lịch sử — chơi mà học, thư giãn sau giờ học</span>';
+      card.addEventListener("click", function () { window.__openGiaiTri(); });
+      grid.appendChild(card);
+    } catch (e) {}
+  }
+  if (typeof renderSubjects === "function") {
+    var origRSGT = renderSubjects;
+    renderSubjects = function () { var r = origRSGT.apply(this, arguments); injectGTCard(); return r; };
+  }
+  injectGTCard();
+
+  var back = el("btn-gt-back");
+  if (back) back.addEventListener("click", function () {
+    if (window.__gtView === "item") {
+      if (window.__GT && window.__GT.handleBack && window.__GT.handleBack()) return;
+      window.__openGiaiTri();
+    } else show("scr-home");
+  });
+})();
+/*__GIAITRI_SHELL_END__*/
 </script>
 
 </body>
