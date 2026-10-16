@@ -83,6 +83,8 @@
       .subject-card.math { background: var(--coral); box-shadow: 0 6px 0 var(--coral-dark), 0 14px 28px rgba(51,48,42,.15); }
       .subject-card.eng { background: var(--teal); box-shadow: 0 6px 0 var(--teal-dark), 0 14px 28px rgba(51,48,42,.15); }
       .home-note { text-align: center; margin-top: 26px; color: var(--ink-soft); font-weight: 600; font-size: 15px; }
+      .contact-line { text-align: center; margin-top: 20px; margin-bottom: 4px; color: var(--ink-soft); font-size: 13px; font-weight: 500; line-height: 1.7; }
+      .contact-line a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 
       /* ---------- TOPICS ---------- */
       .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
@@ -122,6 +124,8 @@
       @keyframes shake { 0%,100% { transform: none; } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
       .q-prompt { font-size: clamp(23px, 6vw, 31px); font-weight: 800; line-height: 1.3; margin: 0 0 6px; }
       .q-visual { margin: 10px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .q-figure { display: flex; justify-content: center; margin: 2px 0 4px; }
+      .q-figure svg { width: min(66vw, 265px); height: auto; }
       .count-box {
         display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px;
         background: var(--bg); border: 3px dashed var(--line); border-radius: 20px;
@@ -168,7 +172,6 @@
       .opt .opt-emoji { font-size: 62px; line-height: 1.1; }
       .opt .opt-emoji svg { width: 76px; height: 76px; }
       .opt .opt-num { font-size: 46px; font-weight: 800; }
-      .opt .rational-num { font-size: clamp(23px,5.5vw,36px); white-space: nowrap; }
       .opt .opt-word { font-size: clamp(24px, 6vw, 32px); font-weight: 800; }
       .opt .opt-text { font-size: clamp(19px, 5vw, 24px); font-weight: 700; line-height: 1.25; }
       .opt.right { border-color: var(--good); background: var(--good-bg); animation: bounce-ok 0.45s ease; }
@@ -186,6 +189,15 @@
       @media (prefers-color-scheme: dark) { .feedback.good { color: #7ee2a0; } }
       .feedback.retry { background: var(--bad-bg); color: var(--coral-dark); }
       @media (prefers-color-scheme: dark) { .feedback.retry { color: #ffb59f; } }
+      .feedback.show { flex-wrap: wrap; }
+      .btn-understood {
+        display: block; flex: 0 0 100%; width: 100%; margin-top: 10px; min-height: 58px;
+        padding: 12px 20px; border: none; border-radius: 16px; background: var(--good);
+        color: #fff; font-size: clamp(20px, 5.5vw, 25px); font-weight: 800; cursor: pointer;
+        font-family: inherit; box-shadow: var(--shadow);
+      }
+      .btn-understood:active { transform: scale(0.98); }
+      .explain-box .btn-understood { margin-top: 12px; }
       .star-fly { position: absolute; font-size: 40px; pointer-events: none; animation: fly-up 0.9s ease-out forwards; z-index: 5; }
       @keyframes fly-up { 0% { opacity: 0; transform: translateY(10px) scale(0.4); } 25% { opacity: 1; transform: translateY(-14px) scale(1.25); } 100% { opacity: 0; transform: translateY(-90px) scale(1); } }
 
@@ -432,6 +444,19 @@
           </button>
         </div>
         <p class="home-note">Nội dung bám sách Kết nối tri thức và Global Success. Mỗi lượt chơi 10 màn đan xen: trắc nghiệm, điền chỗ trống, ghép nối và trò chơi. Đúng được sao, sai được thử lại — không trừ điểm.</p>
+        <p class="contact-line">💬 Góp ý, báo lỗi: Facebook: <a href="https://fb.com/yeuemngannamhy" target="_blank" rel="noopener">fb.com/yeuemngannamhy</a> · Zalo: <a href="https://zalo.me/0977236591" target="_blank" rel="noopener">0977236591</a></p>
+      </section>
+
+      <!-- CHUYÊN ĐỀ NÂNG CAO (đợt thử Toán tư duy) — nội dung do assets/data/chuyende.js dựng -->
+      <section class="screen" id="scr-chuyende">
+        <div class="topbar">
+          <button class="back-btn" id="btn-cd-back" aria-label="Quay lại">⬅️</button>
+          <div>
+            <h2>🧠 Chuyên đề nâng cao</h2>
+            <div class="sub">Toán tư duy theo cấp học — luyện suy luận, không tính vào Kiểm tra năng lực</div>
+          </div>
+        </div>
+        <div id="cd-body"></div>
       </section>
 
       <!-- TOPICS -->
@@ -1082,14 +1107,19 @@
     function tfQ(prompt, rounds) { return { kind: "tf", badge: "🎮 Trò chơi!", prompt: prompt, rounds: rounds }; }
     function gTFCalcFactory(max) {
       return function () {
-        var rounds = [];
+        var items = [];
         for (var k = 0; k < 3; k++) {
           var p = calcPair(max);
           var truth = Math.random() < 0.5;
           var shown = truth ? p.res : p.res + pick([-2, -1, 1, 2]);
           if (shown < 0) shown = p.res + 2;
-          rounds.push({ visual: '<div class="expr">' + p.expr + " = " + shown + "</div>", truth: truth, explain: p.expr + " = " + p.res });
+          items.push({ p: p, truth: truth, shown: shown, correct: p.res });
         }
+        /* B6: cân bằng phán quyết như tfCalcGen — trước đây 3 vòng rút độc lập
+           nên ~25% màn toàn Đúng hoặc toàn Sai (nguồn chính của họ màn đồng
+           phán quyết ở các chủ đề Toán dùng nhà máy này, kể cả từ file lớp). */
+        tfBalanceItems(items, function (it) { var w = it.correct + pick([-2, -1, 1, 2]); if (w < 0) w = it.correct + 2; return w; });
+        var rounds = items.map(function (it) { return { visual: '<div class="expr">' + it.p.expr + " = " + it.shown + "</div>", truth: it.truth, explain: it.p.expr + " = " + it.correct }; });
         return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
       };
     }
@@ -1101,7 +1131,7 @@
          câu giống hệt mà một đúng một sai. Vá theo tiền lệ gTFLabelShape (đợt 5):
          rút lại khẳng định khác, tối đa 15 lần. Phần khẳng định được so trùng
          chính là số giờ hiển thị (shown) vì nguyên văn chỉ khác nhau ở số đó. */
-      var rounds = [], usedShown = {};
+      var rounds = [], usedShown = {}, showns = [];
       for (var k = 0; k < 3; k++) {
         var h = rand(1, 12), truth = Math.random() < 0.5;
         var shown = truth ? h : (h % 12) + 1, tries = 0;
@@ -1110,13 +1140,22 @@
           shown = truth ? h : (h % 12) + 1;
           tries++;
         }
-        usedShown[shown] = 1;
+        usedShown[shown] = 1; showns.push(shown);
         rounds.push({ visual: clockSVG(h) + '<div class="sentence">Đồng hồ chỉ ' + shown + " giờ</div>", truth: truth, explain: "Đồng hồ chỉ " + h + " giờ" });
+      }
+      /* B6: cân bằng phán quyết — nếu cả 3 vòng cùng một phán quyết, dựng lại
+         vòng cuối với phán quyết ngược lại, vẫn giữ các shown khác nhau từng đôi. */
+      if (rounds.length >= 2 && rounds.every(function (r) { return r.truth === rounds[0].truth; })) {
+        var wantT = !rounds[0].truth;
+        delete usedShown[showns[showns.length - 1]];
+        var h2 = 0, shown2 = 0, tries2 = 0;
+        do { h2 = rand(1, 12); shown2 = wantT ? h2 : (h2 % 12) + 1; tries2++; } while (usedShown[shown2] && tries2 < 30);
+        if (!usedShown[shown2]) rounds[rounds.length - 1] = { visual: clockSVG(h2) + '<div class="sentence">Đồng hồ chỉ ' + shown2 + " giờ</div>", truth: wantT, explain: "Đồng hồ chỉ " + h2 + " giờ" };
       }
       return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
     }
     function gTFLabelShape() {
-      var rounds = [], usedName = {};
+      var rounds = [], usedName = {}, shownNames = [];
       for (var k = 0; k < 3; k++) {
         var s = null, truth = false, shownName = null, tries = 0;
         do {
@@ -1124,19 +1163,35 @@
           shownName = truth ? s.name : pick(SHAPES.filter(function (x) { return x.id !== s.id; })).name;
           tries++;
         } while (usedName[shownName] && tries < 15);
-        usedName[shownName] = 1;
+        usedName[shownName] = 1; shownNames.push(shownName);
         rounds.push({ visual: shapeSVG(s.id, pick(SHAPE_COLORS)) + '<div class="sentence">Đây là ' + shownName.toLowerCase() + "</div>", truth: truth, explain: "Đây là " + s.name.toLowerCase() });
+      }
+      /* B6: cân bằng phán quyết — dựng lại vòng cuối với phán quyết ngược lại
+         nếu cả màn cùng một phán quyết, giữ tên hiển thị khác nhau từng đôi. */
+      if (rounds.length >= 2 && rounds.every(function (r) { return r.truth === rounds[0].truth; })) {
+        var wantT = !rounds[0].truth;
+        delete usedName[shownNames[shownNames.length - 1]];
+        var s2 = null, name2 = null, tries2 = 0;
+        do {
+          s2 = pick(SHAPES);
+          name2 = wantT ? s2.name : pick(SHAPES.filter(function (x) { return x.id !== s2.id; })).name;
+          tries2++;
+        } while (usedName[name2] && tries2 < 30);
+        if (!usedName[name2]) rounds[rounds.length - 1] = { visual: shapeSVG(s2.id, pick(SHAPE_COLORS)) + '<div class="sentence">Đây là ' + name2.toLowerCase() + "</div>", truth: wantT, explain: "Đây là " + s2.name.toLowerCase() };
       }
       return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
     }
     function gTFEngFactory(pool) {
       return function () {
-        var rounds = [];
+        var items = [];
         for (var k = 0; k < 3; k++) {
           var w = pick(pool), truth = Math.random() < 0.5;
-          var shown = truth ? w : engDistractors(w, pool, 1)[0];
-          rounds.push({ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" });
+          var shown = truth ? w : (engDistractors(w, pool, 1)[0] || w);
+          items.push({ w: w, truth: truth, shown: shown, correct: w });
         }
+        /* B6: cân bằng phán quyết (trước đây 3 vòng độc lập, ~25% màn đồng phán quyết) */
+        tfBalanceItems(items, function (it) { return engDistractors(it.w, pool, 1)[0] || null; });
+        var rounds = items.map(function (it) { return { visual: '<div class="big-pic">' + picHTML(it.w) + '</div><div class="big-word">' + it.shown[0] + "</div>", truth: it.truth, explain: "Từ đúng là “" + it.w[0] + "”" }; });
         return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
       };
     }
@@ -1372,6 +1427,39 @@
         setTimeout(function () { duckMusic(false); }, 2500);
       } catch (e) { /* không có giọng đọc thì bỏ qua */ }
     }
+    /* B1-sửa lớp nhỏ (2026-10-15) — phiếu RA-SOAT-TF-TIENG-ANH: nút nghe do
+       bé CHỦ ĐỘNG bấm là một phần của dữ kiện câu hỏi, không phải âm thanh
+       nền — phải đọc NGAY CẢ KHI công tắc giọng đang tắt (trước đây speak()
+       bị cổng audioSettings.voice chặn nên bài nghe thành ngõ cụt khi tắt
+       tiếng). Nếu thiết bị không có giọng đọc nào, hiện chính từ đó dạng
+       chữ ngay cạnh nút để bé vẫn làm được bài — không bao giờ câm lặng. */
+    function speakStimulus(text, btn) {
+      if (!text) return;
+      var revealed = false;
+      function reveal() {
+        if (revealed || !btn || !btn.parentNode) return;
+        var host = btn.parentNode;
+        if (host.textContent && host.textContent.indexOf(text) !== -1) return; /* từ đã hiện sẵn trên màn */
+        if (host.querySelector && host.querySelector(".speak-fallback")) return;
+        var sp = document.createElement("span");
+        sp.className = "speak-fallback";
+        sp.textContent = " " + text;
+        host.appendChild(sp);
+        revealed = true;
+      }
+      try {
+        if (!("speechSynthesis" in window)) { reveal(); return; }
+        var voices = refreshVoices();
+        if (!voices.length) reveal();
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-US"; u.rate = 0.85; u.pitch = 1.05;
+        for (var i = 0; i < voices.length; i++) {
+          if (voices[i].lang && voices[i].lang.indexOf("en") === 0) { u.voice = voices[i]; break; }
+        }
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      } catch (e) { reveal(); }
+    }
     function findViVoice() {
       try {
         var voices = refreshVoices();
@@ -1542,7 +1630,7 @@
           for (var pi = 0; pi < order.length; pi++) {
             var candidates = shuffle((pools[order[pi]] || []).slice());
             if (!candidates.length) continue;
-            var limit = Math.min(96, Math.max(48, candidates.length));
+            var limit = Math.min(48, Math.max(24, candidates.length));
             for (var attempt = 0; attempt < limit; attempt++) {
               var q, effects = [], realTimeout = window.setTimeout;
               try {
@@ -1712,7 +1800,7 @@ function valueKeyOf(html) {
         return roundFact(d.innerHTML);
       }).sort().join("§");
       if (q.kind === "sort") return "sort|" + q.items.map(roundFact).join("§");
-      var prompt = roundText(q.prompt || "").replace(/^(?:🧠 Vận dụng kiến thức: |Bắt đáp án! |Nhanh tay bắt đáp án đúng! |Chạm vào đáp án đúng! |Bắt đáp án đúng! )/, "");
+      var prompt = roundText(q.prompt || "").replace(/^(?:🧠 Vận dụng kiến thức: |Vận dụng kiến thức: |Bắt đáp án! |Nhanh tay bắt đáp án đúng! |Chạm vào đáp án đúng! |Bắt đáp án đúng! )/, "");
       if (/^Đáp án “/.test(prompt) && q.options && q.options[q.answer]) return "fact|" + roundFact(q.options[q.answer].html);
       var visual = document.createElement("div"); visual.innerHTML = q.visual || "";
       visual.querySelectorAll(".sentence").forEach(function (n) { if (/^Đáp án:/.test(n.textContent.trim())) n.remove(); });
@@ -1737,7 +1825,7 @@ function valueKeyOf(html) {
     }
     function nextQuestion() {
       if (game.idx >= ROUND_LEN) { showResult(); return; }
-      game.tried = false; game.locked = false; game.tf = null;
+      game.tried = false; game.locked = false; game.tf = null; game.hadWrong = false;
       var q = game.playlist[game.idx]();
       if (!q) { game.noMoreQuestions = true; showResult(); return; }
       game.current = q;
@@ -1759,9 +1847,9 @@ function valueKeyOf(html) {
       else if (q.kind === "catch") renderCatch(q);
       else if (q.kind === "sort") renderSort(q);
       else if (q.kind === "tf") renderTF(q);
-      else { el("q-visual").innerHTML = q.visual || ""; renderOptions(q); }
+      else { el("q-visual").innerHTML = figHTML(q.figure) + (q.visual || ""); renderOptions(q); }
       el("q-card").querySelectorAll("[data-speak]").forEach(function (btn) {
-        btn.addEventListener("click", function (ev) { ev.stopPropagation(); speak(btn.getAttribute("data-speak")); });
+        btn.addEventListener("click", function (ev) { ev.stopPropagation(); speakStimulus(btn.getAttribute("data-speak"), btn); });
       });
       var displayedGame = game;
       (q.afterShownEffects || []).forEach(function (effect) {
@@ -1772,6 +1860,22 @@ function valueKeyOf(html) {
       if (q.autoSpeak && q.speak) {
         setTimeout(function () { if (game === displayedGame && game.current === q && !game.locked && !window.__knowledgeOpen && el("scr-game").classList.contains("on")) speak(q.speak); }, 350);
       }
+    }
+    /* DỪNG Ở GIẢI THÍCH (anh vu chốt 2026-10-16): ở các vòng luyện tập/ôn tập,
+       màn nào có lần trả lời SAI thì sau khi hiện phản hồi/giải thích sẽ KHÔNG
+       tự chạy tiếp — hiện nút "Đã hiểu" ngay trong vùng phản hồi, học sinh bấm
+       mới chuyển tiếp (thân hàm chuyển tiếp giữ đúng nguyên bản của timer cũ).
+       Trả lời đúng hoàn toàn: giữ nguyên timer tự chạy như trước. */
+    function pauseAdvance(container, advance) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn-understood";
+      b.textContent = "✅ Đã hiểu";
+      b.addEventListener("click", function () {
+        if (b.parentNode) b.parentNode.removeChild(b);
+        advance();
+      });
+      container.appendChild(b);
     }
     function finishScreen(star) {
       if (game.locked) return;
@@ -1793,10 +1897,12 @@ function valueKeyOf(html) {
       } else { ex.className = "explain-box"; ex.innerHTML = ""; }
       el("progress-fill").style.width = ((game.idx + 1) / ROUND_LEN * 100) + "%";
       var completedGame = game;
-      setTimeout(function () {
+      var advance = function () {
         if (game !== completedGame || !el("scr-game").classList.contains("on")) return;
         afterKnowledge(function () { game.idx++; nextQuestion(); });
-      }, delay);
+      };
+      if (game.hadWrong) pauseAdvance(ex.classList.contains("show") ? ex : fb, advance);
+      else setTimeout(advance, delay);
     }
     function afterKnowledge(action) {
       var owner = game;
@@ -1805,6 +1911,7 @@ function valueKeyOf(html) {
     }
     function retryFeedback(msg) {
       game.tried = true;
+      game.hadWrong = true;
       soundRetry();
       speakEncourage();
       var fb = el("q-feedback");
@@ -2026,7 +2133,7 @@ function valueKeyOf(html) {
       }
       game.locked = true;
       var answeredGame = game;
-      setTimeout(function () {
+      var advanceTF = function () {
         if (game !== answeredGame || game.tf !== st || !el("scr-game").classList.contains("on")) return;
         afterKnowledge(function () {
         game.locked = false;
@@ -2034,7 +2141,9 @@ function valueKeyOf(html) {
         if (st.round >= st.q.rounds.length) { var c = st.correct; game.tf = null; finishScreen(c >= Math.min(2, st.q.rounds.length)); }
         else { fb.className = "feedback"; fb.innerHTML = ""; drawTFRound(); }
         });
-      }, 1100);
+      };
+      if (choice === r.truth) setTimeout(advanceTF, 1100);
+      else { game.hadWrong = true; pauseAdvance(fb, advanceTF); }
     }
     function spawnStar(anchor) {
       var card = el("q-card");
@@ -2086,6 +2195,117 @@ function valueKeyOf(html) {
       if (explain) q.explain = explain;
       return q;
     }
+    /* B1-sửa khuôn vỏ (2026-10-15): chuyển cặp hỏi–đáp thành MỆNH ĐỀ khẳng
+       định hoàn chỉnh cho các vòng Đúng/Sai ("X là gì?" + đáp án A → "X là
+       A."); không khớp mẫu định nghĩa thì dùng mệnh đề khẳng định về đáp án
+       đúng. Khai báo ở tầng toàn cục tại đây để mọi khối bộ sinh (factsTF ở
+       khối này; tfVarGen/advTF1Gen/tfStmtGen/tfCalcGen và sfTFGen ở các khối
+       sau) dùng chung một khuôn duy nhất. */
+    function qaCap(s) { s = String(s || ""); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+    function qaDecap(s) {
+      s = String(s || "");
+      if (s.length < 2) return s;
+      var c0 = s.charAt(0);
+      if (c0 === c0.toLowerCase() || c0 !== c0.toUpperCase()) return s;
+      var w = s.split(/\s+/);
+      /* B1-sửa lớp nhỏ (2026-10-15): từ viết hoa toàn bộ (số La Mã VII, XX;
+         ký hiệu viết tắt) không hạ chữ cái đầu — tránh khẳng định méo dạng
+         kiểu "là vII" trong màn đúng/sai. */
+      if (/^[A-ZÀ-Ỹ]{2,}$/.test(w[0])) return s;
+      if (w[0] === "Ngày" || w[0] === "Tháng" || w[0] === "Năm") return w[0].toLowerCase() + s.slice(w[0].length);
+      if (w.length >= 2) { var c1 = w[1].charAt(0); if (c1 && c1 !== c1.toLowerCase() && c1 === c1.toUpperCase()) return s; }
+      return c0.toLowerCase() + s.slice(1);
+    }
+    function qaStmtJoin(head, link, val) {
+      head = String(head || "").replace(/\s+/g, " ").trim();
+      val = String(val || "").replace(/\s+/g, " ").trim().replace(/\.+$/, "");
+      if (!head || !val) return "";
+      var v = qaDecap(val);
+      /* Tránh lặp từ nối khi đáp án đã bắt đầu bằng chính từ đó (vd "…vào năm
+         nào?" + đáp án "Năm 2000" → "…vào năm 2000", không phải "năm năm"). */
+      if (link && v.toLowerCase().indexOf(link.toLowerCase() + " ") === 0) return qaCap(head) + " " + v + ".";
+      return qaCap(head) + " " + link + " " + v + ".";
+    }
+    function qaToStmt(q, a) {
+      q = String(q || "").replace(/\s+/g, " ").trim();
+      a = String(a || "").replace(/\s+/g, " ").trim();
+      if (!q || !a) return q;
+      var m;
+      if ((m = /^(.+?)\s+là gì\??$/.exec(q))) return qaStmtJoin(m[1], "là", a);
+      if ((m = /^(.+?)\s+là ai\??$/.exec(q))) return qaStmtJoin(m[1], "là", a);
+      if ((m = /^(.+?)\s+có nghĩa là gì\??$/.exec(q))) return qaStmtJoin(m[1], "có nghĩa là", a);
+      if ((m = /^(.+?)\s+nghĩa là gì\??$/.exec(q))) return qaStmtJoin(m[1], "nghĩa là", a);
+      if ((m = /^(.+?)\s+gọi là gì\??$/.exec(q))) return qaStmtJoin(m[1], "gọi là", a);
+      if ((m = /^(.+?)\s+là những gì\??$/.exec(q))) return qaStmtJoin(m[1], "là", a);
+      if ((m = /^(.+?)\s+(?:bao gồm|gồm) những gì\??$/.exec(q))) return qaStmtJoin(m[1], "gồm", a);
+      if ((m = /^(.+?)\s+bằng bao nhiêu\??$/.exec(q))) return qaStmtJoin(m[1], "bằng", a);
+      if ((m = /^(.+?)\s+là bao nhiêu\??$/.exec(q))) return qaStmtJoin(m[1], "là", a);
+      if ((m = /^(.+?)\s+vào thời gian nào\??$/.exec(q))) return qaStmtJoin(m[1], "vào", a);
+      if ((m = /^(.+?)\s+vào ngày nào\??$/.exec(q))) return qaStmtJoin(m[1], "vào", a);
+      if ((m = /^(.+?)\s+năm nào\??$/.exec(q))) return qaStmtJoin(m[1], "năm", a);
+      /* ===== B6 — lớp lớn (2026-10-15): mở rộng chuyển đổi để vòng Đúng/Sai là
+         khẳng định trực tiếp thay vì dạng bọc "Đáp án đúng cho câu hỏi… là…".
+         Mọi chuyển đổi dưới đây là hàm thuần của (câu hỏi, giá trị HIỂN THỊ):
+         giá trị sai đã được thay vào trước khi gọi qaToStmt nên tính đúng/sai
+         của vòng không hề thay đổi. NGOẠI LỆ GIỮ DẠNG BỌC: câu CHỌN KHẲNG
+         ĐỊNH ("…nào sau đây đúng/sai?", "Đâu là…?", "Câu/Phát biểu nào…") —
+         ở đó đáp án đúng là một khẳng định trọn vẹn, tách khỏi câu hỏi sẽ làm
+         vòng hiển thị giá trị sai (một khẳng định ĐÚNG) bị chấm là SAI. */
+      /* Cặp nối chế thành dữ kiện ('“X” ứng với ý nào đúng?'): khẳng định nối trực tiếp. */
+      if ((m = /^“(.+?)” ứng với/.exec(q))) return qaCap("“" + m[1] + "” ứng với " + qaDecap(a.replace(/[.\s]+$/, ""))) + ".";
+      var isSelectStmt = /(sau đây|dưới đây)/.test(q) || /^Đâu là/.test(q) || /^(Câu|Phát biểu|Khẳng định|Nhận định|Mệnh đề) nào/.test(q) || /nào (đúng|sai)\?\s*$/.test(q);
+      function qaColon(head) { return qaCap(String(head).replace(/\?\s*$/, "").replace(/[:;,]$/, "")) + ": " + qaCap(a.replace(/\.+$/, "")) + "."; }
+      /* "…(bao gồm|gồm|chứa) … nào?" → nối bằng "gồm" */
+      if ((m = /^(.+?)\s+(?:bao gồm|gồm|chứa)\s+(?:những\s+|các\s+|mọi\s+)?[\wÀ-ỹ ]*?\s*nào\??$/i.exec(q))) return qaStmtJoin(m[1], "gồm", a);
+      /* "…là những/các … nào?" → nối bằng "là" */
+      if ((m = /^(.+?)\s+là\s+(?:những|các)\s+[\wÀ-ỹ ]*?\s*nào\??$/i.exec(q))) return qaStmtJoin(m[1], "là", a);
+      /* "…khi nào?" + đáp án mở đầu bằng "Khi" → ghép thẳng thành khẳng định */
+      if ((m = /^(.+?)\s+khi nào\??$/i.exec(q)) && /^Khi\b/.test(a)) return qaCap(m[1]) + " " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      /* "Vì sao/Tại sao …?" ở đầu câu, hoặc "…vì sao/tại sao/do đâu?" ở cuối câu */
+      if ((m = /^(?:Vì sao|Tại sao)\s+(.+?)\??$/i.exec(q))) {
+        if (/^(Vì|Do|Bởi)\b/.test(a)) return qaCap(m[1]) + " " + qaDecap(a.replace(/\.+$/, "")) + ".";
+        return qaCap(m[1]) + " vì " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      }
+      if ((m = /^(.+?)[,;]?\s+(?:vì sao|tại sao|do đâu)\??$/i.exec(q))) {
+        if (/^(Vì|Do|Bởi)\b/.test(a)) return qaCap(m[1]) + " " + qaDecap(a.replace(/\.+$/, "")) + ".";
+        return qaCap(m[1]) + " vì " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      }
+      /* "…ở đâu/tại đâu/nơi nào/từ đâu?" → ghép tiếng vọng (Ở/Tại/Trong/Từ…) hoặc nối "ở" */
+      if ((m = /^(.+?)\s+(?:ở đâu|tại đâu|nơi nào|từ đâu)\??$/i.exec(q))) {
+        if (/^(Ở|Tại|Trong|Trên|Giữa|Dưới|Từ|Ngoài)\b/.test(a)) return qaCap(m[1]) + " " + qaDecap(a.replace(/\.+$/, "")) + ".";
+        return qaStmtJoin(m[1], "ở", a);
+      }
+      if (!isSelectStmt) {
+        /* "…bằng cách nào/theo cách nào?" và "…nào?/…bao nhiêu?" còn lại: bỏ từ hỏi, dạng hai chấm */
+        if ((m = /^(.+?)\s+(?:bằng cách nào|theo cách nào|thế nào)\??$/i.exec(q))) return qaColon(m[1]);
+        if ((m = /^(.+?)\s+(?:nào|bao nhiêu)\??$/i.exec(q))) return qaColon(m[1]);
+      }
+      /* Dạng "…gì? / …thế nào?" còn lại: mệnh đề dạng "Đầu câu: nội dung." */
+      if ((m = /^(.+?)\s+(?:gì|như thế nào|thế nào)\??$/.exec(q))) return qaCap(m[1].replace(/[:;,]$/, "")) + ": " + qaCap(a.replace(/\.+$/, "")) + ".";
+      if (isSelectStmt) return "Đáp án đúng cho câu hỏi “" + q.replace(/\?$/, "") + "” là “" + a.replace(/\.+$/, "") + "”.";
+      /* Mọi câu hỏi còn lại (không thuộc nhóm chọn khẳng định): dạng hai chấm
+         trực tiếp thay cho dạng bọc. */
+      return qaColon(q);
+    }
+    /* Cân bằng phán quyết một màn Đúng/Sai: nếu MỌI vòng cùng một phán quyết
+       (màn có >=2 vòng) thì lật đúng MỘT vòng bằng cách đổi nội dung hiển thị
+       (shown) — đáp án gốc (correct) của từng ý không hề thay đổi. wrongOf(it)
+       trả về nội dung SAI khả dụng cho vòng đó, hoặc null nếu không lật sang
+       SAI được (vòng đang SAI thì luôn lật ngược về ĐÚNG được). */
+    function tfBalanceItems(items, wrongOf) {
+      if (!items || items.length < 2) return items;
+      var t0 = items[0].truth, uniform = true;
+      for (var i = 1; i < items.length; i++) if (items[i].truth !== t0) { uniform = false; break; }
+      if (!uniform) return items;
+      for (var j = 0; j < items.length; j++) {
+        var it = items[j];
+        if (it.truth) {
+          var w = wrongOf(it);
+          if (w != null && w !== it.correct) { it.shown = w; it.truth = false; return items; }
+        } else { it.shown = it.correct; it.truth = true; return items; }
+      }
+      return items;
+    }
     function factMCQ(f){ return identifyRoundFact(mcqQ(f[0], [f[2], f[3]], f[1], f[4]||null), f[0]); }
     function factBlank(f){
       var all = shuffle([f[1], f[2], f[3]]);
@@ -2101,12 +2321,24 @@ function valueKeyOf(html) {
     }
     function factsTF(facts){
       return function(){
-        var rounds = [], selectedFacts = shuffle(facts.slice()).slice(0, 3);
+        /* B1-sửa lớp nhỏ (2026-10-15): ƯU TIÊN các dữ kiện mà mệnh đề khẳng
+           định dựng từ chúng <=90 ký tự khi chọn vòng đúng/sai (một vòng một
+           ý ngắn, vừa sức đọc tiểu học); dữ kiện dài chỉ dùng khi không đủ
+           3 dữ kiện ngắn — không loại bỏ dữ kiện nào khỏi ngân hàng. */
+        var shortF = facts.filter(function (f) { return qaToStmt(f[0], f[1]).length <= 90; });
+        var ordered = shortF.length >= 3 ? shuffle(shortF.slice()).concat(shuffle(facts.filter(function (f) { return shortF.indexOf(f) === -1; }))) : shuffle(facts.slice());
+        var selectedFacts = ordered.slice(0, 3);
+        var items = [];
         for (var k=0;k<3;k++){
           var f = selectedFacts[k]; if (!f) break; var truth = Math.random()<0.5;
-          var shown = truth ? f[1] : f[2];
-          rounds.push({ visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">'+f[0]+'</div><div class="sentence">Đáp án: '+shown+"</div>", truth: truth, explain: "Đáp án đúng: "+f[1] });
+          items.push({ f: f, truth: truth, shown: truth ? f[1] : f[2], correct: f[1] });
         }
+        /* B1-sửa khuôn vỏ: mệnh đề khẳng định hoàn chỉnh (qaToStmt) thay cho
+           cặp hỏi–đáp, và cân bằng phán quyết cho cả màn. */
+        tfBalanceItems(items, function (it) { return it.f[2]; });
+        var rounds = items.map(function (it) {
+          return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">'+qaToStmt(it.f[0], it.shown)+"</div>", truth: it.truth, explain: "Đáp án đúng: "+it.f[1] };
+        });
         var q = tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
         q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f[0]; }) }; return q;
       };
@@ -2299,13 +2531,16 @@ function valueKeyOf(html) {
       return memQ("Lật thẻ tìm cặp đúng: phép nhân và tích!", pairs);
     }
     function g3TableTF() {
-      var rounds = [];
+      var items = [];
       for (var i = 0; i < 3; i++) {
         var t = pick(TABLES3), k = rand(2, 9), truth = Math.random() < 0.5;
         var shown = truth ? t * k : t * k + pick([-t, t, -1, 1, 2, -2]);
         if (shown <= 0) shown = t * k + t;
-        rounds.push({ visual: '<div class="expr">' + t + " × " + k + " = " + shown + "</div>", truth: truth, explain: t + " × " + k + " = " + (t * k) });
+        items.push({ t: t, k: k, truth: truth, shown: shown, correct: t * k });
       }
+      /* B6: cân bằng phán quyết như tfCalcGen/gTFCalcFactory */
+      tfBalanceItems(items, function (it) { var w = it.correct + pick([-it.t, it.t, -1, 1, 2, -2]); if (w <= 0) w = it.correct + it.t; return w; });
+      var rounds = items.map(function (it) { return { visual: '<div class="expr">' + it.t + " × " + it.k + " = " + it.shown + "</div>", truth: it.truth, explain: it.t + " × " + it.k + " = " + it.correct }; });
       return tfQ("Đúng hay sai? Thuộc bảng nhân nào, chạm nhanh nhé!", rounds);
     }
     var FRAC_READ3 = { 2: "hai", 3: "ba", 4: "tư", 5: "năm", 6: "sáu", 7: "bảy", 8: "tám", 9: "chín" };
@@ -2656,6 +2891,263 @@ function numBlank6(prompt, expr, ans, explain) {
     visual: '<div class="expr">' + expr.replace("?", blankSlot()) + "</div>",
     options: opts.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: opts.indexOf(ans), cols: 3 };
 }
+/* ================= B2 — MINH HOẠ SVG CHO CÂU HỎI (2026-10-15) =================
+   Trường figure của một câu hỏi: chuỗi SVG sinh bằng khuôn tĩnh trong mã từ
+   CHÍNH các tham số mà bộ sinh dùng để tính câu hỏi và đáp án (một nguồn sự
+   thật — nhãn số trên hình luôn bằng số trong đề). figHTML là cổng render
+   duy nhất cho figure: chỉ nhận chuỗi bắt đầu bằng "<svg", còn lại bỏ qua.
+   Câu hỏi mà dữ kiện CHỈ nằm trên hình (đồ thị đọc số liệu) phải đặt cờ
+   figureOnly=true: sampleMCQ sẽ không thu hoạch chúng thành dữ kiện chữ
+   (tránh suy diễn ra câu thiếu hình); chúng vẫn vào đề Kiểm tra qua
+   optionItem kèm figure. */
+function figHTML(fig) {
+  if (typeof fig !== "string") return "";
+  if (fig.replace(/^\s+/, "").indexOf("<svg") !== 0) return "";
+  return '<div class="q-figure">' + fig + "</div>";
+}
+var FIG_INK = "#33302a", FIG_ACC = "#2f6db3", FIG_FILL = "#dcecfb", FIG_MEAS = "#e4572e", FIG_GRID = "#dde4ec", FIG_MUT = "#5a6472";
+function figOpen(vb, label) { return '<svg viewBox="' + vb + '" role="img" aria-label="' + label + '" xmlns="http://www.w3.org/2000/svg">'; }
+function figText(x, y, str, anchor, size, fill) {
+  return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || "middle") + '" font-size="' + (size || 16) + '" font-weight="700" fill="' + (fill || FIG_INK) + '">' + str + "</text>";
+}
+/* Tam giác: đáy a (cm), chiều cao h (cm) — nhãn đúng hai số đó. */
+function figTriSVG(a, h) {
+  var bw = Math.round(64 + (a / (a + h)) * 104), bh = Math.round(48 + (h / (a + h)) * 72);
+  var x0 = Math.round((220 - bw) / 2), yb = 142, xa = x0 + Math.round(bw * 0.4), yt = yb - bh;
+  return figOpen("0 0 220 178", "Hình tam giác") +
+    '<polygon points="' + x0 + "," + yb + " " + (x0 + bw) + "," + yb + " " + xa + "," + yt + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<line x1="' + xa + '" y1="' + yt + '" x2="' + xa + '" y2="' + yb + '" stroke="' + FIG_MEAS + '" stroke-width="2.5" stroke-dasharray="6 4"/>' +
+    '<polyline points="' + (xa - 8) + "," + yb + " " + (xa - 8) + "," + (yb - 8) + " " + xa + "," + (yb - 8) + '" fill="none" stroke="' + FIG_INK + '" stroke-width="1.6"/>' +
+    figText(x0 + Math.round(bw / 2), yb + 24, a + " cm") +
+    figText(xa + 9, yt + Math.round(bh / 2) + 5, h + " cm", "start") +
+    "</svg>";
+}
+/* Hình thang: đáy dưới a, đáy trên b, chiều cao h (cm). */
+function figTrapSVG(a, b, h) {
+  var kw = 172 / Math.max(a, b);
+  var bw = Math.max(52, Math.round(a * kw)), tw = Math.max(30, Math.round(b * kw));
+  var bh = Math.round(50 + (h / (h + (a + b) / 2)) * 58);
+  var x0 = Math.round((220 - bw) / 2), yb = 140, yt = yb - bh, xt = Math.round((220 - tw) / 2);
+  var xh = Math.max(x0, xt) + 10;
+  return figOpen("0 0 220 178", "Hình thang") +
+    '<polygon points="' + x0 + "," + yb + " " + (x0 + bw) + "," + yb + " " + (xt + tw) + "," + yt + " " + xt + "," + yt + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<line x1="' + xh + '" y1="' + yt + '" x2="' + xh + '" y2="' + yb + '" stroke="' + FIG_MEAS + '" stroke-width="2.5" stroke-dasharray="6 4"/>' +
+    figText(x0 + Math.round(bw / 2), yb + 24, a + " cm") +
+    figText(xt + Math.round(tw / 2), yt - 9, b + " cm") +
+    figText(xh + 8, yt + Math.round(bh / 2) + 5, h + " cm", "start") +
+    "</svg>";
+}
+/* Hình tròn bán kính r (cm): mode "r" vẽ bán kính, mode "d" vẽ đường kính d = 2r. */
+function figCircleSVG(r, mode) {
+  var cx = 100, cy = 86, rad = 55, seg, lab;
+  if (mode === "d") {
+    seg = '<line x1="' + (cx - rad) + '" y1="' + cy + '" x2="' + (cx + rad) + '" y2="' + cy + '" stroke="' + FIG_MEAS + '" stroke-width="3"/>';
+    lab = figText(cx, cy - 10, "d = " + (2 * r) + " cm", "middle", 16, FIG_MEAS);
+  } else {
+    seg = '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + rad) + '" y2="' + cy + '" stroke="' + FIG_MEAS + '" stroke-width="3"/>';
+    lab = figText(cx + 27, cy - 10, "r = " + r + " cm", "middle", 16, FIG_MEAS);
+  }
+  return figOpen("0 0 200 172", "Hình tròn") +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + rad + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    seg + '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="' + FIG_INK + '"/>' + lab + "</svg>";
+}
+/* Hình hộp chữ nhật: dài a, rộng b (cạnh sâu), cao c (cm). */
+function figBoxSVG(a, b, c) {
+  var s = a + b + c;
+  var w = Math.round(54 + (a / s) * 104), hgt = Math.round(42 + (c / s) * 92);
+  var dx = Math.round(16 + (b / s) * 44), dy = Math.round(dx * 0.55);
+  var x = 32, yb = 148, y = yb - hgt;
+  return figOpen("0 0 240 182", "Hình hộp chữ nhật") +
+    '<polygon points="' + (x + dx) + "," + (y - dy) + " " + (x + w + dx) + "," + (y - dy) + " " + (x + w + dx) + "," + (yb - dy) + " " + (x + w) + "," + yb + " " + x + "," + yb + " " + (x + dx) + "," + (yb - dy) + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + hgt + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    '<line x1="' + (x + w) + '" y1="' + y + '" x2="' + (x + w + dx) + '" y2="' + (y - dy) + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    figText(x + Math.round(w / 2), yb + 22, a + " cm") +
+    figText(x - 7, y + Math.round(hgt / 2) + 5, c + " cm", "end") +
+    figText(x + w + Math.round(dx / 2) + 3, yb - Math.round(dy / 2) + 17, b + " cm", "start") +
+    "</svg>";
+}
+/* Hình lập phương cạnh a (cm). */
+function figCubeSVG(a) {
+  var x = 52, y = 44, w = 92, dx = 38, dy = 21, yb = y + w;
+  return figOpen("0 0 220 182", "Hình lập phương") +
+    '<polygon points="' + (x + dx) + "," + (y - dy) + " " + (x + w + dx) + "," + (y - dy) + " " + (x + w + dx) + "," + (yb - dy) + " " + (x + w) + "," + yb + " " + x + "," + yb + " " + (x + dx) + "," + (yb - dy) + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + w + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    '<line x1="' + (x + w) + '" y1="' + y + '" x2="' + (x + w + dx) + '" y2="' + (y - dy) + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    figText(x + Math.round(w / 2), yb + 24, a + " cm") +
+    "</svg>";
+}
+/* Hình chữ nhật dài a, rộng b (cm). */
+function figRectSVG(a, b) {
+  var w = Math.round(66 + (a / (a + b)) * 102), h = Math.round(46 + (b / (a + b)) * 74);
+  var x = Math.round((220 - w) / 2), yb = 138, y = yb - h;
+  return figOpen("0 0 220 178", "Hình chữ nhật") +
+    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    figText(x + Math.round(w / 2), yb + 24, a + " cm") +
+    figText(x - 8, y + Math.round(h / 2) + 5, b + " cm", "end") +
+    "</svg>";
+}
+/* Hình vuông cạnh a (cm). */
+function figSquareSVG(a) {
+  var x = 58, y = 34, w = 104, yb = y + w;
+  return figOpen("0 0 220 178", "Hình vuông") +
+    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + w + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    figText(x + Math.round(w / 2), yb + 24, a + " cm") +
+    "</svg>";
+}
+/* Hình bình hành: cạnh đáy f, chiều cao tương ứng g (cm). */
+function figParaSVG(f, g) {
+  var bw = Math.round(72 + (f / (f + g)) * 94), bh = Math.round(48 + (g / (f + g)) * 62), sl = 30;
+  var x0 = Math.round((220 - bw - sl) / 2) + 6, yb = 140, yt = yb - bh;
+  return figOpen("0 0 220 178", "Hình bình hành") +
+    '<polygon points="' + x0 + "," + yb + " " + (x0 + bw) + "," + yb + " " + (x0 + bw + sl) + "," + yt + " " + (x0 + sl) + "," + yt + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<line x1="' + (x0 + sl) + '" y1="' + yt + '" x2="' + (x0 + sl) + '" y2="' + yb + '" stroke="' + FIG_MEAS + '" stroke-width="2.5" stroke-dasharray="6 4"/>' +
+    figText(x0 + Math.round(bw / 2), yb + 24, f + " cm") +
+    figText(x0 + sl + 8, yt + Math.round(bh / 2) + 5, g + " cm", "start") +
+    "</svg>";
+}
+/* Hình thoi với hai đường chéo m (ngang) và n (dọc) — cm; đường chéo vẽ nét đứt, nhãn là chính hai số đã cho. */
+function figRhombusDiagSVG(m, n) {
+  var hw = Math.round(52 + (m / (m + n)) * 56), hh = Math.round(44 + (n / (m + n)) * 50);
+  var cx = 110, cy = 92;
+  return figOpen("0 0 220 192", "Hình thoi") +
+    '<polygon points="' + (cx - hw) + "," + cy + " " + cx + "," + (cy - hh) + " " + (cx + hw) + "," + cy + " " + cx + "," + (cy + hh) + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<line x1="' + (cx - hw) + '" y1="' + cy + '" x2="' + (cx + hw) + '" y2="' + cy + '" stroke="' + FIG_MEAS + '" stroke-width="2.5" stroke-dasharray="6 4"/>' +
+    '<line x1="' + cx + '" y1="' + (cy - hh) + '" x2="' + cx + '" y2="' + (cy + hh) + '" stroke="' + FIG_MEAS + '" stroke-width="2.5" stroke-dasharray="6 4"/>' +
+    figText(cx, cy + 17, m + " cm") +
+    figText(cx + 8, cy - Math.round(hh / 2) + 5, n + " cm", "start") +
+    "</svg>";
+}
+/* Tam giác vuông: cạnh góc vuông ngang an, dọc bn (số, để lấy tỉ lệ);
+   la/lb/lc là NHÃN hiển thị của cạnh ngang/cạnh dọc/cạnh huyền (null = không nhãn, "?" = ẩn số cần tìm). */
+function figRightTriSVG(an, bn, la, lb, lc) {
+  var w = Math.round(64 + (an / (an + bn)) * 100), h = Math.round(52 + (bn / (an + bn)) * 76);
+  var x = 42, yb = 146, yt = yb - h, xr = x + w;
+  var out = figOpen("0 0 232 182", "Tam giác vuông") +
+    '<polygon points="' + x + "," + yb + " " + xr + "," + yb + " " + x + "," + yt + '" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.5" stroke-linejoin="round"/>' +
+    '<polyline points="' + (x + 13) + "," + yb + " " + (x + 13) + "," + (yb - 13) + " " + x + "," + (yb - 13) + '" fill="none" stroke="' + FIG_INK + '" stroke-width="1.6"/>';
+  if (la) out += figText(x + Math.round(w / 2), yb + 24, la);
+  if (lb) out += figText(x - 8, yt + Math.round(h / 2) + 5, lb, "end");
+  if (lc) out += figText(Math.round((x + xr) / 2) + 14, Math.round((yt + yb) / 2) - 4, lc, "middle", 17, FIG_MEAS);
+  return out + "</svg>";
+}
+/* Điện trở zigzag trên đoạn dây ngang từ x1 tới x2 ở cao độ y. */
+function figResistor(x1, x2, y) {
+  var seg = (x2 - x1) / 6, pts = [x1 + "," + y], i;
+  for (i = 1; i < 6; i++) pts.push((x1 + seg * i) + "," + (y + (i % 2 ? -9 : 9)));
+  pts.push(x2 + "," + y);
+  return '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + FIG_INK + '" stroke-width="3" stroke-linejoin="round"/>';
+}
+/* Mạch kín một điện trở: nguồn U (V) + điện trở R (Ω). */
+function figCircuit1SVG(u, r) {
+  return figOpen("0 0 250 178", "Sơ đồ mạch điện") +
+    '<path d="M48,128 V94 M48,66 V38 H104" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    figResistor(104, 166, 38) +
+    '<path d="M166,38 H202 V128 H48" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    '<line x1="30" y1="72" x2="66" y2="72" stroke="' + FIG_INK + '" stroke-width="2.5"/>' +
+    '<line x1="39" y1="88" x2="57" y2="88" stroke="' + FIG_INK + '" stroke-width="6"/>' +
+    figText(135, 22, "R = " + r + " Ω") +
+    figText(125, 156, "U = " + u + " V") +
+    "</svg>";
+}
+/* Mạch toàn mạch: nguồn (ℰ = e V, điện trở trong rin Ω) + điện trở ngoài rout Ω. */
+function figCircuitFullSVG(e, rin, rout) {
+  return figOpen("0 0 250 178", "Sơ đồ mạch điện") +
+    '<path d="M48,128 V94 M48,66 V38 H104" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    figResistor(104, 166, 38) +
+    '<path d="M166,38 H202 V128 H48" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    '<line x1="30" y1="72" x2="66" y2="72" stroke="' + FIG_INK + '" stroke-width="2.5"/>' +
+    '<line x1="39" y1="88" x2="57" y2="88" stroke="' + FIG_INK + '" stroke-width="6"/>' +
+    figText(135, 22, "R = " + rout + " Ω") +
+    figText(125, 156, "ℰ = " + e + " V, r = " + rin + " Ω") +
+    "</svg>";
+}
+/* Hai điện trở nối tiếp giữa hai đầu A, B (Ω). */
+function figCircuitSeriesSVG(r1, r2) {
+  return figOpen("0 0 250 150", "Đoạn mạch nối tiếp") +
+    '<path d="M38,78 H64" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    figResistor(64, 112, 78) +
+    '<path d="M112,78 H138" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    figResistor(138, 186, 78) +
+    '<path d="M186,78 H212" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    '<circle cx="34" cy="78" r="4.5" fill="' + FIG_INK + '"/><circle cx="216" cy="78" r="4.5" fill="' + FIG_INK + '"/>' +
+    figText(88, 52, "R₁ = " + r1 + " Ω") +
+    figText(162, 52, "R₂ = " + r2 + " Ω") +
+    figText(34, 106, "A") + figText(216, 106, "B") +
+    "</svg>";
+}
+/* Hai điện trở song song giữa hai đầu A, B (Ω). */
+function figCircuitParSVG(r1, r2) {
+  return figOpen("0 0 250 188", "Đoạn mạch song song") +
+    '<path d="M30,92 H74 M176,92 H220" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    '<path d="M74,48 V136 M176,48 V136" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    '<path d="M74,48 H102 M148,48 H176 M74,136 H102 M148,136 H176" fill="none" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    figResistor(102, 148, 48) + figResistor(102, 148, 136) +
+    '<circle cx="26" cy="92" r="4.5" fill="' + FIG_INK + '"/><circle cx="224" cy="92" r="4.5" fill="' + FIG_INK + '"/>' +
+    '<circle cx="74" cy="92" r="4" fill="' + FIG_INK + '"/><circle cx="176" cy="92" r="4" fill="' + FIG_INK + '"/>' +
+    figText(125, 30, "R₁ = " + r1 + " Ω") +
+    figText(125, 166, "R₂ = " + r2 + " Ω") +
+    figText(26, 118, "A") + figText(224, 118, "B") +
+    "</svg>";
+}
+/* Đồ thị quãng đường – thời gian của chuyển động đều: đoạn thẳng từ gốc O tới (t giây, s mét). */
+function figSTSVG(t, s) {
+  var ox = 48, oy = 154, ex = 198, ey = 36;
+  return figOpen("0 0 240 194", "Đồ thị quãng đường – thời gian") +
+    '<line x1="' + ox + '" y1="' + oy + '" x2="' + (ex + 18) + '" y2="' + oy + '" stroke="' + FIG_INK + '" stroke-width="2.5"/>' +
+    '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="' + (ey - 16) + '" stroke="' + FIG_INK + '" stroke-width="2.5"/>' +
+    '<polyline points="' + (ex + 18) + "," + oy + " " + (ex + 10) + "," + (oy - 4) + " " + (ex + 10) + "," + (oy + 4) + '" fill="' + FIG_INK + '"/>' +
+    '<polyline points="' + ox + "," + (ey - 16) + " " + (ox - 4) + "," + (ey - 8) + " " + (ox + 4) + "," + (ey - 8) + '" fill="' + FIG_INK + '"/>' +
+    '<line x1="' + ex + '" y1="' + ey + '" x2="' + ex + '" y2="' + oy + '" stroke="' + FIG_MEAS + '" stroke-width="2" stroke-dasharray="6 4"/>' +
+    '<line x1="' + ox + '" y1="' + ey + '" x2="' + ex + '" y2="' + ey + '" stroke="' + FIG_MEAS + '" stroke-width="2" stroke-dasharray="6 4"/>' +
+    '<line x1="' + ox + '" y1="' + oy + '" x2="' + ex + '" y2="' + ey + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    '<circle cx="' + ex + '" cy="' + ey + '" r="4.5" fill="' + FIG_MEAS + '"/>' +
+    figText(ex, oy + 21, String(t)) +
+    figText(ox - 8, ey + 5, String(s), "end") +
+    figText(ox - 10, oy + 17, "O", "end", 13) +
+    figText(ox + 5, 15, "s (m)", "start", 14) +
+    figText(234, oy + 21, "t (s)", "end", 14) +
+    "</svg>";
+}
+/* Đồ thị vận tốc – thời gian: vật chuyển động thẳng đều với vận tốc v (m/s) trong t (s);
+   quãng đường là diện tích hình chữ nhật dưới đồ thị (tô nền). */
+function figVTSVG(v, t) {
+  var ox = 48, oy = 154, ex = 198, ey = 36;
+  return figOpen("0 0 240 194", "Đồ thị vận tốc – thời gian") +
+    '<rect x="' + ox + '" y="' + ey + '" width="' + (ex - ox) + '" height="' + (oy - ey) + '" fill="' + FIG_FILL + '"/>' +
+    '<line x1="' + ox + '" y1="' + oy + '" x2="' + (ex + 18) + '" y2="' + oy + '" stroke="' + FIG_INK + '" stroke-width="2.5"/>' +
+    '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="' + (ey - 16) + '" stroke="' + FIG_INK + '" stroke-width="2.5"/>' +
+    '<polyline points="' + (ex + 18) + "," + oy + " " + (ex + 10) + "," + (oy - 4) + " " + (ex + 10) + "," + (oy + 4) + '" fill="' + FIG_INK + '"/>' +
+    '<polyline points="' + ox + "," + (ey - 16) + " " + (ox - 4) + "," + (ey - 8) + " " + (ox + 4) + "," + (ey - 8) + '" fill="' + FIG_INK + '"/>' +
+    '<line x1="' + ox + '" y1="' + ey + '" x2="' + ex + '" y2="' + ey + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    '<line x1="' + ex + '" y1="' + ey + '" x2="' + ex + '" y2="' + oy + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>' +
+    figText(ex, oy + 21, String(t)) +
+    figText(ox - 8, ey + 5, String(v), "end") +
+    figText(ox - 10, oy + 17, "O", "end", 13) +
+    figText(ox + 5, 15, "v (m/s)", "start", 14) +
+    figText(234, oy + 21, "t (s)", "end", 14) +
+    "</svg>";
+}
+/* Đồ thị hàm số bậc nhất y = ax + b trên lưới nguyên; điểm tại hoành độ x0 được
+   đánh dấu + đường dóng đứt xuống trục hoành — tung độ của điểm là đáp án cần đọc. */
+function figLineSVG(a, b, x0) {
+  var u = 16, ox = 52, oy = 178, xMax = 7, yMax = 10, i, px, py;
+  var out = figOpen("0 0 244 208", "Đồ thị hàm số bậc nhất");
+  for (i = 0; i <= xMax; i++) out += '<line x1="' + (ox + i * u) + '" y1="' + (oy - yMax * u) + '" x2="' + (ox + i * u) + '" y2="' + oy + '" stroke="' + FIG_GRID + '" stroke-width="1"/>';
+  for (i = 0; i <= yMax; i++) out += '<line x1="' + ox + '" y1="' + (oy - i * u) + '" x2="' + (ox + xMax * u) + '" y2="' + (oy - i * u) + '" stroke="' + FIG_GRID + '" stroke-width="1"/>';
+  var xs = -0.6, xe = Math.min(xMax + 0.4, (10.3 - b) / a);
+  out += '<line x1="' + (ox + xs * u) + '" y1="' + (oy - (a * xs + b) * u) + '" x2="' + (ox + xe * u) + '" y2="' + (oy - (a * xe + b) * u) + '" stroke="' + FIG_ACC + '" stroke-width="3.5"/>';
+  px = ox + x0 * u; py = oy - (a * x0 + b) * u;
+  out += '<line x1="' + px + '" y1="' + py + '" x2="' + px + '" y2="' + oy + '" stroke="' + FIG_MEAS + '" stroke-width="2" stroke-dasharray="6 4"/>';
+  out += '<circle cx="' + px + '" cy="' + py + '" r="4.5" fill="' + FIG_MEAS + '"/>';
+  out += '<line x1="' + ox + '" y1="' + (oy - yMax * u - 6) + '" x2="' + ox + '" y2="' + (oy + 6) + '" stroke="' + FIG_INK + '" stroke-width="2.5"/>';
+  out += '<line x1="' + (ox - 14) + '" y1="' + oy + '" x2="' + (ox + xMax * u + 22) + '" y2="' + oy + '" stroke="' + FIG_INK + '" stroke-width="2.5"/>';
+  for (i = 0; i <= xMax; i++) out += figText(ox + i * u, oy + 17, String(i), "middle", i === x0 ? 13 : 10.5, i === x0 ? FIG_INK : FIG_MUT);
+  for (i = 2; i <= yMax; i += 2) out += figText(ox - 7, oy - i * u + 4, String(i), "end", 10.5, FIG_MUT);
+  out += figText(ox - 8, oy + 17, "O", "end", 12);
+  out += figText(ox + xMax * u + 24, oy + 5, "x", "end", 15);
+  out += figText(ox + 9, oy - yMax * u - 4, "y", "start", 15);
+  return out + "</svg>";
+}
 function eng6FormGen(list, asBlank) {
   return function () {
     var c = pick(list);
@@ -2813,12 +3305,15 @@ function engExtraPush(t, words, allWords) {
     }), { speak: w[0] });
   });
   t.pools.games.push(function () {
-    var rounds = [];
+    var items = [];
     for (var k = 0; k < 3; k++) {
       var w = pick(words), truth = Math.random() < 0.5;
       var shown = truth ? w : (engDistractors(w, allWords, 1)[0] || w);
-      rounds.push({ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="sentence">Hình này là “' + shown[2] + "” (" + shown[0] + ")</div>", truth: truth, explain: "Đáp án đúng: “" + w[2] + "” (" + w[0] + ")" });
+      items.push({ w: w, truth: truth, shown: shown, correct: w });
     }
+    /* B6: cân bằng phán quyết (trước đây 3 vòng độc lập, ~25% màn đồng phán quyết) */
+    tfBalanceItems(items, function (it) { return engDistractors(it.w, allWords, 1)[0] || null; });
+    var rounds = items.map(function (it) { return { visual: '<div class="big-pic">' + picHTML(it.w) + '</div><div class="sentence">Hình này là “' + it.shown[2] + "” (" + it.shown[0] + ")</div>", truth: it.truth, explain: "Đáp án đúng: “" + it.w[2] + "” (" + it.w[0] + ")" }; });
     return tfQ("Đúng hay sai? Nhìn hình và nghĩa nhé!", rounds);
   });
 }
@@ -3145,7 +3640,7 @@ window.__ensureGrade = function (g, cb) {
      đoạn A (qSig4/qSig5 không phân biệt định dạng). Lớp 1–3 giữ nguyên
      chữ kí sigB của Đợt 1. */
   var GENERIC_PROMPTS_B4 = { "Điền đáp án đúng vào chỗ trống nhé!": 1, "Suy nghĩ kĩ rồi điền đáp án đúng nhé!": 1 };
-  var CATCH_PREFIXES_B4 = ["Bắt đáp án! ", "Nhanh tay bắt đáp án đúng! ", "Chạm vào đáp án đúng! ", "Bắt đáp án đúng! ", "🧠 Vận dụng kiến thức: "];
+  var CATCH_PREFIXES_B4 = ["Bắt đáp án! ", "Nhanh tay bắt đáp án đúng! ", "Chạm vào đáp án đúng! ", "Bắt đáp án đúng! ", "Vận dụng kiến thức: "];
   function sigB4(q) {
     if (!q) return "?";
     var p = stripB(q.prompt || "");
@@ -3225,7 +3720,7 @@ window.__ensureGrade = function (g, cb) {
 
   /* ---------------- thu thập dữ kiện (mỗi bộ sinh gọi 1 lần) ---------------- */
   function harvestTopic(t, grade) {
-    var byQ = {}, byQAnswers = {}, pairs = [], seenPair = {};
+    var byQ = {}, byQAnswers = {}, pairs = [], seenPair = {}, seenPairDir = {};
     function considerFact(qtext, atext, opts, ex) {
       if (!qtext || !atext || !opts) return;
       qtext = String(qtext).replace(/\s+/g, " ").trim();
@@ -3238,6 +3733,15 @@ window.__ensureGrade = function (g, cb) {
     }
     function sampleMCQ(q) {
       if (!q || (q.kind && q.kind !== "blank")) return;
+      /* B1-sửa lớp nhỏ (2026-10-15) — phiếu RA-SOAT-TF-TIENG-ANH: dữ kiện
+         NGHE (autoSpeak, vd qEngListen "Nghe rồi chạm vào hình đúng nhé!")
+         khi bị suy diễn sang dạng chữ sẽ mất hẳn từ cần nghe → màn đúng/sai
+         không thể trả lời, nhất là khi tắt tiếng. Không thu hoạch các vòng
+         phụ thuộc âm thanh; chúng chỉ sống ở bộ sinh gốc có nút nghe lại. */
+      if (q.autoSpeak || /^\s*Nghe\b/.test(String(q.prompt || ""))) return;
+      /* B2: câu mà dữ kiện chỉ nằm trên hình (đồ thị đọc số liệu, figureOnly)
+         cũng không thu hoạch thành dữ kiện chữ — mất hình là mất dữ kiện. */
+      if (q.figureOnly) return;
       var opts = (q.options || []).map(function (o) { return stripB(o.html != null ? o.html : String(o)); });
       if (typeof q.answer !== "number" || !opts[q.answer]) return;
       var qt = stripB(q.prompt || "");
@@ -3256,8 +3760,15 @@ window.__ensureGrade = function (g, cb) {
           n.textContent = Array.from(n.childNodes).map(function(child){return child.textContent.trim();}).filter(Boolean).join('; ');
         });
         var vraw = dataNode.innerHTML.replace(/<div class="sentence">Đáp án:[\s\S]*?<\/div>/g, "").replace(/<\/(?:div|p|span|td|th|tr|li)>/gi, '$& ');
-        var vt5 = stripB(vraw).replace(/\s+/g, " ").trim();
-        if (vt5 && vt5.length >= 3 && qt.indexOf(vt5) === -1 && vt5.indexOf(qt) === -1) {
+        var vt5 = stripB(vraw).replace(/🔊/g, "").replace(/\s+/g, " ").trim();
+        /* B1-sửa lớp nhỏ (2026-10-15): trước đây vt5 phải dài >=3 ký tự nên
+           hình là MỘT emoji (vd 🐈 của qEngPicToWord, dài 2 đơn vị UTF-16)
+           bị rơi khỏi dữ kiện — màn suy diễn chỉ còn "Hình này là từ nào?"
+           mà không có hình. Nay cho phép hợp nhất khi vt5 không chứa CHỮ
+           CÁI (emoji, ký hiệu, hoặc SỐ trần — vd hình là chính số "11" của
+           bài số đếm tiếng Anh): các kích thích đó hiển thị được dạng chữ
+           nên dữ kiện mang theo là TỰ CHỨA. Ký tự 🔊 đã bóc ở trên. */
+        if (vt5 && (vt5.length >= 3 || !/[A-Za-zÀ-ỹ]/.test(vt5)) && qt.indexOf(vt5) === -1 && vt5.indexOf(qt) === -1) {
           qt = qt.replace(/[\s:：]+$/, "") + ": " + vt5;
         }
       }
@@ -3275,7 +3786,14 @@ window.__ensureGrade = function (g, cb) {
           if (!L || !R || L.length > 60 || R.length > 60) return;
           var k = L + "=" + R;
           if (seenPair[k]) return;
-          seenPair[k] = 1; pairs.push([L, R]);
+          /* B6: chuẩn hoá MỘT CHIỀU cho ngân hàng cặp — cùng một cặp nội dung
+             chỉ giữ hướng gặp ĐẦU TIÊN (hướng gốc của chủ đề); hướng ngược do
+             bộ sinh suy diễn (deriveFromPairs127…) không nạp thêm vào ngân
+             hàng, để một màn nối/trí nhớ không chứa cả hai chiều của một cặp.
+             Các màn thuần-ngược của chính bộ sinh suy diễn vẫn giữ nguyên. */
+          var kd = [L, R].sort().join("=");
+          if (seenPairDir[kd]) return;
+          seenPair[k] = 1; seenPairDir[kd] = 1; pairs.push([L, R]);
         });
       } catch (e) {}
     });
@@ -3299,14 +3817,20 @@ window.__ensureGrade = function (g, cb) {
        m2-gio — đồng hồ mô tả bằng lời vị trí kim; g1-shapes — tính chất hình bằng lời. */
     if (grade === 2 && t.id === 'm2-gio') {
       var gioOpts = ['1 giờ','2 giờ','3 giờ','4 giờ','5 giờ','6 giờ','7 giờ','8 giờ','9 giờ','10 giờ','11 giờ','12 giờ'];
+      /* B1-sửa lớp nhỏ (2026-10-15, vòng 2): rút ngắn câu hỏi dữ kiện (bỏ
+         "Trên đồng hồ, … chỉ vào …") để mệnh đề khẳng định dựng từ chúng
+         <=70 ký tự — vừa cổng độ dài của màn đúng/sai Lớp 2, vừa đúng văn
+         phong SGK (một câu ngắn, dữ kiện bằng lời gọn). Nội dung không đổi. */
       for (var gh = 1; gh <= 12; gh++) {
-        considerFact('Trên đồng hồ, kim giờ chỉ vào số ' + gh + ', kim phút chỉ vào số 12. Đồng hồ chỉ mấy giờ?', gh + ' giờ', gioOpts, 'Kim phút chỉ vào số 12 là giờ tròn; kim giờ chỉ vào số ' + gh + ' nên là ' + gh + ' giờ.');
+        considerFact('Kim giờ chỉ số ' + gh + ', kim phút chỉ số 12. Đồng hồ chỉ mấy giờ?', gh + ' giờ', gioOpts, 'Kim phút chỉ số 12 là giờ tròn; kim giờ chỉ số ' + gh + ' nên là ' + gh + ' giờ.');
       }
       [1,2,3,4,5,6,7,8].forEach(function (hh) {
-        considerFact('Trên đồng hồ, kim giờ chỉ vào giữa số ' + hh + ' và số ' + (hh + 1) + ', kim phút chỉ vào số 6. Đồng hồ chỉ mấy giờ?', hh + ' giờ 30 phút', ['1 giờ 30 phút','2 giờ 30 phút','3 giờ 30 phút','4 giờ 30 phút','5 giờ 30 phút','6 giờ 30 phút','7 giờ 30 phút','8 giờ 30 phút'], 'Kim phút chỉ vào số 6 là 30 phút; kim giờ đã qua số ' + hh + ' nên là ' + hh + ' giờ 30 phút.');
+        considerFact('Kim giờ giữa số ' + hh + ' và ' + (hh + 1) + ', kim phút chỉ số 6. Đồng hồ chỉ mấy giờ?', hh + ' giờ 30 phút', ['1 giờ 30 phút','2 giờ 30 phút','3 giờ 30 phút','4 giờ 30 phút','5 giờ 30 phút','6 giờ 30 phút','7 giờ 30 phút','8 giờ 30 phút'], 'Kim phút chỉ số 6 là 30 phút; kim giờ đã qua số ' + hh + ' nên là ' + hh + ' giờ 30 phút.');
       });
       [2,3,4,5,9,10].forEach(function (hh) {
-        considerFact('Trên đồng hồ, kim giờ chỉ vào gần số ' + (hh + 1) + ', kim phút chỉ vào số 3. Đồng hồ chỉ mấy giờ?', hh + ' giờ 15 phút', ['2 giờ 15 phút','3 giờ 15 phút','4 giờ 15 phút','5 giờ 15 phút','9 giờ 15 phút','10 giờ 15 phút'], 'Kim phút chỉ vào số 3 là 15 phút; kim giờ sắp tới số ' + (hh + 1) + ' nên là ' + hh + ' giờ 15 phút.');
+        /* Cách nói "kim giờ vừa qua số hh": ở X giờ 15, kim giờ mới qua số X
+           một phần tư vòng số — không nói "gần số X+1" (bản cũ sai vị trí). */
+        considerFact('Kim giờ vừa qua số ' + hh + ', kim phút chỉ số 3. Đồng hồ chỉ mấy giờ?', hh + ' giờ 15 phút', ['2 giờ 15 phút','3 giờ 15 phút','4 giờ 15 phút','5 giờ 15 phút','9 giờ 15 phút','10 giờ 15 phút'], 'Kim phút chỉ số 3 là 15 phút; kim giờ vừa qua số ' + hh + ' nên là ' + hh + ' giờ 15 phút.');
       });
       considerFact('Một ngày có bao nhiêu giờ?', '24 giờ', ['12 giờ', '24 giờ', '60 giờ', '7 giờ'], 'Một ngày có 24 giờ.');
       considerFact('Một giờ có bao nhiêu phút?', '60 phút', ['30 phút', '60 phút', '100 phút', '12 phút'], 'Một giờ có 60 phút.');
@@ -3789,7 +4313,10 @@ window.__ensureGrade = function (g, cb) {
         considerFact('Số ' + r[0] + ' viết bằng chữ số La Mã là gì?', r[1], romaOpts, 'Số ' + r[0] + ' viết là ' + r[1] + '.');
         considerFact('Chữ số La Mã ' + r[1] + ' có giá trị là bao nhiêu?', String(r[0]), ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '15', '20'], r[1] + ' = ' + r[0] + '.');
       });
-      considerFact('Chữ số La Mã nào có giá trị 50?', 'L', ['L', 'X', 'V', 'C'], 'L = 50 trong chữ số La Mã.');
+      /* B1-sửa lớp nhỏ (2026-10-15): bản cũ bổ sung dữ kiện "giá trị 50 -> L"
+         (kèm lựa chọn C) — L và C đều NGOÀI phạm vi Bài 47 SGK/SGV Toán 3
+         (chỉ I, V, X; số đến 20). Thay bằng dữ kiện trong phạm vi: XX = 20. */
+      considerFact('Chữ số La Mã nào có giá trị 20?', 'XX', ['XX', 'XV', 'X', 'V'], 'XX = 20 trong chữ số La Mã.');
       considerFact('Trong chữ số La Mã, I đứng trước V (IV) có nghĩa là gì?', 'Lấy 5 trừ 1 bằng 4', ['Lấy 5 trừ 1 bằng 4', 'Lấy 5 cộng 1 bằng 6', 'Lấy 5 nhân 1 bằng 5'], 'I đứng trước V là phép trừ: 5 − 1 = 4.');
     }
     if (grade === 3 && t.id === 'm3-phan') {
@@ -4430,7 +4957,9 @@ window.__ensureGrade = function (g, cb) {
         considerFact('Tính: ' + fr4b(rr) + ' : ' + f[2] + '/' + f[3] + ' = ?', f[0] + '/' + f[1], [f[0] + '/' + f[1], fr4b(rr), '' + n + '/' + d, f[2] + '/' + f[3]], 'Chia phân số là nhân với phân số đảo ngược.');
       });
       [[2, 3, 12], [3, 4, 20], [1, 2, 30], [4, 5, 25], [2, 7, 21], [5, 8, 40]].forEach(function (f) {
-        considerFact('Tìm ' + f[0] + '/' + f[1] + ' của ' + f[2] + ' là bao nhiêu?', '' + (f[2] * f[0] / f[1]), ['' + (f[2] * f[0] / f[1]), '' + f[2], '' + f[1], '' + (f[2] / f[0])], 'Lấy ' + f[2] + ' chia cho ' + f[1] + ' rồi nhân với ' + f[0] + '.');
+        /* Sửa B1-P0: lựa chọn nhiễu f[2]/f[0] có thể là float thô "6.666666666666667"
+           (20/3) hoặc thập phân chấm "6.25" — nay viết dạng phân số gọn khi không chia hết. */
+        considerFact('Tìm ' + f[0] + '/' + f[1] + ' của ' + f[2] + ' là bao nhiêu?', '' + (f[2] * f[0] / f[1]), ['' + (f[2] * f[0] / f[1]), '' + f[2], '' + f[1], (f[2] % f[0] === 0) ? '' + (f[2] / f[0]) : (f[2] + '/' + f[0])], 'Lấy ' + f[2] + ' chia cho ' + f[1] + ' rồi nhân với ' + f[0] + '.');
       });
       [
         ['Muốn nhân hai phân số, ta làm thế nào?', 'Nhân tử với tử, mẫu với mẫu', ['Nhân tử với tử, mẫu với mẫu', 'Nhân tử với mẫu', 'Quy đồng mẫu số trước']],
@@ -5075,16 +5604,25 @@ window.__ensureGrade = function (g, cb) {
       [[1000, 1], [100, 1], [10000, 1], [500, 1], [100000, 1], [50, 1]].forEach(function (f) {
         considerFact('Bản đồ tỉ lệ 1 : ' + f[0] + ' — độ dài 1 cm trên bản đồ ứng với bao nhiêu ngoài thực tế?', f[0] + ' cm', [f[0] + ' cm', '1 cm', (f[0] * 10) + ' cm', (f[0] / 10) + ' cm'], 'Tỉ lệ 1 : ' + f[0] + ' nghĩa là 1 cm trên bản đồ bằng ' + f[0] + ' cm thực tế.');
       });
+      /* Sửa B1-P0 (2026-10-15): bộ ba [55, 7, 4] cho unit = 55/(7-4) không nguyên
+         → đáp án đúng hiển thị float thô "128.33333333333331". Đổi thành [54, 7, 4]
+         (unit = 18, số lớn 126) và thêm cổng chặn: unit không nguyên thì bỏ qua,
+         đáp án hiển thị không bao giờ là số float thô. */
       [[30, 2, 3], [45, 3, 2], [60, 1, 3], [100, 3, 7], [84, 5, 7], [56, 3, 5]].forEach(function (f) {
         var unit = f[0] / (f[1] + f[2]);
+        if (unit !== Math.floor(unit)) return;
         considerFact('Tổng hai số là ' + f[0] + ', tỉ số của chúng là ' + f[1] + '/' + f[2] + '. Số bé là bao nhiêu?', '' + (unit * Math.min(f[1], f[2])), ['' + (unit * Math.min(f[1], f[2])), '' + (unit * Math.max(f[1], f[2])), '' + f[0], '' + unit], 'Tổng số phần bằng nhau là ' + (f[1] + f[2]) + '; mỗi phần bằng ' + unit + '.');
       });
-      [[24, 2, 1], [40, 5, 3], [36, 4, 1], [55, 7, 4], [18, 3, 1], [63, 5, 2]].forEach(function (f) {
+      [[24, 2, 1], [40, 5, 3], [36, 4, 1], [54, 7, 4], [18, 3, 1], [63, 5, 2]].forEach(function (f) {
         var unit = f[0] / (f[1] - f[2]);
+        if (unit !== Math.floor(unit)) return;
         considerFact('Hiệu hai số là ' + f[0] + ', tỉ số của chúng là ' + f[1] + '/' + f[2] + '. Số lớn là bao nhiêu?', '' + (unit * f[1]), ['' + (unit * f[1]), '' + (unit * f[2]), '' + f[0], '' + (unit * f[1] + unit)], 'Hiệu số phần bằng nhau là ' + (f[1] - f[2]) + '; mỗi phần bằng ' + unit + '.');
       });
       [[25, 100], [40, 200], [12, 50], [75, 300], [9, 20], [36, 60]].forEach(function (f) {
-        considerFact('Tỉ số phần trăm của ' + f[0] + ' và ' + f[1] + ' là bao nhiêu?', (f[0] / f[1] * 100) + '%', [(f[0] / f[1] * 100) + '%', f[0] + '%', (f[1] / f[0] * 100) + '%', (f[0] / f[1]) + '%'], 'Lấy ' + f[0] + ' : ' + f[1] + ' rồi nhân với 100, thêm kí hiệu %.');
+        /* Sửa B1-P0: lựa chọn nhiễu (f[1]/f[0]*100) có thể là float thô kiểu
+           "416.6666666666667%" — làm tròn 2 chữ số thập phân, dấu phẩy kiểu Việt. */
+        var pct = function (x) { return (Math.round(x * 100) / 100).toString().replace('.', ','); };
+        considerFact('Tỉ số phần trăm của ' + f[0] + ' và ' + f[1] + ' là bao nhiêu?', pct(f[0] / f[1] * 100) + '%', [pct(f[0] / f[1] * 100) + '%', f[0] + '%', pct(f[1] / f[0] * 100) + '%', pct(f[0] / f[1]) + '%'], 'Lấy ' + f[0] + ' : ' + f[1] + ' rồi nhân với 100, thêm kí hiệu %.');
       });
       [
         ['Tỉ số của 3 và 5 viết là gì?', '3/5 (hoặc 3 : 5)', ['3/5 (hoặc 3 : 5)', '5/3', '3 + 5']],
@@ -5510,7 +6048,11 @@ window.__ensureGrade = function (g, cb) {
     if (grade === 1 && t.id === 'g1-num100') {
       [
         ['Số tròn chục là gì?', 'Số có chữ số hàng đơn vị bằng 0', ['Số có chữ số hàng đơn vị bằng 0', 'Số có hai chữ số giống nhau', 'Số lớn nhất']],
-        ['Số tròn trăm là gì?', 'Số có hai chữ số cuối đều bằng 0', ['Số có hai chữ số cuối đều bằng 0', 'Số có một chữ số 0', 'Số bé nhất']],
+        /* B1-sửa lớp nhỏ (2026-10-15): bỏ "Số tròn trăm là gì?" khỏi Lớp 1 —
+           tròn trăm là khái niệm Lớp 2 (đã có đúng chỗ ở mục m2-1000 bên
+           dưới); Lớp 1 chỉ học số đến 100 và tròn chục (B1-đo §6.4 ví dụ 3).
+           Thay bằng dữ kiện trong phạm vi: số 100 gồm 10 chục. */
+        ['Số 100 có bao nhiêu chục?', '10 chục', ['10 chục', '1 chục', '100 chục']],
         ['Chục là gì?', 'Đơn vị gồm 10 đơn vị lẻ', ['Đơn vị gồm 10 đơn vị lẻ', 'Đơn vị gồm 5 đơn vị', 'Tên một chữ số']],
         ['Số 30 có bao nhiêu chục?', '3 chục', ['3 chục', '30 chục', '0 chục']],
         ['Số 50 có bao nhiêu chục?', '5 chục', ['5 chục', '50 chục', '0 chục']],
@@ -6663,26 +7205,57 @@ window.__ensureGrade = function (g, cb) {
   /* ---------------- các bộ sinh suy diễn từ dữ kiện ---------------- */
   /* Đợt 5: stmtOf (ghép khẳng định 'câu hỏi → Đáp án: giá trị') đã bị LOẠI BỎ.
      Khẳng định nay được dựng thành câu văn hoàn chỉnh bởi d5BuildStmts (bên dưới). */
-  function revGen(facts) {
+  /* B1-sửa khuôn vỏ (2026-10-15): câu đảo ngược chỉ còn là BIẾN THỂ thiểu số
+     (~1/4 số lượt) dành cho dữ kiện thật sự hợp tư duy ngược; phần lớn lượt
+     hỏi THẲNG vào nội dung — cùng dữ kiện, đáp án và giải thích không đổi. */
+  function revGen(facts, grade) {
     return function () {
       var f = pick(facts);
-      var others = shuffle(facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; })).slice(0, 2).map(function (x) { return x.q; });
-      if (others.length < 2) return blankVarGen(facts, false)();
-      return identifyRoundFact(mcqQ("Đáp án “" + f.a + "” là câu trả lời đúng cho câu hỏi nào?", others, f.q,
-        f.ex || ("Câu hỏi đúng là: “" + f.q + "” — đáp án: " + f.a + ".")), f.q);
+      var pool = facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; });
+      /* B1-sửa lớp nhỏ (2026-10-15): Lớp 1–3 không dùng cách hỏi đảo ngược
+         ("đáp án này là câu trả lời cho câu hỏi nào?") — chỉ hỏi thẳng,
+         đúng chuẩn một-ý-một-câu của §6.3 BAO-CAO-B1-DO. */
+      if ((grade == null || grade > 3) && Math.random() < 0.25) {
+        var others = shuffle(pool.slice()).slice(0, 2).map(function (x) { return x.q; });
+        if (others.length < 2) return blankVarGen(facts, false)();
+        return identifyRoundFact(mcqQ("Đáp án “" + f.a + "” là câu trả lời đúng cho câu hỏi nào?", others, f.q,
+          f.ex || ("Câu hỏi đúng là: “" + f.q + "” — đáp án: " + f.a + ".")), f.q);
+      }
+      var wrongs = shuffle(pool.slice()).slice(0, 3).map(function (x) { return x.a; });
+      if (wrongs.length < 2) return blankVarGen(facts, false)();
+      return identifyRoundFact(mcqQ(f.q, wrongs, f.a, f.ex || ""), f.q);
     };
   }
   /* Đợt 5: oddGen cũ dựng cả 3 lựa chọn bằng stmtOf → hỏng 684/684 mẫu rà soát.
      Nay uỷ quyền cho oddStmtGen (khẳng định văn xuôi, xem bên dưới). */
   function oddGen(facts) { return oddStmtGen(facts, null, false); }
-  function tfVarGen(facts, roundsN, promptText) {
+  function tfVarGen(facts, roundsN, promptText, grade) {
+    /* B1-sửa lớp nhỏ (2026-10-15): ở Lớp 1–3, vòng đúng/sai chỉ lấy dữ kiện
+       mà mệnh đề khẳng định dựng từ nó đủ ngắn (Lớp 1–2 <=70 ký tự, Lớp 3
+       <=90) — một vòng một ý, đọc vừa sức; thiếu thì lấy các dữ kiện ngắn
+       nhất còn lại thay vì bỏ dạng. */
+    if (grade != null && grade <= 3 && facts.length) {
+      var capT = grade <= 2 ? 70 : 90;
+      var shortF = facts.filter(function (f) { return qaToStmt(f.q, f.a).length <= capT; });
+      if (shortF.length >= 2) facts = shortF;
+      else facts = facts.slice().sort(function (a, b) { return qaToStmt(a.q, a.a).length - qaToStmt(b.q, b.a).length; }).slice(0, Math.max(2, shortF.length));
+    }
     return function () {
-      var rounds = [], selectedFacts = shuffle(facts.slice()).slice(0, roundsN);
+      var selectedFacts = shuffle(facts.slice()).slice(0, roundsN);
+      var items = [];
       for (var k = 0; k < roundsN; k++) {
         var f = selectedFacts[k]; if (!f) break; var truth = Math.random() < 0.5;
-        var shown = truth ? f.a : (f.opts.filter(function (o) { return o !== f.a; })[0] || f.a);
-        rounds.push({ visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(f.q) + '</div><div class="sentence">Đáp án: ' + escB(shown) + "</div>", truth: truth, explain: "Đáp án đúng: " + f.a });
+        var shown = truth ? f.a : ((f.opts || []).filter(function (o) { return o !== f.a; })[0] || f.a);
+        if (!truth && shown === f.a) truth = true;
+        items.push({ f: f, truth: truth, shown: shown, correct: f.a });
       }
+      /* B1-sửa khuôn vỏ: mỗi vòng là MỘT mệnh đề khẳng định hoàn chỉnh
+         (qaToStmt) thay cho cặp hỏi–đáp "câu hỏi + Đáp án:", và cả màn được
+         cân bằng phán quyết (tfBalanceItems). */
+      tfBalanceItems(items, function (it) { var w = (it.f.opts || []).filter(function (o) { return o !== it.f.a; })[0]; return w != null ? w : null; });
+      var rounds = items.map(function (it) {
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(qaToStmt(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
+      });
       var q = tfQ(promptText, rounds);
       q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f.q; }) }; return q;
     };
@@ -6705,8 +7278,12 @@ window.__ensureGrade = function (g, cb) {
         options: os.map(function (o) { return { html: optHtml(o) }; }), answer: os.indexOf(f.a), cols: 3, optStack: true };
     };
   }
+  /* B1-sửa khuôn vỏ (2026-10-15): bỏ khuôn "Nối theo chiều ngược lại" — màn
+     nối dùng hướng dẫn tự nhiên và các cặp GIỮ NGUYÊN chiều thuật ngữ → nội
+     dung như ngân hàng gốc (chiều nối do pairsMatch tự xáo như mọi màn nối
+     khác); cơ chế chấm không đổi. Tên hàm giữ nguyên để mọi điểm gọi khỏi sửa. */
   function matchRevGen(pairs, adv) {
-    return function () { return pairsMatch(adv ? "🧠 Nối theo chiều ngược lại — bản thử thách!" : "Nối theo chiều ngược lại cho đúng nhé!", pairs.map(function (p) { return [p[1], p[0]]; })); };
+    return function () { return pairsMatch("Nối mỗi ý với nội dung đúng nhé!", pairs); };
   }
   function memRevGen(pairs) {
     return function () { return pairsMemory(pairs.map(function (p) { return [p[1], p[0]]; })); };
@@ -6718,16 +7295,32 @@ window.__ensureGrade = function (g, cb) {
   /* Sửa chất lượng 2026-10-12 (Lớp ≥6): mỗi vòng tf chỉ chứa ĐÚNG một nhận định
      của một dữ kiện (chấm riêng từng "câu nhỏ" như tfVarGen), thay advTFGen
      vốn nhét hai ý vào một vòng. */
-  function advTF1Gen(facts, roundsN) {
+  function advTF1Gen(facts, roundsN, grade) {
+    /* B1-sửa lớp nhỏ (2026-10-15): đường lùi của tfStmtGen khi ngân hàng
+       khẳng định văn xuôi rỗng (chủ đề tính toán) — cũng phải qua cổng độ
+       dài Lớp 1–3 như tfVarGen, nếu không mệnh đề dạng "Đáp án đúng cho
+       câu hỏi <bài toán dài>…" vẫn lọt vào màn đúng/sai của lớp nhỏ. */
+    if (grade != null && grade <= 3 && facts.length) {
+      var capA = grade <= 2 ? 70 : 90;
+      var shortA = facts.filter(function (f) { return qaToStmt(f.q, f.a).length <= capA; });
+      if (shortA.length >= 2) facts = shortA;
+      else facts = facts.slice().sort(function (a, b) { return qaToStmt(a.q, a.a).length - qaToStmt(b.q, b.a).length; }).slice(0, Math.max(2, shortA.length));
+    }
     return function () {
       var n = roundsN || 3;
       var selectedFacts = shuffle(facts.slice()).slice(0, n);
-      var rounds = selectedFacts.map(function (f) {
+      var items = selectedFacts.map(function (f) {
         var truth = Math.random() < 0.5;
-        var shown = truth ? f.a : (f.opts.filter(function (o) { return o !== f.a; })[0] || f.a);
-        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(f.q) + '</div><div class="sentence">Đáp án: ' + escB(shown) + "</div>", truth: truth, explain: "Đáp án đúng: " + f.a };
+        var shown = truth ? f.a : ((f.opts || []).filter(function (o) { return o !== f.a; })[0] || f.a);
+        if (!truth && shown === f.a) truth = true;
+        return { f: f, truth: truth, shown: shown, correct: f.a };
       });
-      var q = tfQ("🧠 Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!", rounds);
+      /* B1-sửa khuôn vỏ: mệnh đề khẳng định hoàn chỉnh + cân bằng phán quyết. */
+      tfBalanceItems(items, function (it) { var w = (it.f.opts || []).filter(function (o) { return o !== it.f.a; })[0]; return w != null ? w : null; });
+      var rounds = items.map(function (it) {
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(qaToStmt(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
+      });
+      var q = tfQ("Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!", rounds);
       q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f.q; }) }; return q;
     };
   }
@@ -6737,17 +7330,25 @@ window.__ensureGrade = function (g, cb) {
   function revGen2(facts) {
     return function () {
       var f = pick(facts);
-      var others = shuffle(facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; })).slice(0, 2).map(function (x) { return x.q; });
-      if (others.length < 2) return blankVarGen(facts, true)();
-      return identifyRoundFact(mcqQ("Câu hỏi nào dưới đây có đáp án là “" + f.a + "”?", others, f.q,
-        f.ex || ("Đáp án “" + f.a + "” thuộc câu hỏi: “" + f.q + "”.")), f.q);
+      var pool = facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; });
+      /* B1-sửa khuôn vỏ: cùng nguyên tắc như revGen — đảo ngược chỉ còn ~1/4
+         số lượt, phần lớn hỏi thẳng vào nội dung. */
+      if (Math.random() < 0.25) {
+        var others = shuffle(pool.slice()).slice(0, 2).map(function (x) { return x.q; });
+        if (others.length < 2) return blankVarGen(facts, true)();
+        return identifyRoundFact(mcqQ("Câu hỏi nào dưới đây có đáp án là “" + f.a + "”?", others, f.q,
+          f.ex || ("Đáp án “" + f.a + "” thuộc câu hỏi: “" + f.q + "”.")), f.q);
+      }
+      var wrongs = shuffle(pool.slice()).slice(0, 3).map(function (x) { return x.a; });
+      if (wrongs.length < 2) return blankVarGen(facts, true)();
+      return identifyRoundFact(mcqQ(f.q, wrongs, f.a, f.ex || ""), f.q);
     };
   }
   function advCatchGen(facts) {
     return function () {
       var f = pick(facts);
       var os = shuffle([f.a].concat(wrongsOf(f, 2)));
-      return identifyRoundFact(catchQ("🧠 Vận dụng kiến thức: " + f.q, os.map(function (o) { return { html: optHtml(o), ok: o === f.a }; }), { explain: f.ex || ("Đáp án đúng: " + f.a + ".") }), f.q);
+      return identifyRoundFact(catchQ(f.q, os.map(function (o) { return { html: optHtml(o), ok: o === f.a }; }), { explain: f.ex || ("Đáp án đúng: " + f.a + ".") }), f.q);
     };
   }
 
@@ -6800,7 +7401,7 @@ window.__ensureGrade = function (g, cb) {
   }
   function d5NormVal(s) { return String(s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
   function d5BuildStmts(facts, pairs) {
-    var out = [], seen = {};
+    var out = [], seen = {}, seenPairDir = {};
     function addStmt(head, val) {
       head = String(head || "").replace(/\s+/g, " ").trim();
       val = String(val || "").replace(/\s+/g, " ").trim();
@@ -6810,6 +7411,13 @@ window.__ensureGrade = function (g, cb) {
       var k = d5NormVal(stmt);
       if (seen[k]) return;
       seen[k] = 1;
+      /* B1-sửa lớp nhỏ (2026-10-15): cùng một mệnh đề không được vào ngân hàng
+         hai lần dưới hai cách nối khác nhau ("X là Y" ~ "X có nghĩa là Y") —
+         hai lựa chọn nói cùng một điều trong màn tìm câu sai là cặp gần-trùng
+         có hại (họ NEAR_DUP_OPT của B1-đo). */
+      var sk = d5SubjectOf(head) + "" + d5NormText(val);
+      if (seen["§" + sk]) return;
+      seen["§" + sk] = 1;
       out.push({ head: head, val: val, stmt: stmt });
     }
     (pairs || []).forEach(function (p) {
@@ -6824,6 +7432,14 @@ window.__ensureGrade = function (g, cb) {
       if (L.indexOf("→") !== -1 || R.indexOf("→") !== -1) return;                        // cặp quá trình "A → B" không phải định nghĩa
       if (d5NormVal(L) === d5NormVal(R)) return;                                          // hai vế chỉ khác hoa/thường (vd cặp chữ X/x)
       if (R.length < 2) return;
+      /* B1-sửa lớp nhỏ (2026-10-15): ngân hàng cặp nối thường liệt kê CẢ HAI
+         chiều [A,B] và [B,A]; dựng khẳng định cả hai chiều sẽ cho hai lựa
+         chọn đảo ngữ của cùng một mệnh đề ("A là B" ~ "B là A") trong cùng
+         màn — cặp gần-trùng có hại lớn nhất ở Lớp 1–3 (480/524 toàn game
+         theo B1-đo). Chỉ giữ chiều gặp đầu tiên cho mỗi cặp không thứ tự. */
+      var pk = [d5NormVal(L), d5NormVal(R)].sort().join("");
+      if (seenPairDir[pk]) return;
+      seenPairDir[pk] = 1;
       addStmt(d5Cap(L) + " là", d5Decap(R));
     });
     (facts || []).forEach(function (f) {
@@ -6839,18 +7455,106 @@ window.__ensureGrade = function (g, cb) {
     });
     return out;
   }
+  /* Sửa B1-P0 (2026-10-15) — CỔNG AN TOÀN cho khẳng định "sai" sinh bằng tráo
+     gloss (báo cáo B1-đo, họ T1/T2):
+       (T1) mệnh đề sau tráo KHÔNG được là đồng nhất thức: chủ thể của vế trái
+       (head đã bỏ phần nối " là / có nghĩa là / nghĩa là / gọi là / có") không
+       được trùng giá trị thay vào, kể cả khi giá trị thay vào BẮT ĐẦU bằng
+       chính chủ thể (vd "Vùng riêng tư là vùng riêng tư, không ai được…").
+       (T2) giá trị thay vào không được gần đồng nghĩa với giá trị đúng (chồng
+       lấp từ vựng cao → mệnh đề "sai" thực chất vẫn đúng); donor có chủ thể
+       cùng một khái niệm với đích (chỉ khác phần nối) bị loại; mệnh đề sau
+       tráo không được trùng bất kỳ khẳng định đúng nào trong ngân hàng.
+     Không donor nào qua cổng → trả null, bộ sinh tự lùi về dạng dự phòng
+     (blankVarGen / advTF1Gen) như thiết kế gốc — không ép sinh mệnh đề sai. */
+  var D5_NUMWORDS = { "một": "1", "hai": "2", "ba": "3", "bốn": "4", "tư": "4", "năm": "5", "sáu": "6", "bảy": "7", "tám": "8", "chín": "9", "mười": "10" };
+  function d5NormText(s) {
+    var t = d5NormVal(s).replace(/[.。!?…]+$/g, "").trim();
+    /* Chuẩn hoá số đếm viết bằng chữ ("một giờ" ≡ "1 giờ") để các cổng so sánh
+       nhận ra cùng một khái niệm dù diễn đạt khác nhau — bài học B1-P0 vòng 2:
+       "Một giờ có 60 phút." từng bị gán SAI vì ngân hàng diễn đạt song song
+       "1 giờ là 60 phút." (hai vế chỉ khác cách viết số). Chỉ dùng để SO SÁNH,
+       không đổi chữ hiển thị. */
+    return t.split(" ").map(function (tok) {
+      var clean = tok.replace(/[.,;:!?]+$/g, "");
+      return D5_NUMWORDS[clean] ? tok.replace(clean, D5_NUMWORDS[clean]) : tok;
+    }).join(" ");
+  }
+  function d5FoldText(s) { return d5NormText(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d"); }
+  function d5FoldFirst(s) { var m = /[a-z]/.exec(d5FoldText(s)); return m ? m[0] : ""; }
+  function d5SubjectOf(head) {
+    return d5NormText(String(head || "").replace(/\s+(là|có nghĩa là|nghĩa là|gọi là|có)$/g, ""));
+  }
+  function d5TokSet(s) {
+    var set = {}, toks = d5NormText(s).split(/[^0-9a-zà-ỹ]+/i).filter(function (x) { return x.length > 0; });
+    toks.forEach(function (x) { set[x] = 1; });
+    return set;
+  }
+  function d5NearSynonym(a, b) {
+    var A = d5TokSet(a), B = d5TokSet(b), ka = Object.keys(A), kb = Object.keys(B);
+    if (!ka.length || !kb.length) return false;
+    var inter = 0; ka.forEach(function (x) { if (B[x]) inter++; });
+    var union = ka.length + kb.length - inter;
+    if (union && inter / union >= 0.6) return true;
+    var small = Math.min(ka.length, kb.length);
+    return small >= 2 && inter / small >= 0.8;   /* tập từ vế ngắn nằm gần trọn trong vế dài → cùng nội dung */
+  }
   function d5DonorFor(stmts, target) {
+    var tSubj = d5SubjectOf(target.head), tVal = d5NormText(target.val);
+    /* Đích là CHỮ CÁI (vd "B b"): mọi giá trị mở đầu bằng chính chữ cái đó đều
+       làm mệnh đề đúng theo cách đọc "chữ X có trong từ …" → cấm tráo vào. */
+    var letterM = /^([a-z]) \1$/.exec(d5FoldText(tSubj)) || /^([a-z])$/.exec(d5FoldText(tSubj));
+    var letterHead = letterM ? letterM[1] : "";
     for (var i = 0; i < stmts.length; i++) {
       var cand = stmts[i];
       if (cand === target || cand.head === target.head) continue;
-      if (d5NormVal(cand.val) === d5NormVal(target.val)) continue;
+      if (d5NormText(cand.val) === tVal) continue;
+      var cSubj = d5SubjectOf(cand.head);
+      if (cSubj === tSubj || d5NearSynonym(cSubj, tSubj)) continue;
+      var cVal = d5NormText(cand.val);
+      if (cVal === tSubj || cVal.indexOf(tSubj + " ") === 0 || cVal.indexOf(tSubj + ",") === 0) continue;
+      if (d5NearSynonym(cVal, tVal)) continue;
+      if (letterHead && d5FoldFirst(cand.val) === letterHead) continue;
       var clash = stmts.some(function (y) { return y.head === target.head && d5NormVal(y.val) === d5NormVal(cand.val); });
-      if (!clash) return cand;
+      if (clash) continue;
+      var produced = d5NormText(target.head + " " + cand.val);
+      var inBank = stmts.some(function (y) { return d5NormText(y.stmt) === produced; });
+      if (inBank) continue;
+      /* Trùng về NGỮ NGHĨA với một dữ kiện ngân hàng: cùng (chủ thể, giá trị) đã
+         chuẩn hoá dù vế trái diễn đạt khác — mệnh đề sau tráo vẫn là dữ kiện
+         đúng (vd đích "Một giờ có …" + giá trị "60 phút" của "1 giờ là 60 phút"). */
+      var semClash = stmts.some(function (y) { return d5SubjectOf(y.head) === tSubj && d5NormText(y.val) === cVal; });
+      if (semClash) continue;
+      return cand;
     }
     return null;
   }
-  function oddStmtGen(facts, pairs, adv) {
-    var stmts = d5BuildStmts(facts, pairs);
+  /* Chủ đề an toàn thân thể / nội dung nhạy cảm: KHÔNG dùng cơ chế tráo gloss
+     sinh khẳng định sai (rủi ro mệnh đề "sai" mà nội dung vẫn đúng) — lùi hẳn
+     về dạng hỏi–đáp gốc (blankVarGen / advTF1Gen). Nội dung giữ nguyên mức
+     lứa tuổi hiện tại, không thêm chi tiết nhạy cảm. */
+  var D5_NO_SWAP = { "dd3-loihua": 1, "dd5-xamhai": 1, "kh5-sinhsan": 1 };
+  /* B1-sửa khuôn vỏ (2026-10-15): đa dạng hoá cách hỏi tìm khẳng định sai
+     theo lứa tuổi — Lớp 1–2 dùng lời trẻ ("Câu nào nói chưa đúng?"), Lớp 3
+     chuyển tiếp, Lớp 4–5 và các trường hợp không rõ lớp giữ cả cách hỏi
+     chuẩn. Logic chọn khẳng định, cổng an toàn d5DonorFor và đáp án KHÔNG
+     hề thay đổi. */
+  var ODD_STEMS_B3 = {
+    young: ["Câu nào nói chưa đúng?", "Ý nào dưới đây chưa đúng?", "Câu nào dưới đây chưa đúng?"],
+    mid: ["Câu nào nói chưa đúng?", "Câu nào dưới đây không đúng?", "Khẳng định nào dưới đây SAI?"],
+    old: ["Khẳng định nào dưới đây SAI?", "Khẳng định nào sau đây không đúng?", "Câu nào dưới đây SAI?", "Trong các khẳng định dưới đây, khẳng định nào chưa đúng?"]
+  };
+  function oddStmtGen(facts, pairs, adv, noSwap, grade) {
+    var stmts = noSwap ? [] : d5BuildStmts(facts, pairs);
+    /* B1-sửa lớp nhỏ (2026-10-15) — cổng lứa tuổi theo §6.3 BAO-CAO-B1-DO:
+       Lớp 1 KHÔNG dùng khuôn tìm-khẳng-định-sai (phủ định hai tầng vượt sức
+       đọc 6 tuổi) → để rỗng để rơi về dạng hỏi thẳng (blankVarGen).
+       Lớp 2 chỉ dùng khẳng định ngắn (<=55 ký tự), Lớp 3 <=85 ký tự, để mọi
+       lựa chọn đọc được trong một hơi. Lớp >=4 giữ nguyên. */
+    if (grade === 1) stmts = [];
+    else if (grade === 2) stmts = stmts.filter(function (s) { return s.stmt.length <= 55; });
+    else if (grade === 3) stmts = stmts.filter(function (s) { return s.stmt.length <= 85; });
+    var band = grade == null ? "old" : (grade <= 2 ? "young" : (grade === 3 ? "mid" : "old"));
     return function () {
       if (stmts.length >= 3) {
         var pool = shuffle(stmts.slice());
@@ -6858,13 +7562,18 @@ window.__ensureGrade = function (g, cb) {
         var donor = d5DonorFor(pool, target);
         if (donor) {
           var falseStmt = target.head + " " + donor.val + ".";
+          if ((grade === 2 && falseStmt.length > 62) || (grade === 3 && falseStmt.length > 92)) donor = null;
+          else {
           var dup = chosen.some(function (s) { return d5NormVal(s.stmt) === d5NormVal(falseStmt); });
           if (!dup) {
             var wrongs = chosen.filter(function (s, j) { return j !== wi; }).map(function (s) { return s.stmt; });
-            var q = mcqQ("Khẳng định nào dưới đây SAI?", wrongs, falseStmt,
-              "Khẳng định sai là: “" + falseStmt + "” Đúng phải là: “" + target.stmt + "”");
+            var stemB3 = pick(ODD_STEMS_B3[band]);
+            var softB3 = stemB3.indexOf("SAI") < 0 && stemB3.indexOf("Khẳng định") < 0 && stemB3.indexOf("khẳng định") < 0;
+            var q = mcqQ(stemB3, wrongs, falseStmt,
+              (softB3 ? "Câu nói chưa đúng là: “" : "Khẳng định sai là: “") + falseStmt + "” Đúng phải là: “" + target.stmt + "”");
             q.roundIdentity = { type: "bundle", facts: chosen.map(function (s) { return s.head; }) };
             return q;
+          }
           }
         }
       }
@@ -6873,26 +7582,41 @@ window.__ensureGrade = function (g, cb) {
       return tfCalcGen()();
     };
   }
-  function tfStmtGen(facts, pairs, roundsN) {
-    var stmts = d5BuildStmts(facts, pairs);
+  function tfStmtGen(facts, pairs, roundsN, noSwap, grade) {
+    var stmts = noSwap ? [] : d5BuildStmts(facts, pairs);
+    /* B1-sửa lớp nhỏ (2026-10-15): Lớp 1–2 chỉ phán đoán khẳng định <=70 ký
+       tự, Lớp 3 <=90 ký tự (§6.3: một vòng = một ý ngắn). Nếu lọc xong còn
+       <2 khẳng định thì lấy các khẳng định ngắn nhất còn lại. */
+    if (grade != null && grade <= 3 && stmts.length >= 2) {
+      var capS = grade <= 2 ? 70 : 90;
+      var shortS = stmts.filter(function (s) { return s.stmt.length <= capS; });
+      if (shortS.length >= 2) stmts = shortS;
+      else stmts = stmts.slice().sort(function (a, b) { return a.stmt.length - b.stmt.length; }).slice(0, Math.max(2, shortS.length));
+    }
     return function () {
       if (stmts.length >= 2) {
         var n = roundsN || 3;
         var sel = shuffle(stmts.slice()).slice(0, n);
-        var rounds = sel.map(function (s) {
+        var items = sel.map(function (s) {
           var truth = Math.random() < 0.5, shown = s.stmt;
           if (!truth) {
             var d = d5DonorFor(stmts, s);
             if (d) shown = s.head + " " + d.val + "."; else truth = true;
           }
-          return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(shown) + "</div>", truth: truth, explain: truth ? ("Đúng — " + s.stmt) : ("Sai. Đúng phải là: " + s.stmt) };
+          return { s: s, truth: truth, shown: shown, correct: s.stmt };
         });
-        var q = tfQ("🧠 Đúng hay sai? Đọc kĩ từng khẳng định nhé!", rounds);
+        /* B1-sửa khuôn vỏ: cân bằng phán quyết cho cả màn — vòng lật sang SAI
+           vẫn phải qua đúng cổng d5DonorFor (giữ nguyên an toàn đợt P0). */
+        tfBalanceItems(items, function (it) { var d = d5DonorFor(stmts, it.s); return d ? (it.s.head + " " + d.val + ".") : null; });
+        var rounds = items.map(function (it) {
+          return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(it.shown) + "</div>", truth: it.truth, explain: it.truth ? ("Đúng — " + it.s.stmt) : ("Sai. Đúng phải là: " + it.s.stmt) };
+        });
+        var q = tfQ("Đúng hay sai? Đọc kĩ từng khẳng định nhé!", rounds);
         q.roundIdentity = { type: "bundle", facts: sel.map(function (s) { return s.head; }) };
         return q;
       }
-      if (facts && facts.length) return advTF1Gen(facts, roundsN)();
-      return tfCalcGen("🧠 Đúng hay sai? Kiểm tra phép tính nhé!")();
+      if (facts && facts.length) return advTF1Gen(facts, roundsN, grade)();
+      return tfCalcGen("Đúng hay sai? Kiểm tra phép tính nhé!")();
     };
   }
 
@@ -6950,17 +7674,23 @@ window.__ensureGrade = function (g, cb) {
   }
   var STORY_ITEMS = [["quả cam", "quả táo"], ["viên bi", "viên sỏi"], ["cái kẹo", "cái bánh"], ["cây bút chì", "quyển vở"], ["bông hoa", "chiếc lá"]];
   var NAMES_B = ["Lan", "Minh", "Hoa", "Tuấn", "Mai", "An"];
-  function extraDataGen(nums) {
+  function extraDataGen(nums, grade) {
     return function () {
       var n = pick(nums), it = pick(STORY_ITEMS), nm = pick(NAMES_B), z = rand(3, 15), story, ans = n.res;
-      if (n.op === "+") story = nm + " mua " + n.x + " " + it[0] + ", sau đó mua thêm " + n.y + " " + it[0] + " nữa. Trong chuyến đi, " + nm + " cũng mua " + z + " " + it[1] + ". Hỏi " + nm + " mua tất cả bao nhiêu " + it[0] + "?";
-      else if (n.op === "−") story = nm + " có " + n.x + " " + it[0] + ". " + nm + " cho bạn " + n.y + " " + it[0] + ". Trong cặp của " + nm + " còn có " + z + " " + it[1] + ". Hỏi " + nm + " còn lại bao nhiêu " + it[0] + "?";
-      else if (n.op === "×") story = nm + " xếp " + it[0] + " vào " + n.x + " hộp, mỗi hộp có " + n.y + " " + it[0] + ". Ngoài ra " + nm + " còn có " + z + " " + it[1] + " để riêng. Hỏi trong các hộp có tất cả bao nhiêu " + it[0] + "?";
-      else story = nm + " có " + n.x + " " + it[0] + ", chia đều cho " + n.y + " bạn. " + nm + " còn mang theo " + z + " " + it[1] + ". Hỏi mỗi bạn được bao nhiêu " + it[0] + "?";
+      /* B1-sửa lớp nhỏ (2026-10-15) — §6.4 ví dụ 2 của B1-đo: SGK không bao
+         giờ NÓI TRƯỚC "bài có dữ kiện thừa". Lớp 1–2: bỏ hẳn dữ kiện thừa,
+         bài toán lời văn thường. Lớp 3: giữ dữ kiện thừa như tình huống đọc
+         hiểu nhưng bỏ thông báo meta; lời giải vẫn chỉ ra dữ kiện không
+         dùng SAU khi làm. Lớp >=4: giữ nguyên thiết kế tầng nâng cao. */
+      var young = grade != null && grade <= 2, mid3 = grade === 3;
+      if (n.op === "+") story = nm + " mua " + n.x + " " + it[0] + ", sau đó mua thêm " + n.y + " " + it[0] + " nữa." + (young ? "" : " Trong chuyến đi, " + nm + " cũng mua " + z + " " + it[1] + ".") + " Hỏi " + nm + " mua tất cả bao nhiêu " + it[0] + "?";
+      else if (n.op === "−") story = nm + " có " + n.x + " " + it[0] + ". " + nm + " cho bạn " + n.y + " " + it[0] + "." + (young ? "" : " Trong cặp của " + nm + " còn có " + z + " " + it[1] + ".") + " Hỏi " + nm + " còn lại bao nhiêu " + it[0] + "?";
+      else if (n.op === "×") story = nm + " xếp " + it[0] + " vào " + n.x + " hộp, mỗi hộp có " + n.y + " " + it[0] + "." + (young ? "" : " Ngoài ra " + nm + " còn có " + z + " " + it[1] + " để riêng.") + " Hỏi trong các hộp có tất cả bao nhiêu " + it[0] + "?";
+      else story = nm + " có " + n.x + " " + it[0] + ", chia đều cho " + n.y + " bạn." + (young ? "" : " " + nm + " còn mang theo " + z + " " + it[1] + ".") + " Hỏi mỗi bạn được bao nhiêu " + it[0] + "?";
       var opts = numOptions(ans, Math.max(0, ans - 12), ans + 12, 4);
-      return { prompt: "Bài toán có dữ kiện thừa — hãy chọn lọc dữ kiện cần dùng!", visual: '<div class="sentence">' + story + "</div>",
+      return { prompt: (young || mid3) ? "Bài toán có lời văn" : "Bài toán có dữ kiện thừa — hãy chọn lọc dữ kiện cần dùng!", visual: '<div class="sentence">' + story + "</div>",
         options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(ans), cols: 4,
-        explain: "Dữ kiện thừa là " + z + " " + it[1] + " — không cần dùng. Ta chỉ tính: " + n.x + " " + n.op + " " + n.y + " = " + n.res + " (" + it[0] + ")." };
+        explain: young ? ("Ta tính: " + n.x + " " + n.op + " " + n.y + " = " + n.res + " (" + it[0] + ").") : ("Dữ kiện thừa là " + z + " " + it[1] + " — không cần dùng. Ta chỉ tính: " + n.x + " " + n.op + " " + n.y + " = " + n.res + " (" + it[0] + ").") };
     };
   }
 
@@ -6989,14 +7719,19 @@ window.__ensureGrade = function (g, cb) {
   }
   function tfCalcGen(promptText) {
     return function () {
-      var rounds = [];
+      var items = [];
       for (var k = 0; k < 3; k++) {
         var x = rand(3, 60), y = rand(2, 40), op = Math.random() < 0.5 ? "+" : "−", res = op === "+" ? x + y : x - y;
         if (res < 0) { op = "+"; res = x + y; }
         var truth = Math.random() < 0.5, shown = truth ? res : res + pick([-3, -2, -1, 1, 2, 3, 10]);
         if (shown < 0) shown = res + 2;
-        rounds.push({ visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + x + " " + op + " " + y + " = " + shown + "</div>", truth: truth, explain: x + " " + op + " " + y + " = " + res + "." });
+        items.push({ x: x, op: op, y: y, res: res, truth: truth, shown: shown, correct: res });
       }
+      /* B1-sửa khuôn vỏ: cân bằng phán quyết cho cả màn phép tính. */
+      tfBalanceItems(items, function (it) { var c = it.res + pick([-3, -2, -1, 1, 2, 3, 10]); if (c < 0) c = it.res + 2; return c; });
+      var rounds = items.map(function (it) {
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + it.x + " " + it.op + " " + it.y + " = " + it.shown + "</div>", truth: it.truth, explain: it.x + " " + it.op + " " + it.y + " = " + it.res + "." };
+      });
       return tfQ(promptText || "Đúng hay sai? Tính nhẩm thật nhanh nhé!", rounds);
     };
   }
@@ -7035,6 +7770,7 @@ window.__ensureGrade = function (g, cb) {
     var strict1 = grade >= 6; /* Lớp ≥6: chỉ dùng bộ sinh ĐƠN Ý (sửa chất lượng 2026-10-12) */
     var atoms = harvestTopic(t, grade);
     var facts = atoms.facts, pairs = atoms.pairs;
+    var noSwap = !!D5_NO_SWAP[t.id]; /* B1-P0: chủ đề nhạy cảm không tráo gloss sinh khẳng định sai */
     if (/^tin6-/.test(t.id)) facts.uniqueReverseB = true;
     /* Đợt 5: Lớp 1–5 KHÔNG còn tự chế dữ kiện hỏi–đáp '"X" ứng với ý nào đúng?'
        từ cặp nối (mục D — gốc L3 thứ hai trong rà soát); cặp nối chỉ dùng cho
@@ -7072,11 +7808,11 @@ window.__ensureGrade = function (g, cb) {
     var isEngB = String(subj.id).indexOf("eng") !== -1;
     if (n0 < (isEngB ? 168 : 130)) {
       if (hasF) {
-        pushNew("choose", revGen(facts)); if (!strict1) pushNew("choose", oddStmtGen(factsAdv, pairs, false));
+        pushNew("choose", revGen(facts, grade)); if (!strict1) pushNew("choose", oddStmtGen(factsAdv, pairs, false, noSwap, grade));
         pushNew("blank", blankVarGen(facts, false));
-        pushNew("games", tfVarGen(facts, 3, TF_PROMPTS[1]));
+        pushNew("games", tfVarGen(facts, 3, TF_PROMPTS[1], grade));
         pushNew("games", catchVarGen(facts, CATCH_PREFIXES[1]));
-        if (n0 < 100) pushNew("games", tfVarGen(facts, 4, TF_PROMPTS[2]));
+        if (n0 < 100) pushNew("games", tfVarGen(facts, 4, TF_PROMPTS[2], grade));
       }
       if (pairs.length >= 4) { pushNew("match", matchRevGen(pairs, false)); pushNew("games", memRevGen(pairs)); }
       if (nums.length) { pushNew("blank", missingGen(nums, false)); pushNew("choose", twoStepGen(nums)); pushNew("choose", compareGen(nums)); }
@@ -7089,12 +7825,12 @@ window.__ensureGrade = function (g, cb) {
     var extraFactories = [];
     if (hasF) {
       extraFactories = [
-        function () { var g = tfVarGen(facts, 3, TF_PROMPTS[3]); pushNew("games", g); return g; },
+        function () { var g = tfVarGen(facts, 3, TF_PROMPTS[3], grade); pushNew("games", g); return g; },
         function () { var g = catchVarGen(facts, CATCH_PREFIXES[2]); pushNew("games", g); return g; },
-        function () { var g = strict1 ? catchVarGen(facts, CATCH_PREFIXES[0]) : oddStmtGen(factsAdv, pairs, false); pushNew(strict1 ? "games" : "choose", g); return g; },
-        function () { var g = tfVarGen(facts, 4, TF_PROMPTS[0]); pushNew("games", g); return g; },
+        function () { var g = strict1 ? catchVarGen(facts, CATCH_PREFIXES[0]) : oddStmtGen(factsAdv, pairs, false, noSwap, grade); pushNew(strict1 ? "games" : "choose", g); return g; },
+        function () { var g = tfVarGen(facts, 4, TF_PROMPTS[0], grade); pushNew("games", g); return g; },
         function () { var g = catchVarGen(facts, CATCH_PREFIXES[3]); pushNew("games", g); return g; },
-        function () { var g = revGen(facts); pushNew("choose", g); return g; }
+        function () { var g = revGen(facts, grade); pushNew("choose", g); return g; }
       ];
     } else {
       extraFactories = [
@@ -7119,21 +7855,21 @@ window.__ensureGrade = function (g, cb) {
     var adv = { choose: [], blank: [], match: [], games: [] };
     if (hasF) {
       if (strict1) {
-        adv.choose.push(revGen(facts), revGen2(facts));
+        adv.choose.push(revGen(facts, grade), revGen2(facts));
         adv.games.push(advTF1Gen(facts), advCatchGen(facts));
         adv.blank.push(blankVarGen(facts, true));
       } else {
         /* Đợt 5: tầng nâng cao Lớp 1–5 chỉ dùng dữ kiện ĐỦ ĐIỀU KIỆN (advSrc)
            và bộ sinh khẳng định văn xuôi — không còn khung meta của
            oddGen/advTFGen bản cũ. */
-        if (advSrc.length >= 2) adv.choose.push(revGen(advSrc));
-        adv.choose.push(oddStmtGen(advSrc, pairs, true));
-        adv.games.push(tfStmtGen(advSrc, pairs));
+        if (advSrc.length >= 2) adv.choose.push(revGen(advSrc, grade));
+        adv.choose.push(oddStmtGen(advSrc, pairs, true, noSwap, grade));
+        adv.games.push(tfStmtGen(advSrc, pairs, null, noSwap, grade));
         if (advSrc.length) { adv.games.push(advCatchGen(advSrc)); adv.blank.push(blankVarGen(advSrc, true)); }
       }
     }
     if (nums.length) {
-      adv.choose.push(twoStepGen(nums), compareGen(nums), extraDataGen(nums));
+      adv.choose.push(twoStepGen(nums), compareGen(nums), extraDataGen(nums, grade));
       adv.blank.push(missingGen(nums, true));
     }
     if (strict1 && subj && subj.id === "g6-math") {
@@ -7142,7 +7878,7 @@ window.__ensureGrade = function (g, cb) {
          nhóm bộ sinh đơn ý được giữ lại theo bản đồ sửa chất lượng. */
       adv.choose.push(opMissingGen(), logicCompareGen());
       adv.blank.push(seqGen());
-      adv.games.push(tfCalcGen("🧠 Đúng hay sai? Tính nhẩm thật nhanh nhé!"));
+      adv.games.push(tfCalcGen("Đúng hay sai? Tính nhẩm thật nhanh nhé!"));
     }
     if (pairs.length >= 4) adv.match.push(matchRevGen(pairs, true));
     var isMathT = /toán|math/i.test(String(subj.name || "")) || /math/i.test(String(subj.id || ""));
@@ -7152,7 +7888,7 @@ window.__ensureGrade = function (g, cb) {
       if (isMathT) {
         adv.choose.push(opMissingGen(), logicCompareGen());
         adv.blank.push(seqGen());
-        adv.games.push(tfCalcGen("🧠 Đúng hay sai? Tính nhẩm thật nhanh nhé!"));
+        adv.games.push(tfCalcGen("Đúng hay sai? Tính nhẩm thật nhanh nhé!"));
       }
     } else if (adv.choose.length < 2 && isMathT) {
       adv.choose.push(opMissingGen());
@@ -7161,11 +7897,11 @@ window.__ensureGrade = function (g, cb) {
     var advAll = adv.choose.concat(adv.blank, adv.match, adv.games);
     var sigsA = countGens(advAll, 12);
     var advFactories = [];
-    if (hasF) advFactories.push(function () { var g = strict1 ? advTF1Gen(facts) : tfStmtGen(advSrc, pairs); adv.games.push(g); return g; });
+    if (hasF) advFactories.push(function () { var g = strict1 ? advTF1Gen(facts) : tfStmtGen(advSrc, pairs, null, noSwap, grade); adv.games.push(g); return g; });
     if (strict1 || isMathT) advFactories.push(function () { var g = seqGen(); adv.blank.push(g); return g; });
     else advFactories.push(function () { var g = blankVarGen(advSrc, true); adv.blank.push(g); return g; });
-    if (hasF) advFactories.push(function () { if (strict1) { var g = advTF1Gen(facts, 4); adv.games.push(g); return g; } var g2 = oddStmtGen(advSrc, pairs, true); adv.choose.push(g2); return g2; });
-    advFactories.push(function () { var g = tfCalcGen("🧠 Đúng hay sai? Kiểm tra phép tính nhé!"); adv.games.push(g); return g; });
+    if (hasF) advFactories.push(function () { if (strict1) { var g = advTF1Gen(facts, 4); adv.games.push(g); return g; } var g2 = oddStmtGen(advSrc, pairs, true, noSwap, grade); adv.choose.push(g2); return g2; });
+    advFactories.push(function () { var g = tfCalcGen("Đúng hay sai? Kiểm tra phép tính nhé!"); adv.games.push(g); return g; });
     if (hasF) advFactories.push(function () { var g = strict1 ? advCatchGen(facts) : advCatchGen(advSrc); adv.games.push(g); return g; });
     var ai = 0;
     while (Object.keys(sigsA).length < 24 && ai < advFactories.length) { addSigs(sigsA, advFactories[ai++](), 12); }
@@ -7411,10 +8147,11 @@ window.__ensureGrade = function (g, cb) {
        nét vẽ) vẫn được giữ cho Kiến thức dù bị loại khỏi pairs. pairs giữ
        nguyên 100% hành vi cũ cho pairmeta/createBank (ngân hàng câu hỏi). */
     var pairsK=pairs.slice();
-    if(!pairs.length) (t.pools.match||[]).forEach(function(gen,gi){try{var q=withSeed(902+gi,gen);(q.pairs||[]).forEach(function(p){var rawL=String(p.l||p.a||""),rawR=String(p.r||p.b||"");var l=clean(rawL),r=clean(rawR);if(l&&r&&!pairs.some(function(x){return x[0]===l&&x[1]===r;}))pairs.push([l,r]);var imL=imgMarkup9(rawL),imR=imgMarkup9(rawR);var kl=imL?rawL:l,kr=imR?rawR:r;var okL=imL?!!rawL.trim():!!l,okR=imR?!!rawR.trim():!!r;if(okL&&okR&&!pairsK.some(function(x){return x[0]===kl&&x[1]===kr;}))pairsK.push([kl,kr]);});}catch(e){}});
+    if(!pairs.length) (t.pools.match||[]).forEach(function(gen,gi){try{var q=withSeed(902+gi,gen);(q.pairs||[]).forEach(function(p){var rawL=String(p.l||p.a||""),rawR=String(p.r||p.b||"");var l=clean(rawL),r=clean(rawR);if(l&&r&&!pairs.some(function(x){return x[0]===l&&x[1]===r;})&&!pairs.some(function(x){return x[0]===r&&x[1]===l;}))pairs.push([l,r]); /* B6: như harvestTopic — ngân hàng cặp chỉ giữ một chiều (hướng gặp đầu tiên) */var imL=imgMarkup9(rawL),imR=imgMarkup9(rawR);var kl=imL?rawL:l,kr=imR?rawR:r;var okL=imL?!!rawL.trim():!!l,okR=imR?!!rawR.trim():!!r;if(okL&&okR&&!pairsK.some(function(x){return x[0]===kl&&x[1]===kr;}))pairsK.push([kl,kr]);});}catch(e){}});
     curSrc="pairmeta";
     pairs.forEach(function(p,i){var others=pairs.filter(function(x,j){return j!==i&&x[1]!==p[1];}).map(function(x){return x[1];});
-      add('Trong chương này, “'+p[0]+'” ứng với nội dung nào?',p[1],others.slice(0,2),p[0]+': '+p[1]);});
+      /* B1-sửa khuôn vỏ: bỏ khung meta "Trong chương này" — hỏi thẳng vào nội dung của cặp. */
+      add('“'+p[0]+'” ứng với nội dung nào?',p[1],others.slice(0,2),p[0]+': '+p[1]);});
     /* Chương có bộ sinh Toán/thuật toán: giữ cả hình và dữ kiện cụ thể của bài. */
     if (/math/.test(subj.id) || facts.length<12) {
       curSrc="sample";
@@ -7423,6 +8160,11 @@ window.__ensureGrade = function (g, cb) {
         try {
           var q=withSeed(1009+k*37,gens[k%gens.length]);
           if(!q.options||!q.options[q.answer]||(q.roundIdentity&&q.roundIdentity.type==='bundle'))continue;
+          /* B2: câu figureOnly (dữ kiện chỉ nằm trên hình — đồ thị đọc số liệu)
+             không dựng thành dữ kiện chữ: mọi dạng suy diễn (chọn/điền/TF/bắt
+             đáp án) đều không mang hình, mất hình là mất dữ kiện. Như cổng
+             figureOnly ở sampleMCQ của harvestTopic. */
+          if(q.figureOnly)continue;
           var a=clean(q.options[q.answer].html),ws=q.options.filter(function(o,i){return i!==q.answer;}).map(function(o){return clean(o.html);});
           var id=roundQuestionKey(q);
           if (/<(?:svg|img)\b/.test(id)) id='visual-source:'+roundHistoryHash(id);
@@ -7459,6 +8201,10 @@ window.__ensureGrade = function (g, cb) {
   function sfRevGen(facts, adv) {
     return function () {
       var f = pick(facts);
+      /* B1-sửa khuôn vỏ: dạng đảo ngược chỉ còn ~1/4 số lượt; còn lại hỏi
+         thẳng vào nội dung (cùng thân câu với sfChooseGen, giữ nguyên hình
+         minh hoạ và huy hiệu tầng nâng cao). */
+      if (Math.random() >= 0.25) { var qd = mcqQ(f.q, sfWrongs(facts, f, 3), f.a, f.ex || "", f.visual || ""); if (adv) qd.badge = "🧠 Thử thách tư duy"; return identifyRoundFact(qd, f.q); }
       var others = shuffle(facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; })).slice(0, 2).map(function (x) { return x.q; });
       if (others.length < 2) { var q0 = mcqQ(f.q, sfWrongs(facts, f, 3), f.a, f.ex || "", f.visual || ""); if (adv) q0.badge = "🧠 Thử thách tư duy"; return identifyRoundFact(q0, f.q); }
       var q = mcqQ("Đáp án “" + f.a + "” là câu trả lời đúng cho câu hỏi nào?", others, f.q, f.ex || ("Câu hỏi đúng là: “" + f.q + "” — đáp án: " + f.a + "."));
@@ -7480,13 +8226,19 @@ window.__ensureGrade = function (g, cb) {
   function sfTFGen(facts, adv) {
     return function () {
       var sel = shuffle(facts.slice()).slice(0, 3);
-      var rounds = sel.map(function (f) {
+      var items = sel.map(function (f) {
         var truth = Math.random() < 0.5;
-        var shown = truth ? f.a : (f.wrongs[0] || f.a);
+        var shown = truth ? f.a : ((f.wrongs && f.wrongs[0]) || f.a);
         if (!truth && shown === f.a) truth = true;
-        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escText(f.q) + '</div><div class="sentence">Đáp án: ' + escText(shown) + "</div>", truth: truth, explain: "Đáp án đúng: " + f.a };
+        return { f: f, truth: truth, shown: shown, correct: f.a };
       });
-      var q = tfQ(adv ? "🧠 Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!" : "Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!", rounds);
+      /* B1-sửa khuôn vỏ: mệnh đề khẳng định hoàn chỉnh (qaToStmt) thay cho
+         cặp hỏi–đáp, và cân bằng phán quyết cho cả màn. */
+      tfBalanceItems(items, function (it) { var w = (it.f.wrongs || [])[0]; return (w != null && w !== it.f.a) ? w : null; });
+      var rounds = items.map(function (it) {
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escText(qaToStmt(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
+      });
+      var q = tfQ("Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!", rounds);
       q.roundIdentity = { type: "bundle", facts: sel.map(function (f) { return f.q; }) };
       return q;
     };
@@ -7495,7 +8247,7 @@ window.__ensureGrade = function (g, cb) {
     return function () {
       var f = pick(facts);
       var os = shuffle([f.a].concat(sfWrongs(facts, f, 2)));
-      return identifyRoundFact(catchQ((adv ? "🧠 Vận dụng kiến thức: " : "Bắt đáp án! ") + f.q, os.map(function (o) { return { html: '<span class="opt-text">' + escText(o) + "</span>", ok: o === f.a }; })), f.q);
+      return identifyRoundFact(catchQ((adv ? "" : "Bắt đáp án! ") + f.q, os.map(function (o) { return { html: '<span class="opt-text">' + escText(o) + "</span>", ok: o === f.a }; })), f.q);
     };
   }
   /* Đếm số câu phân biệt ĐO ĐƯỢC của một bộ pools bằng chính hàm định danh
@@ -7528,7 +8280,7 @@ window.__ensureGrade = function (g, cb) {
     var mineAdv = { choose: [sfRevGen(facts, true), sfChooseGen(facts, true)], blank: [sfBlankGen(facts, true)], games: [sfTFGen(facts, true), sfCatchGen(facts, true)], match: [] };
     if (data.pairs.length >= 4) {
       mine.match.push(function () { return pairsMatch("Nối khái niệm với nội dung đúng.", shuffle(data.pairs.slice()).slice(0, 4)); });
-      mineAdv.match.push(function () { return pairsMatch("🧠 Nối theo chiều ngược lại cho đúng nhé!", shuffle(data.pairs.slice()).slice(0, 4).map(function (p) { return [p[1], p[0]]; })); });
+      mineAdv.match.push(function () { return pairsMatch("Nối mỗi ý với nội dung đúng nhé!", shuffle(data.pairs.slice()).slice(0, 4)); });
       mine.games.push(function () { return pairsMemory(shuffle(data.pairs.slice()).slice(0, 4)); });
     }
     /* Gộp với ngân hàng gốc (gồm cả phần processTopic đã mở rộng nếu có). */
@@ -7857,7 +8609,7 @@ window.__ensureGrade = function (g, cb) {
       type: qq.kind === "blank" ? "blank" : "choose", tier: meta.tier,
       grade: meta.grade, subjId: meta.subj.id, subjName: meta.subj.name,
       topicId: meta.topic.id, topicName: meta.topic.name,
-      prompt: qq.prompt || "", visual: qq.visual || "",
+      prompt: qq.prompt || "", visual: qq.visual || "", figure: qq.figure || "",
       options: qq.options.map(function (o) { return optHtml(o); }),
       answer: qq.answer, correctText: correctText,
       explain: qq.explain || "", key: key, factKey: factKey
@@ -7980,12 +8732,16 @@ window.__ensureGrade = function (g, cb) {
     var items = shuffle(std.concat(adv));
     return { items: items, meta: { scope: "topic", grade: g, subjId: subj.id, subjName: subj.name, topicId: t.id, topicName: t.name, advGot: adv.length, stdGot: items.length - adv.length } };
   }
+  /* Bọc thử lại (đợt sửa phân số 2026-10-15): sinh đề theo chủ đề thử tối đa 3 lần,
+     giữ bản đủ nhất (nhiều câu nhất); đủ 30 câu + đủ 9 câu nâng cao thì dừng ngay.
+     Nếu cả 3 lần vẫn thiếu thì trả bản tốt nhất như hành vi cũ — bắt đầu MỀM,
+     không chặn cứng học sinh (phần thiếu gốc xử lý bằng bổ sung ngân hàng). */
   function buildTopicTest(g, subj, t) {
-    var best=null;
-    for(var attempt=0;attempt<3;attempt++){
-      var built=buildTopicTestOnce(g,subj,t);
-      if(!best||built.items.length>best.items.length)best=built;
-      if(built.items.length===TEST_LEN&&built.meta.advGot===ADV_TARGET)return built;
+    var best = null;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      var built = buildTopicTestOnce(g, subj, t);
+      if (!best || built.items.length > best.items.length) best = built;
+      if (built.items.length === TEST_LEN && built.meta.advGot === ADV_TARGET) break;
     }
     return best;
   }
@@ -8134,9 +8890,9 @@ window.__ensureGrade = function (g, cb) {
     if (it.tier === "adv") { badge.textContent = "🧠 Câu nâng cao"; badge.className = "q-badge show"; }
     else { badge.textContent = ""; badge.className = "q-badge"; }
     el("as-prompt").textContent = it.prompt || "";
-    var vis = el("as-visual"); vis.innerHTML = it.visual || "";
+    var vis = el("as-visual"); vis.innerHTML = figHTML(it.figure) + (it.visual || "");
     vis.querySelectorAll("[data-speak]").forEach(function (btn) {
-      btn.addEventListener("click", function (ev) { ev.stopPropagation(); try { speak(btn.getAttribute("data-speak")); } catch (e) {} });
+      btn.addEventListener("click", function (ev) { ev.stopPropagation(); try { speakStimulus(btn.getAttribute("data-speak"), btn); } catch (e) {} });
     });
     var box = el("as-options");
     box.innerHTML = ""; box.className = "options" + (it.type === "tf" ? " cols-2" : "");
@@ -8245,7 +9001,7 @@ window.__ensureGrade = function (g, cb) {
         (it.explain ? "<br><b>Giải thích:</b> " + it.explain : "") + "</div>";
       div.innerHTML = body;
       var holder = div.querySelector(".as-review-visual");
-      holder.innerHTML = it.visual || "";
+      holder.innerHTML = figHTML(it.figure) + (it.visual || "");
       var slot = holder.querySelector(".blank-slot");
       if (slot) { slot.textContent = it.type === "blank" ? it.correctText : slot.textContent; slot.classList.add("filled"); }
       rv.appendChild(div);
@@ -8320,7 +9076,7 @@ window.__ensureGrade = function (g, cb) {
         } else {
           built = buildSubjectTest(g, subj);
         }
-        if (built.items.length !== TEST_LEN || built.meta.advGot !== ADV_TARGET) { el("as-setup-err").textContent = "Chưa rút đủ 30 câu theo cấu trúc đề này, em thử chủ đề/môn khác nhé!"; return; }
+        if (!built.items.length) { el("as-setup-err").textContent = "Chưa rút đủ câu cho đề này, em thử chủ đề/môn khác nhé!"; return; }
         el("as-setup-err").textContent = "";
         startTest(built);
       } finally {
@@ -8572,6 +9328,9 @@ window.__ensureGrade = function (g, cb) {
       var key = (typeof currentTopicKey !== "undefined" && currentTopicKey) ? String(currentTopicKey) : "";
       var parts = key.split("|");
       if (parts.length < 3) return null;
+      /* Chuyên đề nâng cao (Toán tư duy): chủ đề không nằm trong GRADES —
+         uỷ quyền cho chuyende.js tra registry riêng khi đã nạp. */
+      if (parts[1] === "chuyende" && typeof window.__cdTopicContext === "function") { var cdx = window.__cdTopicContext(parts); if (cdx) return cdx; }
       var g = parseInt(parts[0], 10);
       var G = (typeof GRADES !== "undefined") ? GRADES[g] : null;
       if (!G) return null;
@@ -8597,7 +9356,7 @@ window.__ensureGrade = function (g, cb) {
       var type = (q.kind === "blank" || q.blankText) ? "blank" : "choose";
       captureWrong({ grade: ctx.grade, subjectId: ctx.subj.id, subjectName: ctx.subj.name,
         topicId: ctx.topic.id, topicName: ctx.topic.name,
-        q: { type: type, prompt: q.prompt || "", visual: q.visual || "",
+        q: { type: type, prompt: q.prompt || "", visual: q.visual || "", figure: q.figure || "",
           options: q.options.map(function (o) { return o && o.html != null ? String(o.html) : String(o == null ? "" : o); }),
           answer: q.answer, explain: q.explain || "", blankText: type === "blank" ? String(q.blankText || "") : "" } });
     } catch (e) {}
@@ -8629,7 +9388,7 @@ window.__ensureGrade = function (g, cb) {
         if (it.type !== "choose" && it.type !== "blank" && it.type !== "tf") return;
         captureWrong({ grade: it.grade, subjectId: it.subjId, subjectName: it.subjName,
           topicId: it.topicId, topicName: it.topicName,
-          q: { type: it.type, prompt: it.prompt || "", visual: it.visual || "",
+          q: { type: it.type, prompt: it.prompt || "", visual: it.visual || "", figure: it.figure || "",
             options: (it.options || []).map(function (o) { return String(o == null ? "" : o); }),
             answer: it.answer, explain: it.explain || "", blankText: it.type === "blank" ? String(it.correctText || "") : "" } });
       });
@@ -8686,7 +9445,7 @@ window.__ensureGrade = function (g, cb) {
     if (!correctText) return out;
     out.push({ key: a1KeyFor(meta.topic.id, q.prompt || "", q.visual || "", correctText),
       grade: meta.grade, subjectId: meta.subj.id, subjectName: meta.subj.name, topicId: meta.topic.id, topicName: meta.topic.name,
-      q: { type: type, prompt: q.prompt || "", visual: q.visual || "", options: optsHtml, answer: q.answer,
+      q: { type: type, prompt: q.prompt || "", visual: q.visual || "", figure: q.figure || "", options: optsHtml, answer: q.answer,
         explain: q.explain || "", blankText: type === "blank" ? String(q.blankText || correctText) : "" } });
     return out;
   }
@@ -8816,7 +9575,7 @@ window.__ensureGrade = function (g, cb) {
     if (q.type === "tf") {
       return { kind: "tf", prompt: q.prompt || "Đúng hay sai?", rounds: [{ visual: q.visual || "", truth: q.answer === 0, explain: q.explain || "" }], __a1Key: item.key };
     }
-    var out = { prompt: q.prompt || "", visual: q.visual || "",
+    var out = { prompt: q.prompt || "", visual: q.visual || "", figure: q.figure || "",
       options: (q.options || []).map(function (h) { return { html: String(h == null ? "" : h) }; }),
       answer: q.answer, explain: q.explain || "", __a1Key: item.key };
     if (q.type === "blank") { out.kind = "blank"; out.blankText = String(q.blankText || ""); }
@@ -8875,7 +9634,7 @@ window.__ensureGrade = function (g, cb) {
     show("scr-home");
     a1Summary("🎯 Thử thách hôm nay xong rồi!",
       "Em trả lời đúng ngay lần đầu " + score + "/" + total + " câu." +
-      (firstTime ? " Đã ghi nhận hoàn thành thử thách hôm nay — nhớ quay lại ngày mai để giữ chuỗi nhé!" :
+      (firstTime ? " Em đã hoàn thành thử thách hôm nay rồi — nhớ quay lại ngày mai để giữ chuỗi nhé!" :
         " Hôm nay em đã hoàn thành thử thách từ lần làm đầu tiên rồi, lần này là luyện thêm thôi nhé!"));
   }
 
@@ -9125,6 +9884,12 @@ window.__ensureGrade = function (g, cb) {
     ".a2-count-row{display:flex;gap:10px}",
     ".a2-count{flex:1;border:3px solid var(--line,#f0dfba);background:#fffdf6;border-radius:14px;padding:10px;font-family:inherit;font-weight:800;font-size:17px;cursor:pointer;color:var(--ink,#33302a)}",
     ".a2-count.sel{border-color:var(--sun,#ffb703);box-shadow:0 4px 0 var(--sun,#ffb703)}",
+    /* ---- 2 nút mở phiếu ở thẻ mới (đợt tách In/Lưu PDF 2026-10-16) ---- */
+    ".a2-ws-open{display:none;width:100%;text-align:center;text-decoration:none;box-sizing:border-box;margin-top:10px}",
+    ".a2-ws-open.on{display:block}",
+    ".a2-ws-note{display:none;margin-top:12px;border:3px dashed #e0a13c;background:#fff7e0;border-radius:14px;padding:12px 14px;font-size:16px;font-weight:600;line-height:1.5;color:#6b4e00}",
+    ".a2-ws-note.on{display:block}",
+    ".a2-ws-note a{font-weight:900;color:#1f6fb2}",
     /* ---- tờ phiếu (xem trước trên màn + bản in) ---- */
     "#a2-ws-print{margin-top:18px}",
     ".ws-paper{background:#fff;color:#1d1d1b;border:3px solid #d8d2c0;border-radius:10px;padding:26px 28px;box-shadow:0 8px 24px rgba(90,70,20,.12);font-size:16px;line-height:1.5}",
@@ -9138,6 +9903,7 @@ window.__ensureGrade = function (g, cb) {
     ".ws-q{margin:15px 0}",
     ".ws-qp{font-weight:600}",
     ".ws-vis{margin:6px 0}",
+    ".ws-fig{margin:6px 0;text-align:center}.ws-fig svg{width:230px;height:auto}",
     ".ws-opts{margin:6px 0 0 18px}",
     ".ws-opt{margin:3px 0}",
     ".ws-blank{margin:8px 0 0 18px;font-weight:700}",
@@ -9170,14 +9936,14 @@ window.__ensureGrade = function (g, cb) {
   }
   mkSection("scr-profile",
     '<div class="topbar"><button class="back-btn" id="a2-pf-back" aria-label="Quay lại">⬅️</button>' +
-    '<div><h2>📊 Hồ sơ học tập</h2><div class="sub">Sao, huy hiệu, tiến độ và kết quả kiểm tra của em trên máy này</div></div></div>' +
+    '<div><h2>📊 Nhật ký học tập</h2><div class="sub">Sao, huy hiệu, tiến độ và kết quả kiểm tra của em trên máy này</div></div></div>' +
     '<div class="a2-wrap" id="a2-pf-body"></div>');
   mkSection("scr-worksheet",
     '<div class="topbar"><button class="back-btn" id="a2-ws-back" aria-label="Quay lại">⬅️</button>' +
     '<div><h2>🖨️ In phiếu bài tập</h2><div class="sub">Tạo phiếu giấy từ ngân hàng câu hỏi của game — in ra hoặc lưu PDF cho học sinh làm trên giấy</div></div></div>' +
     '<div class="a2-wrap"><div class="a2-card">' +
     '<p class="a2-note">Phiếu được rút từ <b>cùng ngân hàng câu hỏi</b> em vẫn luyện tập và kiểm tra (chỉ các dạng trắc nghiệm, điền khuyết, đúng/sai). ' +
-    '<b>Đáp án và giải thích nằm ở trang riêng cuối phiếu</b> để thầy cô, bố mẹ chấm bài.</p>' +
+    '<b>Đáp án và giải thích nằm ở trang riêng cuối phiếu</b> — làm xong bài hãy mở ra đối chiếu nhé.</p>' +
     '<div class="a2-formrow"><span class="field-label">Lớp</span><div class="a2-note" id="a2-ws-grade" style="font-size:18px;color:var(--ink,#33302a)">Lớp —</div></div>' +
     '<div class="a2-formrow"><span class="field-label">Phạm vi câu hỏi</span><div class="a2-scope-row">' +
     '<button type="button" class="a2-scope sel" id="a2-ws-scope-topic"><span class="n">📚 Theo chủ đề</span><span class="d">Câu hỏi của đúng một chương/chủ đề</span></button>' +
@@ -9192,7 +9958,9 @@ window.__ensureGrade = function (g, cb) {
     '</div></div>' +
     '<div class="login-err" id="a2-ws-err"></div>' +
     '<button class="big-btn primary" id="a2-ws-gen" style="width:100%">📄 Tạo phiếu xem trước</button>' +
-    '<button class="big-btn alt" id="a2-ws-btn-print" style="width:100%;margin-top:10px;display:none">🖨️ In / Lưu PDF</button>' +
+    '<a class="big-btn primary a2-ws-open" id="a2-ws-btn-print2" target="_blank">🖨️ In phiếu</a>' +
+    '<a class="big-btn alt a2-ws-open" id="a2-ws-btn-pdf" target="_blank">📄 Lưu PDF</a>' +
+    '<div class="a2-ws-note" id="a2-ws-note"></div>' +
     '</div>' +
     '<div id="a2-ws-print"></div></div>');
   if (typeof screens !== "undefined" && screens.indexOf("scr-profile") === -1) {
@@ -9206,7 +9974,7 @@ window.__ensureGrade = function (g, cb) {
     hist = hist.filter(function (r) { return r && typeof r.score === "number"; });
     if (!hist.length) {
       return '<div class="a2-card"><h3>📝 Kết quả Kiểm tra</h3>' +
-        '<p class="a2-note">Chưa có bài kiểm tra nào được ghi lại trên máy này. Khi em làm bài ở mục 📝 Kiểm tra năng lực, điểm số và các chủ đề cần ôn sẽ hiện ở đây nhé!</p></div>';
+        '<p class="a2-note">Em chưa làm bài kiểm tra nào trên máy này. Khi em làm bài ở mục 📝 Kiểm tra năng lực, điểm số và các chủ đề cần ôn sẽ hiện ở đây nhé!</p></div>';
     }
     var n = hist.length, sum = 0, best = -1;
     hist.forEach(function (r) { sum += r.score; if (r.score > best) best = r.score; });
@@ -9265,7 +10033,7 @@ window.__ensureGrade = function (g, cb) {
         '<span class="a2-day-l">' + names[d.getDay()] + '</span><span class="a2-day-d">' + d.getDate() + '/' + (d.getMonth() + 1) + '</span></div>';
     }
     return '<div class="a2-card"><h3>📅 Hoạt động 7 ngày gần nhất</h3><div class="a2-week">' + cols + '</div>' +
-      (any ? "" : '<p class="a2-note" style="margin-top:10px">Tuần này chưa có ngày học nào được ghi. Học một bài hôm nay để ngày hôm nay sáng lên nhé!</p>') + '</div>';
+      (any ? "" : '<p class="a2-note" style="margin-top:10px">Tuần này em chưa học ngày nào. Học một bài hôm nay để ngày hôm nay sáng lên nhé!</p>') + '</div>';
   }
 
   function fillProgress(gp, act) {
@@ -9273,7 +10041,7 @@ window.__ensureGrade = function (g, cb) {
     var done = function () {
       var G = (typeof GRADES !== "undefined") ? GRADES[gp] : null;
       if (!G || !G.subjects) {
-        box.innerHTML = '<p class="a2-note">Chưa nạp được dữ liệu Lớp ' + gp + '. Em quay lại trang đầu, chọn Lớp ' + gp + ' rồi mở lại hồ sơ nhé!</p>';
+        box.innerHTML = '<p class="a2-note">Chưa nạp được dữ liệu Lớp ' + gp + '. Em quay lại trang đầu, chọn Lớp ' + gp + ' rồi mở lại nhật ký nhé!</p>';
         return;
       }
       var played = (act && act.playedTopics) || {};
@@ -9300,7 +10068,7 @@ window.__ensureGrade = function (g, cb) {
     var body = el("a2-pf-body"); if (!body) return;
     var pf = curProfile();
     if (!pf) {
-      body.innerHTML = '<div class="a2-card"><p class="a2-note">Em hãy đăng nhập để xem hồ sơ học tập của mình nhé!</p></div>';
+      body.innerHTML = '<div class="a2-card"><p class="a2-note">Em hãy đăng nhập để xem nhật ký học tập của mình nhé!</p></div>';
       return;
     }
     var a1 = A1();
@@ -9408,7 +10176,7 @@ window.__ensureGrade = function (g, cb) {
     paper.appendChild(head);
     var fields = document.createElement("div");
     fields.className = "ws-fields";
-    fields.innerHTML = '<span>Họ và tên: <i class="ws-line"></i></span><span>Lớp: <i class="ws-line s"></i></span><span>Ngày: <i class="ws-line s"></i></span>';
+    fields.innerHTML = '<span>Tên em: <i class="ws-line"></i></span><span>Ngày làm: <i class="ws-line s"></i></span>';
     paper.appendChild(fields);
     items.forEach(function (it, i) {
       var q = document.createElement("div");
@@ -9419,6 +10187,11 @@ window.__ensureGrade = function (g, cb) {
       var sp = document.createElement("span"); sp.textContent = it.prompt || "";
       qp.appendChild(b); qp.appendChild(sp);
       q.appendChild(qp);
+      if (it.figure && /^\s*<svg/.test(it.figure)) {
+        var vf = document.createElement("div");
+        vf.className = "ws-fig"; vf.innerHTML = it.figure;
+        q.appendChild(vf);
+      }
       if (it.visual) {
         var v = document.createElement("div");
         v.className = "ws-vis"; v.innerHTML = it.visual;
@@ -9450,7 +10223,7 @@ window.__ensureGrade = function (g, cb) {
     var ans = document.createElement("div");
     ans.className = "ws-answers";
     ans.innerHTML = '<div class="ws-title">ĐÁP ÁN VÀ GIẢI THÍCH</div>' +
-      '<div class="ws-meta2">(Trang riêng — dành cho thầy cô và phụ huynh chấm bài)</div>';
+      '<div class="ws-meta2">(Trang riêng — đáp án để đối chiếu sau khi làm xong)</div>';
     items.forEach(function (it, i) {
       var a = document.createElement("div");
       a.className = "ws-a";
@@ -9468,6 +10241,136 @@ window.__ensureGrade = function (g, cb) {
     paper.appendChild(ans);
     box.appendChild(paper);
   }
+  /* ---- ĐỢT TÁCH IN / LƯU PDF (vu yêu cầu 2026-10-16) ----
+     Đường cũ gọi window.print() ngay trong tài liệu game. Khi chơi qua link
+     chia sẻ, tài liệu game nằm trong KHUNG NHÚNG (iframe) — print() từ tài
+     liệu bị nhúng bị trình duyệt bỏ qua im lặng (khung thiếu quyền mở hộp
+     thoại) nên ấn in không có gì xảy ra và không bao giờ có file PDF.
+     Đường mới: dựng phiếu thành một TÀI LIỆU HTML ĐỘC LẬP hoàn chỉnh rồi mở
+     ở THẺ MỚI cấp cao nhất bằng thẻ <a href=blob: target=_blank> (thao tác từ
+     chính cú chạm của người dùng). Ở thẻ cấp cao nhất, hộp in hoạt động bình
+     thường: PC in trực tiếp; điện thoại chọn "Lưu dưới dạng PDF" trong hộp
+     in rồi chia sẻ/gửi file. Nội dung phiếu lấy nguyên văn từ bản xem trước
+     đã dựng (cùng .ws-paper) — phần sinh nội dung KHÔNG đổi.
+     Nếu thẻ mới bị chặn, tài liệu con không gửi được tín hiệu "đã mở" về —
+     game hiện thông báo + liên kết mở phiếu thủ công, không im lặng. */
+  var WS_DOC_CSS = [
+    "*{box-sizing:border-box}",
+    "body{margin:0;background:#e8e2cf;font-family:\"Baloo 2\",\"Segoe UI\",system-ui,sans-serif;color:#1d1d1b}",
+    ".ws-toolbar{position:sticky;top:0;z-index:5;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff8e1;border-bottom:3px solid #e5cf8f;padding:12px 16px}",
+    ".ws-thint{font-size:15px;font-weight:600;color:#6f675a}",
+    ".ws-tbtn{font-family:inherit;font-size:19px;font-weight:900;color:#fff;background:#58a05c;border:none;border-radius:14px;padding:13px 22px;cursor:pointer;box-shadow:0 4px 0 #3c7240}",
+    ".ws-tbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #3c7240}",
+    ".ws-guide{max-width:840px;margin:16px auto 0;background:#eaf4ff;border:3px solid #7db3e8;border-radius:14px;padding:16px 18px;font-size:17px;line-height:1.55}",
+    ".ws-guide-t{font-size:21px;font-weight:900;margin-bottom:6px}",
+    ".ws-guide ol{margin:6px 0 12px;padding-left:22px}",
+    ".ws-guide li{margin:4px 0}",
+    ".ws-paper{background:#fff;color:#1d1d1b;border:3px solid #d8d2c0;border-radius:10px;padding:26px 28px;box-shadow:0 8px 24px rgba(90,70,20,.12);font-size:16px;line-height:1.5;max-width:840px;margin:16px auto}",
+    ".ws-title{font-size:24px;font-weight:900;text-align:center;letter-spacing:.5px}",
+    ".ws-meta{text-align:center;font-weight:800;font-size:17px;margin-top:4px}",
+    ".ws-meta2{text-align:center;font-weight:600;font-size:14px;color:#555;margin-top:2px}",
+    ".ws-fields{display:flex;gap:22px;flex-wrap:wrap;margin:16px 0 6px;font-weight:700}",
+    ".ws-line{display:inline-block;border-bottom:2px solid #999;min-width:190px;height:15px;vertical-align:bottom}",
+    ".ws-line.s{min-width:80px}",
+    ".ws-line.long{min-width:280px}",
+    ".ws-q{margin:15px 0}",
+    ".ws-qp{font-weight:600}",
+    ".ws-vis{margin:6px 0}",
+    ".ws-fig{margin:6px 0;text-align:center}.ws-fig svg{width:230px;height:auto}",
+    ".ws-opts{margin:6px 0 0 18px}",
+    ".ws-opt{margin:3px 0}",
+    ".ws-blank{margin:8px 0 0 18px;font-weight:700}",
+    ".ws-tf{margin:8px 0 0 18px;font-weight:800;letter-spacing:1px}",
+    ".ws-answers{margin-top:26px;border-top:3px dashed #bbb;padding-top:18px}",
+    ".ws-a{margin:7px 0}",
+    ".ws-a-key{font-weight:800}",
+    ".ws-a-ex{font-weight:600}",
+    "@page{margin:13mm}",
+    "@media print{",
+    "  body{background:#fff}",
+    "  .ws-toolbar,.ws-guide{display:none!important}",
+    "  .ws-paper{border:none;box-shadow:none;border-radius:0;padding:0;margin:0;max-width:none}",
+    "  .ws-q{page-break-inside:avoid}",
+    "  .ws-answers{page-break-before:always;break-before:page;border-top:none}",
+    "}"
+  ].join("\n");
+  function wsBuildDoc(mode) {
+    var box = el("a2-ws-print"); if (!box || !wsBuilt) return null;
+    var paper = box.querySelector(".ws-paper"); if (!paper) return null;
+    var m = wsBuilt.meta || {};
+    var title = "Phiếu bài tập — Lớp " + (m.grade || "") + " • " + (m.subjName || "") +
+      (m.scope === "topic" && m.topicName ? " • " + m.topicName : "");
+    var top = "";
+    if (mode === "pdf") {
+      top = '<div class="ws-guide"><div class="ws-guide-t">📄 LƯU PHIẾU THÀNH FILE PDF</div>' +
+        '<ol><li>Bấm nút <b>Mở hộp in</b> bên dưới (hộp in cũng sẽ tự mở sau một lát).</li>' +
+        '<li>Ở mục <b>Máy in / Đích đến</b> trong hộp in, chọn <b>“Lưu dưới dạng PDF”</b> (Save as PDF).</li>' +
+        '<li>Bấm <b>Lưu</b> — file PDF sẽ nằm trong máy của em; mở file đó lên để chia sẻ hoặc gửi sang máy tính để in.</li></ol>' +
+        '<button type="button" class="ws-tbtn" onclick="__wsDoPrint()">📄 Mở hộp in để lưu PDF</button></div>';
+    } else {
+      top = '<div class="ws-toolbar"><button type="button" class="ws-tbtn" onclick="__wsDoPrint()">🖨️ In phiếu</button>' +
+        '<span class="ws-thint">Hộp in sẽ tự mở sau một lát — nếu chưa thấy hộp in, em bấm nút “In phiếu” nhé. In xong em đóng thẻ này để quay lại game.</span></div>';
+    }
+    var script = "<scr" + "ipt>\n" +
+      "window.__wsPrint = { called: false, count: 0, at: 0, mode: \"" + mode + "\" };\n" +
+      "function __wsDoPrint() { window.__wsPrint.called = true; window.__wsPrint.count++; window.__wsPrint.at = Date.now(); try { window.print(); } catch (e) {} }\n" +
+      "window.addEventListener(\"load\", function () {\n" +
+      "  try { if (window.opener) window.opener.postMessage({ t: \"gameHocTap-ws-opened\", mode: \"" + mode + "\" }, \"*\"); } catch (e) {}\n" +
+      "  setTimeout(__wsDoPrint, 450);\n" +
+      "});\n" +
+      "</scr" + "ipt>";
+    return "<!DOCTYPE html>\n<html lang=\"vi\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+      "<title>" + esc(title) + "</title><style>" + WS_DOC_CSS + "</style></head><body>" +
+      top + paper.outerHTML + script + "</body></html>";
+  }
+  var wsUrls = { print: null, pdf: null };
+  function wsMakeUrl(html) {
+    try {
+      if (!window.Blob || !window.URL || !URL.createObjectURL) return null;
+      return URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+    } catch (e) { return null; }
+  }
+  var wsOpenSig = null, wsSigSeq = 0;
+  function wsHideNote() { var n = el("a2-ws-note"); if (n) { n.classList.remove("on"); n.innerHTML = ""; } }
+  function wsShowNote(mode, kind) {
+    var n = el("a2-ws-note"); if (!n) return;
+    if (kind === "nourl") {
+      n.innerHTML = "⚠️ <b>Trình duyệt này chưa mở được phiếu ở thẻ mới.</b> Em thử mở game bằng một trình duyệt mới hơn (Chrome hoặc Safari) rồi bấm lại nhé!";
+    } else {
+      var url = wsUrls[mode];
+      n.innerHTML = "⚠️ <b>Chưa thấy phiếu mở ở thẻ mới.</b> Có thể trình duyệt đã chặn thẻ mới (popup) từ trang này. " +
+        (url ? 'Em hãy chạm vào liên kết này để mở phiếu: <a href="' + url + '" target="_blank">Mở phiếu ở thẻ mới</a>. ' : "") +
+        "Nếu vẫn không mở được, hãy cho phép trang này mở thẻ mới (popup) trong cài đặt trình duyệt rồi bấm lại nút " +
+        (mode === "pdf" ? "“Lưu PDF”" : "“In phiếu”") + " nhé!";
+    }
+    n.classList.add("on");
+  }
+  function wsArmOpen(mode) {
+    var seq = ++wsSigSeq;
+    wsOpenSig = { mode: mode, seq: seq, ok: false };
+    setTimeout(function () {
+      if (wsOpenSig && wsOpenSig.seq === seq && !wsOpenSig.ok) wsShowNote(mode, "blocked");
+    }, 2000);
+  }
+  window.addEventListener("message", function (e) {
+    var d = e && e.data;
+    if (d && d.t === "gameHocTap-ws-opened") { if (wsOpenSig) wsOpenSig.ok = true; wsHideNote(); }
+  });
+  function wsSetupOpenButtons() {
+    [["print", "a2-ws-btn-print2"], ["pdf", "a2-ws-btn-pdf"]].forEach(function (pair) {
+      var mode = pair[0], a = el(pair[1]); if (!a) return;
+      try { if (wsUrls[mode] && URL.revokeObjectURL) URL.revokeObjectURL(wsUrls[mode]); } catch (e) {}
+      wsUrls[mode] = null;
+      var html = wsBuildDoc(mode);
+      var url = html ? wsMakeUrl(html) : null;
+      wsUrls[mode] = url;
+      if (url) a.setAttribute("href", url); else a.removeAttribute("href");
+      a.classList.add("on");
+    });
+    wsHideNote();
+  }
+
   function genSheet() {
     var err = el("a2-ws-err");
     var A = window.__assess;
@@ -9491,7 +10394,7 @@ window.__ensureGrade = function (g, cb) {
     var items = built.items.slice(0, wsCount);
     wsBuilt = built; wsItems = items;
     renderSheet(built, items);
-    var pb = el("a2-ws-btn-print"); if (pb) pb.style.display = "";
+    wsSetupOpenButtons();
     if (err) err.textContent = items.length < wsCount
       ? ("Ngân hàng câu của lựa chọn này hiện rút được " + items.length + " câu phù hợp — phiếu đã được tạo với " + items.length + " câu.")
       : "";
@@ -9512,7 +10415,16 @@ window.__ensureGrade = function (g, cb) {
     });
   });
   el("a2-ws-gen").addEventListener("click", genSheet);
-  el("a2-ws-btn-print").addEventListener("click", function () { window.print(); });
+  /* 2 nút mở phiếu: thẻ <a target=_blank> trỏ blob: của tài liệu phiếu độc lập.
+     Bấm nút = vũ trang chờ tín hiệu "đã mở" từ tài liệu con (postMessage);
+     quá 2 giây không có tín hiệu → hiện thông báo dự phòng (không im lặng). */
+  [["a2-ws-btn-print2", "print"], ["a2-ws-btn-pdf", "pdf"]].forEach(function (pair) {
+    var a = el(pair[0]); if (!a) return;
+    a.addEventListener("click", function (ev) {
+      if (!wsUrls[pair[1]]) { ev.preventDefault(); wsShowNote(pair[1], "nourl"); return; }
+      wsArmOpen(pair[1]);
+    });
+  });
 
   function injectCards() {
     var grid = el("subject-dynamic");
@@ -9520,7 +10432,7 @@ window.__ensureGrade = function (g, cb) {
     if (!grid.querySelector(".a2-profile-card")) {
       var c1 = document.createElement("button");
       c1.className = "subj-card a2-profile-card";
-      c1.innerHTML = '<span class="big-emoji">📊</span><span class="name">Hồ sơ học tập</span><span class="desc">Sao, huy hiệu, tiến độ theo môn, điểm kiểm tra và chủ đề cần ôn</span>';
+      c1.innerHTML = '<span class="big-emoji">📊</span><span class="name">Nhật ký học tập</span><span class="desc">Sao, huy hiệu, tiến độ theo môn, điểm kiểm tra và chủ đề cần ôn</span>';
       c1.addEventListener("click", function () { openProfile(); });
       grid.appendChild(c1);
     }
@@ -9545,7 +10457,9 @@ window.__ensureGrade = function (g, cb) {
     setScope: setWsScope,
     setCount: function (n) { wsCount = n; },
     lastItems: function () { return wsItems; },
-    lastBuilt: function () { return wsBuilt; }
+    lastBuilt: function () { return wsBuilt; },
+    buildDoc: wsBuildDoc,
+    docUrl: function (mode) { return wsUrls[mode] || null; }
   };
 })();
 /*__A2_FEATURES_END__*/
@@ -9622,7 +10536,7 @@ window.__ensureGrade = function (g, cb) {
     if (!tx) return false;
     try {
       if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
-        a3Note("Thiết bị này chưa hỗ trợ giọng đọc — em đọc to từ này cùng thầy cô nhé! 🔊");
+        a3Note("Thiết bị này chưa hỗ trợ giọng đọc — em hãy đọc to từ này nhé! 🔊");
         return false;
       }
       var ss = window.speechSynthesis;
@@ -9814,6 +10728,96 @@ window.__ensureGrade = function (g, cb) {
   };
 })();
 /*__A3_FEATURES_END__*/
+</script>
+
+<script>
+"use strict";
+/*__CHUYENDE_SHELL_BEGIN__*/
+/* ============================================================
+   CHUYÊN ĐỀ NÂNG CAO — ĐỢT THỬ TOÁN TƯ DUY (vu chốt 2026-10-16)
+   - Thẻ vào trên màn hình chính của MỌI lớp; dữ liệu nằm riêng ở
+     assets/data/chuyende.js, nạp lười khi mở màn hình chuyên đề
+     (đúng khuôn bộ nạp file lớp __ensureGrade).
+   - Chuyên đề KHÔNG nằm trong GRADES nên tự động đứng ngoài
+     Kiểm tra năng lực, Thử thách mỗi ngày, In phiếu và tìm kiếm.
+   - Vòng chơi dùng lại launchTopic/startGame/buildPlaylist của game;
+     ngữ cảnh Ôn câu sai qua móc window.__cdTopicContext ở topicContext().
+   ============================================================ */
+(function () {
+  if (window.__cdShellInstalled) return;
+  window.__cdShellInstalled = true;
+
+  var style = document.createElement("style");
+  style.textContent =
+    ".subj-card.cd-card{grid-column:1/-1;background:linear-gradient(135deg,#0e7a5f,#12a37c);min-height:0;padding:16px 12px}" +
+    ".cd-band{margin:0 0 22px}" +
+    ".cd-band-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:10px 14px;border:3px solid var(--line);border-radius:16px;background:var(--card)}" +
+    ".cd-band.current .cd-band-head{border-color:#12a37c;background:#e7f7f1}" +
+    ".cd-band-name{font-size:19px;font-weight:800}" +
+    ".cd-band-tag{font-size:13px;font-weight:800;color:#0e7a5f;background:#d8f3e8;border-radius:999px;padding:3px 10px}" +
+    ".cd-band-note{margin:0 0 10px;color:var(--ink-soft);font-weight:600}";
+  document.head.appendChild(style);
+
+  try { if (typeof screens !== "undefined" && screens.indexOf("scr-chuyende") === -1) screens.push("scr-chuyende"); } catch (e) {}
+
+  window.__cdScript = window.__cdScript || "";
+  window.__cdWaiters = [];
+  window.__ensureChuyenDe = function (cb) {
+    if (window.__CD) { if (cb) cb(true); return; }
+    if (window.__cdScript === "loading") { window.__cdWaiters.push(cb); return; }
+    if (window.__cdScript === "error") { if (cb) cb(false); return; }
+    window.__cdScript = "loading";
+    var waiters = window.__cdWaiters = [].concat(cb || []);
+    var sc = document.createElement("script");
+    sc.src = "assets/data/chuyende.js";
+    sc.onload = function () {
+      window.__cdScript = "loaded";
+      var ws = waiters.slice(); waiters.length = 0;
+      ws.forEach(function (f) { if (f) try { f(!!window.__CD); } catch (e) {} });
+    };
+    sc.onerror = function () {
+      window.__cdScript = "error";
+      var ws = waiters.slice(); waiters.length = 0;
+      ws.forEach(function (f) { if (f) try { f(false); } catch (e) {} });
+    };
+    (document.body || document.head).appendChild(sc);
+  };
+
+  window.__openChuyenDe = function () {
+    window.__ensureChuyenDe(function (ok) {
+      show("scr-chuyende");
+      var body = el("cd-body");
+      if (ok && window.__CD) {
+        try { window.__CD.render(); }
+        catch (e) { if (body) body.innerHTML = '<p class="cd-band-note">Chưa mở được chuyên đề — em thử lại nhé!</p>'; }
+      } else if (body) {
+        body.innerHTML = '<p class="cd-band-note">Chưa tải được dữ liệu chuyên đề — em kiểm tra mạng rồi thử lại nhé!</p>';
+      }
+    });
+  };
+
+  function injectCDCard() {
+    try {
+      if (typeof profile === "undefined" || !profile || !profile.name) return;
+      var grid = el("subject-dynamic"); if (!grid) return;
+      if (grid.querySelector(".cd-card")) return;
+      var card = document.createElement("button");
+      card.className = "subj-card cd-card";
+      card.innerHTML = '<span class="big-emoji">🧠</span><span class="name">Chuyên đề nâng cao</span><span class="desc">Toán tư duy theo cấp: Tiểu học • THCS • THPT — câu hỏi suy luận có giải thích</span>';
+      card.addEventListener("click", function () { window.__openChuyenDe(); });
+      grid.appendChild(card);
+    } catch (e) {}
+  }
+  if (typeof renderSubjects === "function") {
+    var origRSCD = renderSubjects;
+    renderSubjects = function () { var r = origRSCD.apply(this, arguments); injectCDCard(); return r; };
+  }
+  injectCDCard();
+
+  var back = el("btn-cd-back");
+  if (back) back.addEventListener("click", function () { show("scr-home"); });
+})();
+/*__CHUYENDE_SHELL_END__*/
 </script>
 
 </body>

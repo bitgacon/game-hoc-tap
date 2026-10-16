@@ -861,8 +861,18 @@
      TIẾNG ANH 11 — Global Success
      words = [từ, hình, nghĩa]; patterns = mẫu câu ngữ pháp; gfacts = sự kiện ngữ pháp
      ================================================================== */
+  /* B6-T9: khử nhiễm chữ cái cho Lớp 6–12 (xem eng10NoLetter ở lop10.js). */
+  function eng11NoLetter(base) {
+    function has(f, name) { return String(f).indexOf(name) !== -1; }
+    return {
+      choose: base.choose.filter(function (f) { return !has(f, "qEngFirstLetter"); }),
+      blank: base.blank.filter(function (f) { return !has(f, "qEngBlankLetter"); }),
+      match: base.match.filter(function (f) { return f !== mEngLetterWord && !has(f, "mEngLetterWord"); }),
+      games: base.games.filter(function (f) { return f !== gSortLetters && !has(f, "gSortLetters"); })
+    };
+  }
   function eng11Pools(u, gfacts) {
-    var base = engPools(u.words);
+    var base = eng11NoLetter(engPools(u.words));
     function patGen() {
       var pat = pick(u.patterns);
       var all = shuffle(pat.w.slice());
@@ -1138,9 +1148,9 @@
   var vl11c4P = [["Cường độ dòng điện", "I = q/t"], ["Định luật Ohm đoạn mạch", "I = U/R"], ["Điện trở của dây dẫn", "R = ρ·l/S"], ["Định luật Ohm toàn mạch", "I = ℰ/(R + r)"], ["Điện năng tiêu thụ", "A = U·I·t"], ["Công suất điện", "P = U·I"], ["Định luật Joule – Lenz", "Q = I²·R·t"], ["Công suất của nguồn", "P_ng = ℰ·I"]];
   function vl11Ohm() {
     var v = rand(0, 3);
-    if (v === 0) { var tr = pick([[12, 3, 4], [15, 5, 3], [24, 4, 6], [36, 6, 6], [40, 8, 5], [45, 9, 5]]); return numBlank6("Đặt hiệu điện thế " + tr[0] + " V vào hai đầu điện trở " + tr[1] + " Ω. Cường độ dòng điện qua điện trở bằng bao nhiêu A?", "I = U/R = ?", tr[2], "Định luật Ohm: I = U/R."); }
+    if (v === 0) { var tr = pick([[12, 3, 4], [15, 5, 3], [24, 4, 6], [36, 6, 6], [40, 8, 5], [45, 9, 5]]); var q0 = numBlank6("Đặt hiệu điện thế " + tr[0] + " V vào hai đầu điện trở " + tr[1] + " Ω. Cường độ dòng điện qua điện trở bằng bao nhiêu A?", "I = U/R = ?", tr[2], "Định luật Ohm: I = U/R."); q0.figure = figCircuit1SVG(tr[0], tr[1]); return q0; }
     if (v === 1) { var U = pick([6, 10, 12, 20, 24]), I = pick([2, 3, 4, 5]); return numBlank6("Một thiết bị hoạt động ở hiệu điện thế " + U + " V, dòng điện qua nó là " + I + " A. Công suất điện của thiết bị bằng bao nhiêu W?", "P = UI = ?", U * I, "P = U·I."); }
-    if (v === 2) { var tr2 = pick([[12, 3, 1, 3], [24, 5, 1, 4], [18, 8, 1, 2], [30, 9, 1, 3], [16, 7, 1, 2], [20, 4, 1, 4]]); return numBlank6("Nguồn có suất điện động " + tr2[0] + " V, điện trở trong " + tr2[2] + " Ω, mắc với mạch ngoài " + tr2[1] + " Ω. Cường độ dòng điện trong mạch bằng bao nhiêu A?", "I = ℰ/(R + r) = ?", tr2[3], "Định luật Ohm toàn mạch: I = ℰ/(R + r)."); }
+    if (v === 2) { var tr2 = pick([[12, 3, 1, 3], [24, 5, 1, 4], [18, 8, 1, 2], [30, 9, 1, 3], [16, 7, 1, 2], [20, 4, 1, 4]]); var q2 = numBlank6("Nguồn có suất điện động " + tr2[0] + " V, điện trở trong " + tr2[2] + " Ω, mắc với mạch ngoài " + tr2[1] + " Ω. Cường độ dòng điện trong mạch bằng bao nhiêu A?", "I = ℰ/(R + r) = ?", tr2[3], "Định luật Ohm toàn mạch: I = ℰ/(R + r)."); q2.figure = figCircuitFullSVG(tr2[0], tr2[2], tr2[1]); return q2; }
     var I2 = pick([1, 2, 3]), R = pick([5, 10, 20]), t = pick([2, 5, 10]); return numBlank6("Dòng điện " + I2 + " A chạy qua điện trở " + R + " Ω trong " + t + " s. Nhiệt lượng toả ra trên điện trở bằng bao nhiêu J?", "Q = I²Rt = ?", I2 * I2 * R * t, "Định luật Joule – Lenz: Q = I²·R·t.");
   }
   var vl11cd1F = [

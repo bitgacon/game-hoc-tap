@@ -37,12 +37,12 @@
         ], [["mm", "Đo độ dài rất ngắn"], ["g", "Đo khối lượng"], ["ml", "Đo dung tích"], ["°C", "Đo nhiệt độ"]], "Nối đơn vị với đại lượng đo nhé!");
         kp.choose = kp.choose.concat([g3Convert, g3Convert]); return kp; })() },
       { id: "m3-nc1000", emoji: "💪", name: "Nhân, chia phạm vi 1000 và biểu thức", sub: "Bài 36–40 • Nhân chia 3 chữ số, thứ tự tính biểu thức", pools: { choose: [g3Mul3x1, g3Div3x1, g3ExprVal, g3ExprVal], blank: [g3BlankExpr, qBlankCalcFactory(999)], match: [g3ExprMatch], games: [gTFCalcFactory(100), gSortNumsFactory(999), gMemCalcFactory(100)] } },
-      { id: "m3-so10000", emoji: "💯", name: "Các số đến 10 000", sub: "Bài 45–49 • Đọc, viết, so sánh, làm tròn", pools: { choose: [g3ReadNum(10000), g3ComposeNum(true), g3CompareBig(10000), g3Round(10), g3Round(100)], blank: [g3SeqBlank([100, 1000], 10000)], match: [g3MatchRead(10000)], games: [g3MemRead(10000), g3SortBig(10000), gTFCalcFactory(100)] } },
-      { id: "m3-lama", emoji: "🏛️", name: "Chữ số La Mã", sub: "Bài 47 • I, V, X, L — đọc và viết số đến 20", pools: { choose: [g3RomanToNum, g3NumToRoman, function () { return mcqQ("Trong hệ chữ số La Mã, chữ L có giá trị là bao nhiêu?", ["10", "5"], "50", "I = 1, V = 5, X = 10, L = 50."); }, function () { return mcqQ("Số 4 viết bằng chữ số La Mã là?", ["IIII", "VI"], "IV", "Số 4 viết là IV (5 − 1), không viết IIII."); }], blank: [g3RomanBlank], match: [g3RomanMatch], games: g3RomanGames() } },
+      { id: "m3-so10000", emoji: "💯", name: "Các số đến 10 000", sub: "Bài 45–49 • Đọc, viết, so sánh, làm tròn", pools: { choose: [g3ReadNum(10000), g3ComposeNum(true), g3CompareBig(10000), g3Round(10), g3Round(100)], blank: [g3SeqBlank([100, 1000], 10000)], match: [g3MatchRead(10000)], games: [g3MemRead(10000), g3SortBigCap(10000), gTFCalcFactory(100)] } },
+      { id: "m3-lama", emoji: "🏛️", name: "Chữ số La Mã", sub: "Bài 47 • I, V, X — đọc và viết số đến 20", pools: { choose: [g3RomanToNum, g3NumToRoman, function () { return mcqQ("Số 20 viết bằng chữ số La Mã là?", ["XV", "XIX"], "XX", "20 = 10 + 10 nên viết là XX (X = 10)."); }, function () { return mcqQ("Số 4 viết bằng chữ số La Mã là?", ["IIII", "VI"], "IV", "Số 4 viết là IV (5 − 1), không viết IIII."); }], blank: [g3RomanBlank], match: [g3RomanMatch], games: g3RomanGames() } },
       { id: "m3-cvdt", emoji: "▦", name: "Chu vi và diện tích", sub: "Bài 50–53 • Tam giác, tứ giác, chữ nhật, hình vuông", pools: { choose: [g3PeriArea, g3PeriArea, g3PeriArea], blank: [g3BlankPeri], match: [g3PeriMatch], games: [gMemCalcFactory(100), gTFCalcFactory(100), gCatchAnswerFactory(100)] } },
       { id: "m3-calc10000", emoji: "🧮", name: "Tính trong phạm vi 10 000", sub: "Bài 54–58 • Cộng, trừ, nhân, chia số có bốn chữ số", pools: { choose: [g3AddSubBig(10000), g3AddSubBig(10000), g3Mul4x1, g3Div4x1], blank: [g3BlankBig], match: [g3MatchCalcBig], games: [gMemCalcFactory(100), gTFCalcFactory(100), g3SortBig(10000)] } },
-      { id: "m3-so100000", emoji: "🚀", name: "Số đến 100 000 và tính toán", sub: "Bài 59–72 • Số 5 chữ số, làm tròn, cộng trừ nhân chia", pools: { choose: [g3ReadNum(100000), g3CompareBig(100000), g3Round(1000), g3Round(10000), g3AddSubBig(100000), g3MulDiv100000], blank: [g3SeqBlank([1000, 10000], 100000)], match: [g3MatchRead(100000)], games: [g3MemRead(100000), g3SortBig(100000), gTFCalcFactory(100)] } },
-      { id: "m3-giotien", emoji: "🕐", name: "Đồng hồ, tháng – năm, tiền Việt Nam", sub: "Bài 66–69 • Giờ đến phút, lịch, các mệnh giá tiền", pools: { choose: [g2ClockMin, g3Money, g3Money, function () { return mcqQ("Tháng 2 của năm thường có bao nhiêu ngày?", ["30 ngày", "31 ngày"], "28 ngày", "Năm thường tháng 2 có 28 ngày; năm nhuận có 29 ngày."); }, function () { return mcqQ("Năm nhuận, tháng 2 có bao nhiêu ngày?", ["28 ngày", "30 ngày"], "29 ngày", "Cứ 4 năm có một năm nhuận, tháng 2 có 29 ngày."); }, function () { return mcqQ("Tháng nào sau đây có 31 ngày?", ["Tháng 4", "Tháng 6"], "Tháng 1", "Các tháng 1, 3, 5, 7, 8, 10, 12 có 31 ngày; tháng 4, 6, 9, 11 có 30 ngày."); }, function () { return mcqQ("Tháng 4 có bao nhiêu ngày?", ["31 ngày", "28 ngày"], "30 ngày", "Tháng 4, 6, 9, 11 có 30 ngày."); }, function () { return mcqQ("Một năm có bao nhiêu tháng?", ["10 tháng", "365 tháng"], "12 tháng", "Một năm có 12 tháng."); }], blank: [qBlankClock, g3MoneyBlank], match: [mClockHour, g3MoneyMatch], games: [gSortDays, gMemClock, gTFClock] } },
+      { id: "m3-so100000", emoji: "🚀", name: "Số đến 100 000 và tính toán", sub: "Bài 59–72 • Số 5 chữ số, làm tròn, cộng trừ nhân chia", pools: { choose: [g3ReadNum(100000), g3CompareBig(100000), g3Round(1000), g3Round(10000), g3AddSubBig(100000), g3MulDiv100000], blank: [g3SeqBlank([1000, 10000], 100000)], match: [g3MatchRead(100000)], games: [g3MemRead(100000), g3SortBigCap(100000), gTFCalcFactory(100)] } },
+      { id: "m3-giotien", emoji: "🕐", name: "Đồng hồ, tháng – năm, tiền Việt Nam", sub: "Bài 66–69 • Giờ đến phút, lịch, các mệnh giá tiền", pools: { choose: [g2ClockMin, gtMoneyStd, gtMoneyStd, function () { return mcqQ("Tháng 2 của năm thường có bao nhiêu ngày?", ["30 ngày", "31 ngày"], "28 ngày", "Năm thường tháng 2 có 28 ngày; năm nhuận có 29 ngày."); }, function () { return mcqQ("Năm nhuận, tháng 2 có bao nhiêu ngày?", ["28 ngày", "30 ngày"], "29 ngày", "Cứ 4 năm có một năm nhuận, tháng 2 có 29 ngày."); }, function () { return mcqQ("Tháng nào sau đây có 31 ngày?", ["Tháng 4", "Tháng 6"], "Tháng 1", "Các tháng 1, 3, 5, 7, 8, 10, 12 có 31 ngày; tháng 4, 6, 9, 11 có 30 ngày."); }, function () { return mcqQ("Tháng 4 có bao nhiêu ngày?", ["31 ngày", "28 ngày"], "30 ngày", "Tháng 4, 6, 9, 11 có 30 ngày."); }, function () { return mcqQ("Một năm có bao nhiêu tháng?", ["10 tháng", "365 tháng"], "12 tháng", "Một năm có 12 tháng."); }], blank: [qBlankClock, gtMoneyBlankStd], match: [mClockHour, g3MoneyMatch], games: [gSortDays, gMemClock, gTFClock] } },
       { id: "m3-thongke", emoji: "📊", name: "Thống kê và xác suất", sub: "Bài 73–75 • Bảng số liệu; chắc chắn – có thể – không thể", pools: { choose: [g3TableRead, g3TableRead, function () { return mcqQ("Trong hộp chỉ có toàn bút xanh. Lấy ngẫu nhiên 1 cái bút. Sự kiện nào chắc chắn xảy ra?", ["Lấy được bút đỏ", "Không lấy được bút nào"], "Lấy được bút xanh", "Hộp chỉ có bút xanh nên chắc chắn lấy được bút xanh."); }, function () { return mcqQ("Sự kiện nào KHÔNG THỂ xảy ra?", ["Ngày mai em đi học", "Em được cô khen"], "Tung xúc xắc 6 mặt được mặt 8 chấm", "Xúc xắc chỉ có các mặt từ 1 đến 6, không thể ra mặt 8 chấm."); }, function () { return mcqQ("Chưa xem dự báo thời tiết, nói về trời ngày mai ta dùng cách nói nào?", ["Chắc chắn có mưa", "Không thể có mưa"], "Có thể có mưa, có thể không", "Khi sự việc chưa chắc chắn, ta dùng từ “có thể”."); }, function () { return mcqQ("Bảng số liệu dùng để làm gì?", ["Ghi lại và trình bày số liệu thu thập được", "Trang trí cho đẹp", "Thay cho bài kiểm tra"], "Bảng số liệu giúp ta dễ đọc, so sánh các số liệu."); }], blank: [], match: [function () { return pairsMatch("Nối tình huống với khả năng xảy ra nhé!", [["Túi chỉ có bi đỏ", "Chắc chắn lấy được bi đỏ"], ["Túi có bi đỏ và bi xanh", "Có thể lấy được bi đỏ"], ["Túi không có bi đỏ", "Không thể lấy được bi đỏ"], ["Gieo một con xúc xắc", "Có thể ra mặt 6 chấm"]]); }], games: [factsTF([["Bảng số liệu giúp ta dễ so sánh các số liệu", "Đúng", "Sai", null], ["Gieo xúc xắc có thể ra mặt 7 chấm", "Sai", "Đúng", null], ["Sự kiện chắc chắn là sự kiện luôn xảy ra", "Đúng", "Sai", null]])] } }
     ];
     /* ---------- TIẾNG VIỆT 3 ---------- */
@@ -87,7 +87,7 @@
         ["Để hỏi về phương tiện, cách thức, em dùng từ hỏi nào?", "Bằng gì?", "Ở đâu?", "Để làm gì?", "“Bằng gì?” dùng để hỏi về phương tiện, cách thức."],
         ["Dấu hai chấm (:) thường được dùng khi nào?", "Trước lời nói trực tiếp hoặc phần liệt kê", "Để kết thúc câu hỏi", "Giữa hai chữ bất kì", "Dấu hai chấm báo hiệu lời trích dẫn hoặc liệt kê ở phía sau."],
         ["Lời nói trực tiếp của nhân vật được đặt trong dấu nào?", "Dấu ngoặc kép (“ ”)", "Dấu phẩy", "Dấu chấm", "Lời nói trực tiếp đặt trong dấu ngoặc kép."],
-        ["Trong đoạn hội thoại, đầu lời nói của mỗi nhân vật thường có dấu nào?", "Dấu gạch ngang đầu dòng (–)", "Dấu chấm than", "Dấu ngoặc đơn", "Dấu gạch ngang đầu dòng đánh dấu lời nói của nhân vật."],
+        ["Đầu lời nói của nhân vật trong hội thoại thường có dấu nào?", "Dấu gạch ngang đầu dòng (–)", "Dấu chấm than", "Dấu ngoặc đơn", "Dấu gạch ngang đầu dòng đánh dấu lời nói của nhân vật."],
         ["Câu nào sử dụng biện pháp so sánh?", "Mặt trời như quả bóng lửa.", "Mặt trời mọc ở phía đông.", "Mặt trời rất to.", "Từ so sánh “như”: mặt trời được so sánh với quả bóng lửa."],
         ["Trong câu “Đẹp tựa tranh vẽ”, từ nào là từ so sánh?", "tựa", "và", "của", "“Tựa” là từ so sánh, cùng nhóm với “như”, “bằng”."]
       ], [["Câu hỏi", "Khi nào? Ở đâu?"], ["Câu cảm", "Ôi, đẹp quá!"], ["Câu khiến", "Hãy ngồi xuống!"], ["So sánh", "Đẹp như hoa"]], "Nối cho đúng nhé!"),
@@ -106,7 +106,7 @@
         ["Bác sĩ Y-éc-xanh nổi tiếng với việc tìm ra vi khuẩn gây bệnh nào?", "Bệnh dịch hạch", "Bệnh cảm cúm", "Bệnh đau mắt", "Năm 1894, ông tìm ra vi khuẩn gây bệnh dịch hạch."],
         ["Ông Đùng và bà Đùng là gì của nhau?", "Hai vợ chồng", "Hai anh em", "Hai người bạn", "Ông Đùng và bà Đùng là hai vợ chồng trong truyện cổ."],
         ["Ông Đùng, bà Đùng có đặc điểm gì nổi bật?", "Thân hình khổng lồ, sức khoẻ phi thường", "Bay được như chim", "Biết tàng hình", "Hai vợ chồng nổi tiếng vì to lớn và khoẻ mạnh lạ thường."],
-        ["Truyện “Sự tích ông Đùng, bà Đùng” thuộc chủ đề nào trong sách Tiếng Việt 3?", "Đất nước ngàn năm", "Những sắc màu thiên nhiên", "Bài học từ cuộc sống", "Bài 22 thuộc chủ đề Đất nước ngàn năm (Tập Hai)."]
+        ["Truyện “Sự tích ông Đùng, bà Đùng” thuộc chủ đề nào?", "Đất nước ngàn năm", "Những sắc màu thiên nhiên", "Bài học từ cuộc sống", "Bài 22 thuộc chủ đề Đất nước ngàn năm (Tập Hai)."]
       ], [["Trưng Trắc, Trưng Nhị", "Khởi nghĩa năm 40"], ["Cóc", "Dẫn đoàn kiện Trời"], ["Y-éc-xanh", "Bác sĩ ở Nha Trang"], ["Ông Đùng, bà Đùng", "Vợ chồng khổng lồ"]], "Nối nhân vật với nội dung đúng nhé!")
     ];
     /* ---------- TIẾNG ANH 3 — Global Success ---------- */
@@ -222,13 +222,13 @@
       topic("tnxh3-thucvat", "🌱", "Thực vật và động vật", "Bài 13–17 • Bộ phận và chức năng, sử dụng hợp lí", [
         ["Bộ phận nào của cây hút nước và muối khoáng từ đất?", "Rễ cây", "Thân cây", "Lá cây", "Rễ hút nước và muối khoáng để nuôi cây."],
         ["Bộ phận nào của cây vận chuyển nước, chất dinh dưỡng và nâng đỡ cây?", "Thân cây", "Rễ cây", "Hoa", "Thân vận chuyển các chất và nâng đỡ toàn bộ cây."],
-        ["Lá cây có chức năng chính nào?", "Quang hợp tạo chất dinh dưỡng cho cây", "Hút nước từ đất", "Nâng đỡ cây đứng thẳng", "Lá quang hợp, tạo thức ăn cho cây và thải khí ô-xi."],
+        ["Lá cây có chức năng chính nào?", "Tạo chất dinh dưỡng cho cây", "Hút nước từ đất", "Nâng đỡ cây đứng thẳng", "Nhờ ánh sáng mặt trời, lá tạo ra chất dinh dưỡng để nuôi cây và thải khí ô-xi."],
         ["Hoa của cây có chức năng gì?", "Sinh sản để tạo quả và hạt", "Hút nước từ đất", "Vận chuyển chất dinh dưỡng", "Hoa là cơ quan sinh sản của cây có hoa."],
         ["Vì sao cần tưới nước, bón phân cho cây trồng?", "Để cây đủ nước, đủ dinh dưỡng mà sinh trưởng tốt", "Để cây nhanh héo úa", "Không cần thiết chút nào", "Chăm sóc đúng cách giúp cây lớn nhanh, khoẻ mạnh."],
         ["Bộ phận nào giúp cá hô hấp dưới nước?", "Mang cá", "Vây cá", "Đuôi cá", "Cá hô hấp bằng mang."],
         ["Bộ phận nào giúp chim bay được?", "Cánh và bộ lông nhẹ, xốp", "Mỏ chim", "Chân chim", "Cánh cùng bộ lông nhẹ giúp chim bay lên."],
         ["Sử dụng hợp lí thực vật và động vật nghĩa là gì?", "Khai thác vừa đủ, đồng thời bảo vệ và chăm sóc, gây trồng thêm", "Khai thác càng nhiều càng tốt", "Phá rừng, săn bắt tuỳ tiện", "Dùng hợp lí để tài nguyên không bị cạn kiệt."]
-      ], [["Rễ", "Hút nước, muối khoáng"], ["Lá", "Quang hợp tạo chất dinh dưỡng"], ["Thân", "Vận chuyển và nâng đỡ"], ["Mang cá", "Giúp cá hô hấp"]], "Nối bộ phận với chức năng nhé!"),
+      ], [["Rễ", "Hút nước, muối khoáng"], ["Lá", "Tạo chất dinh dưỡng cho cây"], ["Thân", "Vận chuyển và nâng đỡ"], ["Mang cá", "Giúp cá hô hấp"]], "Nối bộ phận với chức năng nhé!"),
       topic("tnxh3-suckhoe", "❤️", "Con người và sức khoẻ", "Bài 18–25 • Cơ quan tiêu hoá, tuần hoàn, thần kinh và cách chăm sóc", [
         ["Thức ăn đi qua các bộ phận nào theo đúng thứ tự?", "Miệng → thực quản → dạ dày → ruột", "Tim → mạch máu → não", "Não → tuỷ sống → dạ dày", "Đó là đường đi của thức ăn trong cơ quan tiêu hoá."],
         ["Dạ dày có nhiệm vụ gì trong tiêu hoá?", "Nhào trộn và nghiền nát thức ăn", "Bơm máu đi khắp cơ thể", "Điều khiển suy nghĩ", "Dạ dày co bóp, nhào trộn thức ăn với dịch vị."],
@@ -244,7 +244,7 @@
         ["Mặt Trời lặn ở phương nào?", "Phương Tây", "Phương Đông", "Phương Nam", "Chiều tối, Mặt Trời lặn ở phương Tây."],
         ["Dụng cụ nào dùng để xác định phương hướng?", "La bàn", "Nhiệt kế", "Thước kẻ", "Kim la bàn giúp ta xác định các phương trong không gian."],
         ["Kim của la bàn luôn chỉ về phương nào?", "Phương Bắc", "Phương Đông", "Phương Tây", "Đầu kim la bàn luôn chỉ phương Bắc."],
-        ["Đới khí hậu quanh xích đạo, nóng quanh năm, gọi là đới nào?", "Đới nóng (nhiệt đới)", "Đới lạnh (hàn đới)", "Đới ôn hoà", "Khu vực gần xích đạo thuộc đới nóng."],
+        ["Vùng quanh xích đạo nóng quanh năm thuộc đới nào?", "Đới nóng (nhiệt đới)", "Đới lạnh (hàn đới)", "Đới ôn hoà", "Khu vực gần xích đạo thuộc đới nóng."],
         ["Đới khí hậu nào rất lạnh, có băng tuyết quanh năm?", "Đới lạnh (hàn đới)", "Đới nóng", "Đới ôn hoà", "Gần hai cực của Trái Đất là đới lạnh."],
         ["Việt Nam nằm trong đới khí hậu nào?", "Đới nóng (nhiệt đới)", "Đới lạnh", "Đới ôn hoà lạnh", "Việt Nam thuộc đới nóng, khí hậu nhiệt đới gió mùa."],
         ["Phần lớn bề mặt Trái Đất là gì?", "Đại dương (phần nước)", "Lục địa (phần đất)", "Băng tuyết", "Đại dương chiếm phần lớn bề mặt Trái Đất."],
@@ -278,7 +278,7 @@
       ], [["Chưa hiểu bài", "Hỏi thầy cô, bạn bè"], ["Đọc sách", "Mở rộng hiểu biết"], ["Hay hỏi vì sao", "Ham học hỏi"], ["Giấu dốt, sợ hỏi", "Không nên"]], "Nối cho đúng nhé!"),
       topic("dd3-loihua", "🤝", "Giữ lời hứa", "Bài 5 • Đã hứa là cố gắng thực hiện", [
         ["Giữ lời hứa nghĩa là gì?", "Đã hứa điều gì thì cố gắng thực hiện đúng như vậy", "Hứa cho vui rồi quên đi", "Chỉ giữ lời hứa khi có lợi cho mình", "Người giữ lời hứa được mọi người tin yêu."],
-        ["Em đã hứa giúp bạn ôn bài nhưng hôm đó em rất muốn đi chơi. Em nên làm gì?", "Vẫn giúp bạn như đã hứa, đi chơi sau", "Bỏ bạn để đi chơi luôn", "Nói dối rằng em bị ốm", "Đã hứa thì phải giữ lời."],
+        ["Đã hứa giúp bạn ôn bài nhưng em lại muốn đi chơi. Em nên làm gì?", "Vẫn giúp bạn như đã hứa, đi chơi sau", "Bỏ bạn để đi chơi luôn", "Nói dối rằng em bị ốm", "Đã hứa thì phải giữ lời."],
         ["Trước khi hứa một điều gì, em cần làm gì?", "Suy nghĩ xem mình có thực hiện được không", "Hứa đại cho xong chuyện", "Hứa thật nhiều việc cùng một lúc", "Chỉ nên hứa những điều mình làm được."],
         ["Nếu lỡ không giữ được lời hứa, em nên làm gì?", "Xin lỗi và giải thích thật lòng với người đó", "Trốn tránh, im lặng", "Đổ lỗi cho người khác", "Biết nhận lỗi khi không giữ được lời hứa."]
       ], [["Đã hứa", "Cố gắng thực hiện"], ["Hứa cho vui rồi quên", "Không giữ lời hứa"], ["Không giữ được hứa", "Xin lỗi, giải thích thật lòng"], ["Giữ lời hứa", "Được mọi người tin yêu"]], "Nối cho đúng nhé!"),
@@ -304,7 +304,7 @@
       topic("dd3-atgt", "🚦", "An toàn giao thông", "Bài 9–10 • Đi bộ an toàn, an toàn khi đi các phương tiện", [
         ["Khi đi bộ, em cần đi ở đâu cho an toàn?", "Trên vỉa hè hoặc sát lề đường phía bên phải", "Giữa lòng đường", "Sát làn xe đang chạy nhanh", "Người đi bộ đi trên vỉa hè, sát lề đường."],
         ["Muốn sang đường an toàn, em cần làm gì?", "Sang ở vạch kẻ đường, quan sát kĩ hai phía", "Chạy thật nhanh qua đường", "Sang ở bất cứ chỗ nào tiện nhất", "Quan sát và sang đường đúng nơi quy định."],
-        ["Đèn tín hiệu giao thông chuyển sang màu đỏ, người đi bộ phải làm gì?", "Dừng lại, chờ đèn xanh mới đi", "Cứ đi vì mình là người đi bộ", "Chạy thật nhanh qua", "Đèn đỏ phải dừng lại, đèn xanh mới được đi."],
+        ["Đèn tín hiệu chuyển sang đỏ, người đi bộ phải làm gì?", "Dừng lại, chờ đèn xanh mới đi", "Cứ đi vì mình là người đi bộ", "Chạy thật nhanh qua", "Đèn đỏ phải dừng lại, đèn xanh mới được đi."],
         ["Đi xe đạp, em cần chú ý điều gì để an toàn?", "Đội mũ bảo hiểm, đi đúng phần đường, không đùa nghịch", "Đi hàng ba và buông cả hai tay", "Chở ba người trên một xe", "Tuân thủ quy định giúp em an toàn khi đi xe đạp."],
         ["Ngồi trên ô tô, em cần làm gì để an toàn?", "Thắt dây an toàn, ngồi yên, không thò đầu tay ra ngoài", "Thò đầu ra cửa sổ ngắm cảnh", "Đứng lên nhảy trên ghế xe", "Thắt dây an toàn giúp bảo vệ em khi xe phanh gấp."],
         ["Ngồi sau xe máy của bố mẹ, em bắt buộc phải làm việc gì?", "Đội mũ bảo hiểm và cài quai đúng cách", "Cầm ô che nắng cho bố mẹ", "Ngồi xoay ngược về phía sau", "Trẻ em đi xe máy phải đội mũ bảo hiểm."],
@@ -315,7 +315,7 @@
     var TIN3_TOPICS = [
       topic("tin3-may", "🖥️", "Máy tính và em", "Bài 1–5 • Thông tin và quyết định, bộ phận máy tính, bàn phím", [
         ["Thông tin là gì?", "Những hiểu biết của em về sự vật, sự việc xung quanh", "Chỉ là các con số", "Chỉ là các hình ảnh", "Thông tin giúp em hiểu biết và quyết định đúng."],
-        ["Xem dự báo thấy ngày mai có mưa nên em mang theo áo mưa. Đó là ví dụ về điều gì?", "Dùng thông tin để đưa ra quyết định", "Máy tính tự quyết định thay em", "Lưu trữ thông tin trong máy", "Thông tin giúp em quyết định mang áo mưa."],
+        ["Thấy dự báo mai có mưa nên mang áo mưa — đó là ví dụ về điều gì?", "Dùng thông tin để đưa ra quyết định", "Máy tính tự quyết định thay em", "Lưu trữ thông tin trong máy", "Thông tin giúp em quyết định mang áo mưa."],
         ["Máy tính xử lí thông tin như thế nào?", "Theo chương trình do con người tạo ra", "Tự suy nghĩ như con người", "Ngẫu nhiên, không theo quy tắc nào", "Máy tính làm việc theo chương trình."],
         ["Bộ phận nào của máy tính dùng để hiển thị chữ và hình ảnh?", "Màn hình", "Bàn phím", "Chuột máy tính", "Màn hình là thiết bị đưa thông tin ra."],
         ["Bộ phận nào dùng để gõ chữ vào máy tính?", "Bàn phím", "Màn hình", "Loa", "Bàn phím là thiết bị đưa thông tin vào máy tính."],
@@ -328,8 +328,8 @@
         ["Internet là gì?", "Mạng máy tính khổng lồ kết nối các máy tính trên toàn thế giới", "Một trò chơi điện tử", "Một chiếc máy tính thật to", "Internet kết nối máy tính khắp thế giới để chia sẻ thông tin."],
         ["Trên Internet, em có thể tìm được những gì phục vụ học tập?", "Bài học, hình ảnh và video học tập", "Chỉ có trò chơi giải trí", "Không có thông tin gì hữu ích", "Internet là kho thông tin khổng lồ cho học tập."],
         ["Mọi thông tin trên Internet có phải lúc nào cũng đúng không?", "Không, em cần chọn lọc và hỏi người lớn khi chưa rõ", "Luôn luôn đúng tuyệt đối", "Luôn luôn sai", "Cần biết chọn lọc thông tin trên Internet."],
-        ["Một trang web lạ yêu cầu em nhập họ tên và địa chỉ nhà. Em nên làm gì?", "Không nhập và báo cho bố mẹ hoặc thầy cô", "Nhập ngay cho nhanh", "Gửi đường link cho nhiều bạn cùng nhập", "Cẩn thận với yêu cầu cung cấp thông tin cá nhân."],
-        ["Muốn tìm thông tin trên Internet, em thường gõ từ khoá cần tìm vào đâu?", "Ô tìm kiếm của trang tìm kiếm", "Bất cứ ô trống nào trên màn hình", "Trong cửa sổ trò chơi", "Dùng công cụ tìm kiếm với từ khoá phù hợp."]
+        ["Trang web lạ yêu cầu nhập họ tên, địa chỉ nhà. Em nên làm gì?", "Không nhập và báo cho bố mẹ hoặc thầy cô", "Nhập ngay cho nhanh", "Gửi đường link cho nhiều bạn cùng nhập", "Cẩn thận với yêu cầu cung cấp thông tin cá nhân."],
+        ["Tìm thông tin trên Internet, em gõ từ khoá vào đâu?", "Ô tìm kiếm của trang tìm kiếm", "Bất cứ ô trống nào trên màn hình", "Trong cửa sổ trò chơi", "Dùng công cụ tìm kiếm với từ khoá phù hợp."]
       ], [["Internet", "Mạng máy tính toàn thế giới"], ["Trang web", "Nơi chứa thông tin trên Internet"], ["Từ khoá tìm kiếm", "Giúp tìm đúng thông tin cần"], ["Thông tin lạ, chưa rõ", "Hỏi bố mẹ, thầy cô"]], "Nối cho đúng nhé!"),
       topic("tin3-luutru", "🗂️", "Lưu trữ và tìm kiếm thông tin", "Bài 7–9 • Sắp xếp để dễ tìm, sơ đồ hình cây, tệp và thư mục", [
         ["Vì sao cần sắp xếp sách vở, tài liệu ngăn nắp theo nhóm?", "Để dễ tìm khi cần dùng", "Để trông cho vui mắt", "Để khó tìm hơn", "Sắp xếp khoa học giúp tìm kiếm nhanh, tiết kiệm thời gian."],
@@ -343,7 +343,7 @@
         ["Thông tin nào của em KHÔNG nên chia sẻ cho người lạ trên mạng?", "Họ tên đầy đủ, địa chỉ nhà, trường học và mật khẩu", "Màu sắc em yêu thích", "Món ăn em thích", "Thông tin cá nhân cần được bảo vệ cẩn thận."],
         ["Mật khẩu tài khoản của em, em nên xử lí thế nào?", "Giữ bí mật, không chia sẻ cho người khác", "Cho bạn thân dùng chung thoải mái", "Đăng công khai lên mạng xã hội", "Mật khẩu là “chìa khoá” riêng của em."],
         ["Người lạ trên mạng rủ em ra ngoài gặp mặt. Em nên làm gì?", "Từ chối và báo ngay cho bố mẹ biết", "Đồng ý đi một mình", "Giữ bí mật, không nói với bố mẹ", "Không gặp người lạ trên mạng khi không có người lớn đi cùng."],
-        ["Em nhận được tin nhắn lạ chứa đường link đáng ngờ. Em nên làm gì?", "Không bấm vào và hỏi ý kiến người lớn", "Bấm vào xem ngay cho biết", "Chuyển tiếp cho thật nhiều bạn", "Đường link lạ có thể chứa mã độc hoặc lừa đảo."],
+        ["Nhận tin nhắn lạ có đường link đáng ngờ, em nên làm gì?", "Không bấm vào và hỏi ý kiến người lớn", "Bấm vào xem ngay cho biết", "Chuyển tiếp cho thật nhiều bạn", "Đường link lạ có thể chứa mã độc hoặc lừa đảo."],
         ["Dùng xong máy tính ở trường hoặc nơi công cộng, em nên làm gì?", "Đăng xuất khỏi tài khoản của mình", "Để nguyên tài khoản đang đăng nhập", "Cho bạn khác dùng chung tài khoản", "Đăng xuất giúp bảo vệ thông tin cá nhân của em."]
       ], [["Mật khẩu", "Giữ bí mật"], ["Người lạ trên mạng", "Không gặp, báo cho bố mẹ"], ["Đường link lạ", "Không bấm vào"], ["Thông tin cá nhân", "Không chia sẻ bừa bãi"]], "Nối tình huống với việc nên làm nhé!"),
       topic("tin3-trinhchieu", "🎞️", "Bài trình chiếu và luyện chuột", "Bài 11–13 • Trang chiếu, thao tác nháy chuột, kéo thả", [
@@ -359,7 +359,7 @@
         ["Câu “Nếu trời mưa thì em mang áo mưa” thể hiện điều gì?", "Một công việc được thực hiện theo điều kiện: nếu… thì…", "Một câu trong bài hát", "Một phép tính cộng", "Cấu trúc “nếu… thì…” diễn tả công việc theo điều kiện."],
         ["Máy tính giúp em giải quyết vấn đề bằng cách nào?", "Thực hiện nhanh và chính xác các bước theo chương trình", "Tự quyết định thay em mọi việc", "Không giúp được việc gì", "Máy tính là công cụ trợ giúp đắc lực cho con người."],
         ["Khi làm một bài trình chiếu, bước nào cần làm trước?", "Xác định chủ đề và chuẩn bị nội dung", "Đứng trình bày trước lớp luôn", "In bài ra giấy ngay", "Chuẩn bị nội dung là bước đầu tiên khi làm bài trình chiếu."],
-        ["Trong câu “Nếu làm xong bài tập thì em được đi chơi”, nếu em CHƯA làm xong bài tập thì sao?", "Chưa được đi chơi, vì điều kiện chưa xảy ra", "Vẫn đi chơi như thường", "Được đi chơi gấp đôi", "Điều kiện không xảy ra thì việc sau “thì” không được thực hiện."]
+        ["Câu “Nếu làm xong bài tập thì được đi chơi”: chưa làm xong thì sao?", "Chưa được đi chơi, vì điều kiện chưa xảy ra", "Vẫn đi chơi như thường", "Được đi chơi gấp đôi", "Điều kiện không xảy ra thì việc sau “thì” không được thực hiện."]
       ], [["Nếu… thì…", "Công việc theo điều kiện"], ["Chia nhỏ công việc", "Thành các bước rõ ràng"], ["Máy tính", "Trợ giúp giải quyết vấn đề"], ["Thứ tự các bước", "Thực hiện đúng trình tự"]], "Nối cho đúng nhé!")
     ];
     /* Thêm mini-game riêng cho Tin học: bắt phím rơi + sắp xếp các bước */
@@ -381,7 +381,7 @@
         ["Sử dụng đèn học thế nào là đúng và tốt cho mắt?", "Đặt đèn phía tay không thuận, ánh sáng vừa đủ, tắt khi không dùng", "Để đèn sát vào mắt cho thật sáng", "Bật đèn cả ngày lẫn đêm", "Dùng đèn học đúng cách giúp bảo vệ mắt và tiết kiệm điện."],
         ["Sử dụng quạt điện thế nào là an toàn?", "Không thò tay vào lồng quạt khi quạt đang chạy", "Chạm tay vào cánh quạt đang quay", "Để quạt sát mặt nước", "Giữ khoảng cách an toàn khi quạt điện đang hoạt động."],
         ["Máy thu thanh (radio) được dùng để làm gì?", "Nghe tin tức, ca nhạc qua sóng phát thanh", "Xem hình ảnh chuyển động", "Nấu chín thức ăn", "Radio thu sóng phát thanh để nghe âm thanh."],
-        ["Máy thu hình (ti vi) khác máy thu thanh (radio) ở điểm nào?", "Ti vi xem được cả hình ảnh và âm thanh", "Ti vi chỉ nghe được âm thanh", "Ti vi nhỏ hơn radio rất nhiều", "Ti vi trình chiếu hình ảnh kèm theo âm thanh."],
+        ["Máy thu hình khác máy thu thanh ở điểm nào?", "Ti vi xem được cả hình ảnh và âm thanh", "Ti vi chỉ nghe được âm thanh", "Ti vi nhỏ hơn radio rất nhiều", "Ti vi trình chiếu hình ảnh kèm theo âm thanh."],
         ["Việc nào giúp tiết kiệm điện trong gia đình?", "Tắt đèn, quạt, ti vi khi không sử dụng", "Bật mọi thiết bị điện cả ngày", "Mở cửa tủ lạnh liên tục", "Tiết kiệm điện là bảo vệ môi trường và chi tiêu gia đình."],
         ["Khi tay đang ướt, em có được chạm vào ổ điện và công tắc không?", "Tuyệt đối không, rất dễ bị điện giật", "Được, không sao cả", "Chạm thật nhanh là được", "Tay ướt chạm vào điện cực kì nguy hiểm."],
         ["Thấy dây điện trong nhà bị hở, đứt, em nên làm gì?", "Báo ngay cho người lớn và tránh xa, không tự chạm vào", "Tự mình nối lại", "Cầm lên xem thử", "Việc về điện phải để người lớn xử lí."]
@@ -393,7 +393,7 @@
         ["Làm một đồ dùng học tập (như hộp đựng bút) thường theo thứ tự nào?", "Chuẩn bị vật liệu → cắt, gấp → dán và trang trí", "Trang trí trước rồi mới cắt giấy", "Làm tuỳ hứng, không cần theo bước", "Làm sản phẩm thủ công cần thực hiện theo các bước."],
         ["Biển báo giao thông hình tròn, viền đỏ thường là loại biển nào?", "Biển báo cấm", "Biển chỉ dẫn", "Biển báo hiệu lệnh", "Biển báo cấm có hình tròn, viền đỏ, nền trắng."],
         ["Biển báo giao thông hình tam giác, viền đỏ thường là loại biển nào?", "Biển cảnh báo nguy hiểm", "Biển báo cấm", "Biển chỉ dẫn địa điểm", "Biển tam giác viền đỏ cảnh báo nguy hiểm phía trước."],
-        ["Biển báo có hình người đi bộ đi trên các vạch kẻ cho biết điều gì?", "Nơi dành cho người đi bộ sang đường", "Cấm người đi bộ qua lại", "Khu vực chơi bóng đá", "Biển chỉ dẫn vị trí sang đường cho người đi bộ."],
+        ["Biển báo hình người đi bộ trên vạch kẻ cho biết điều gì?", "Nơi dành cho người đi bộ sang đường", "Cấm người đi bộ qua lại", "Khu vực chơi bóng đá", "Biển chỉ dẫn vị trí sang đường cho người đi bộ."],
         ["Sau khi làm thủ công xong, em cần làm việc gì?", "Dọn dẹp, cất dụng cụ và thu gom giấy vụn", "Để nguyên mọi thứ bừa bãi", "Vứt hết dụng cụ đi", "Giữ gìn vệ sinh nơi làm việc sau khi làm thủ công."]
       ], [["Kéo thủ công", "Cắt giấy"], ["Keo dán", "Dán các bộ phận"], ["Biển tròn, viền đỏ", "Biển báo cấm"], ["Biển tam giác, viền đỏ", "Cảnh báo nguy hiểm"]], "Nối cho đúng nhé!")
     ];
@@ -512,6 +512,47 @@ var G3_EXTRA_FACTS = {
     ["Việc nào tốt cho cơ quan thần kinh?", "Ngủ đủ giấc", "Thức khuya chơi điện tử", "Nghe tiếng ồn thật to", "Ngủ đủ giúp não nghỉ ngơi và ghi nhớ tốt."],
     ["Việc nào tốt cho hệ tiêu hoá?", "Đánh răng và ăn uống điều độ", "Ăn thật nhiều kẹo ngọt", "Uống nước ngọt thay nước lọc", "Vệ sinh răng miệng, ăn uống điều độ giúp tiêu hoá tốt."]
   ],
+  /* ---------- TOÁN 3 (B1-SỬA 2026-10-15 — đa dạng hoá phép tính nền) ---------- */
+  "m3-so10000": [
+    ["2413 + 3524 bằng bao nhiêu?", "5937", "6937", "4937", "2413 + 3524 = 5937."],
+    ["4215 + 2683 bằng bao nhiêu?", "6898", "7898", "5898", "4215 + 2683 = 6898."],
+    ["1346 + 5213 bằng bao nhiêu?", "6559", "7559", "5559", "1346 + 5213 = 6559."],
+    ["3052 + 4716 bằng bao nhiêu?", "7768", "8768", "6768", "3052 + 4716 = 7768."],
+    ["5240 + 3628 bằng bao nhiêu?", "8868", "9868", "7868", "5240 + 3628 = 8868."],
+    ["6135 + 2457 bằng bao nhiêu?", "8592", "9592", "7592", "6135 + 2457 = 8592."],
+    ["8742 − 3451 bằng bao nhiêu?", "5291", "6291", "4291", "8742 − 3451 = 5291."],
+    ["7405 − 2184 bằng bao nhiêu?", "5221", "6221", "4221", "7405 − 2184 = 5221."],
+    ["9631 − 4207 bằng bao nhiêu?", "5424", "6424", "4424", "9631 − 4207 = 5424."],
+    ["6824 − 3462 bằng bao nhiêu?", "3362", "4362", "2362", "6824 − 3462 = 3362."],
+    ["5290 − 2175 bằng bao nhiêu?", "3115", "4115", "2115", "5290 − 2175 = 3115."],
+    ["9063 − 5248 bằng bao nhiêu?", "3815", "4815", "2815", "9063 − 5248 = 3815."],
+    ["314 × 3 bằng bao nhiêu?", "942", "1942", "1042", "314 × 3 = 942."],
+    ["2314 × 4 bằng bao nhiêu?", "9256", "10256", "8256", "2314 × 4 = 9256."],
+    ["1205 × 6 bằng bao nhiêu?", "7230", "8230", "6230", "1205 × 6 = 7230."],
+    ["9636 : 3 bằng bao nhiêu?", "3212", "4212", "2212", "9636 : 3 = 3212."],
+    ["8848 : 4 bằng bao nhiêu?", "2212", "3212", "1212", "8848 : 4 = 2212."],
+    ["7776 : 6 bằng bao nhiêu?", "1296", "2296", "296", "7776 : 6 = 1296."]
+  ],
+  "m3-so100000": [
+    ["24135 + 31246 bằng bao nhiêu?", "55381", "56381", "54381", "24135 + 31246 = 55381."],
+    ["45213 + 27584 bằng bao nhiêu?", "72797", "73797", "71797", "45213 + 27584 = 72797."],
+    ["13457 + 52136 bằng bao nhiêu?", "65593", "66593", "64593", "13457 + 52136 = 65593."],
+    ["62305 + 15478 bằng bao nhiêu?", "77783", "78783", "76783", "62305 + 15478 = 77783."],
+    ["28540 + 36275 bằng bao nhiêu?", "64815", "65815", "63815", "28540 + 36275 = 64815."],
+    ["11236 + 43509 bằng bao nhiêu?", "54745", "55745", "53745", "11236 + 43509 = 54745."],
+    ["58742 − 23451 bằng bao nhiêu?", "35291", "36291", "34291", "58742 − 23451 = 35291."],
+    ["74506 − 31284 bằng bao nhiêu?", "43222", "44222", "42222", "74506 − 31284 = 43222."],
+    ["96318 − 45207 bằng bao nhiêu?", "51111", "52111", "50111", "96318 − 45207 = 51111."],
+    ["43825 − 21463 bằng bao nhiêu?", "22362", "23362", "21362", "43825 − 21463 = 22362."],
+    ["67290 − 34175 bằng bao nhiêu?", "33115", "34115", "32115", "67290 − 34175 = 33115."],
+    ["85603 − 52348 bằng bao nhiêu?", "33255", "34255", "32255", "85603 − 52348 = 33255."],
+    ["2314 × 3 bằng bao nhiêu?", "6942", "7942", "5942", "2314 × 3 = 6942."],
+    ["12403 × 2 bằng bao nhiêu?", "24806", "25806", "23806", "12403 × 2 = 24806."],
+    ["21305 × 4 bằng bao nhiêu?", "85220", "86220", "84220", "21305 × 4 = 85220."],
+    ["36936 : 4 bằng bao nhiêu?", "9234", "10234", "8234", "36936 : 4 = 9234."],
+    ["45630 : 5 bằng bao nhiêu?", "9126", "10126", "8126", "45630 : 5 = 9126."],
+    ["84084 : 7 bằng bao nhiêu?", "12012", "13012", "11012", "84084 : 7 = 12012."]
+  ],
   /* ---------- TOÁN 3 (BƯỚC 1 — gia cố tầng nâng cao m3-giotien) ---------- */
   "m3-giotien": [
     ["Mẹ đưa tờ 50 000 đồng mua đồ hết 35 000 đồng. Người bán trả lại bao nhiêu tiền?", "15 000 đồng", "25 000 đồng", "5 000 đồng", "Tiền trả lại = 50 000 − 35 000 = 15 000 đồng."],
@@ -524,7 +565,23 @@ var G3_EXTRA_FACTS = {
     ["Trên đồng hồ, kim phút chỉ vào số 6 thì đó là bao nhiêu phút?", "30 phút", "6 phút", "60 phút", "Mỗi số trên mặt đồng hồ ứng với 5 phút: 6 × 5 = 30 phút."],
     ["Trên đồng hồ, kim phút chỉ vào số 3 thì đó là bao nhiêu phút?", "15 phút", "3 phút", "45 phút", "Mỗi số trên mặt đồng hồ ứng với 5 phút: 3 × 5 = 15 phút."],
     ["Em đến trường lúc 7 giờ sáng và ra về lúc 11 giờ trưa. Em ở trường bao nhiêu giờ?", "4 giờ", "3 giờ", "5 giờ", "Từ 7 giờ đến 11 giờ là 11 − 7 = 4 giờ."],
-    ["Một bộ phim bắt đầu lúc 19 giờ, kéo dài 2 giờ. Phim kết thúc lúc mấy giờ?", "21 giờ", "17 giờ", "20 giờ", "Giờ kết thúc = 19 + 2 = 21 giờ."]
+    ["Một bộ phim bắt đầu lúc 19 giờ, kéo dài 2 giờ. Phim kết thúc lúc mấy giờ?", "21 giờ", "17 giờ", "20 giờ", "Giờ kết thúc = 19 + 2 = 21 giờ."],
+    ["Em thức dậy lúc 6 giờ sáng và đến trường lúc 7 giờ. Từ lúc thức dậy đến lúc đến trường là bao nhiêu phút?", "60 phút", "30 phút", "45 phút", "Từ 6 giờ đến 7 giờ là 1 giờ = 60 phút."],
+    ["Giờ vào học là 7 giờ 30 phút. Lúc đó kim phút chỉ số mấy?", "Số 6", "Số 3", "Số 12", "Mỗi số trên mặt đồng hồ ứng với 5 phút: 30 : 5 = 6, kim phút chỉ số 6."],
+    ["Một quyển vở giá 8 000 đồng. Mua 3 quyển vở như thế hết bao nhiêu tiền?", "24 000 đồng", "11 000 đồng", "21 000 đồng", "8 000 × 3 = 24 000 đồng."],
+    ["Một cây bút giá 5 000 đồng, một cái thước giá 3 000 đồng. Mua cả hai món hết bao nhiêu tiền?", "8 000 đồng", "2 000 đồng", "15 000 đồng", "5 000 + 3 000 = 8 000 đồng."],
+    ["Vé xem phim giá 40 000 đồng. Em đưa tờ 50 000 đồng. Em được trả lại bao nhiêu tiền?", "10 000 đồng", "20 000 đồng", "90 000 đồng", "50 000 − 40 000 = 10 000 đồng."],
+    ["Một ổ bánh mì giá 10 000 đồng. Mẹ mua 2 ổ bánh mì và đưa tờ 50 000 đồng. Mẹ được trả lại bao nhiêu tiền?", "30 000 đồng", "40 000 đồng", "20 000 đồng", "Hai ổ bánh mì hết 10 000 × 2 = 20 000 đồng; trả lại 50 000 − 20 000 = 30 000 đồng."],
+    ["Tháng 10 có bao nhiêu ngày?", "31 ngày", "30 ngày", "29 ngày", "Tháng 10 thuộc nhóm tháng có 31 ngày: 1, 3, 5, 7, 8, 10, 12."],
+    ["Tháng 11 có bao nhiêu ngày?", "30 ngày", "31 ngày", "28 ngày", "Các tháng 4, 6, 9, 11 có 30 ngày."],
+    ["Hôm nay là thứ hai. Ngày mai là thứ mấy?", "Thứ ba", "Thứ tư", "Chủ nhật", "Sau thứ hai là thứ ba."],
+    ["Hôm nay là thứ sáu. Hôm qua là thứ mấy?", "Thứ năm", "Thứ tư", "Thứ bảy", "Đứng ngay trước thứ sáu là thứ năm."],
+    ["Một buổi học bắt đầu lúc 8 giờ và kết thúc lúc 10 giờ 30 phút. Buổi học kéo dài bao lâu?", "2 giờ 30 phút", "2 giờ", "3 giờ 30 phút", "Từ 8 giờ đến 10 giờ 30 phút là 2 giờ 30 phút."],
+    ["Em tập thể dục từ 6 giờ 15 phút đến 6 giờ 45 phút. Em tập trong bao lâu?", "30 phút", "15 phút", "60 phút", "Từ 6 giờ 15 phút đến 6 giờ 45 phút là 45 − 15 = 30 phút."],
+    ["Hai tờ 20 000 đồng và một tờ 10 000 đồng là bao nhiêu tiền?", "50 000 đồng", "40 000 đồng", "30 000 đồng", "20 000 + 20 000 + 10 000 = 50 000 đồng."],
+    ["Một tờ 200 000 đồng đổi được mấy tờ 100 000 đồng?", "2 tờ", "5 tờ", "10 tờ", "200 000 : 100 000 = 2 tờ."],
+    ["Em đi ngủ lúc 21 giờ. Đó là mấy giờ tối?", "9 giờ tối", "8 giờ tối", "10 giờ tối", "21 giờ là 9 giờ tối."],
+    ["Đồng hồ chỉ 15 giờ. Đó là mấy giờ chiều?", "3 giờ chiều", "5 giờ chiều", "2 giờ chiều", "15 − 12 = 3, tức 3 giờ chiều."]
   ],
   /* ---------- ĐẠO ĐỨC 3 ---------- */
   "dd3-toquoc": [
@@ -665,6 +722,8 @@ var G3_EXTRA_FACTS = {
 };
 
 var G3_EXTRA_PAIRS = {
+  /* TOÁN 3 (B1-SỬA 2026-10-15): cặp dữ kiện giờ – lịch – tiền cho m3-giotien */
+  "m3-giotien": [["Kim phút chỉ số 6", "30 phút"], ["Kim phút chỉ số 3", "15 phút"], ["Kim phút chỉ số 9", "45 phút"], ["Kim phút chỉ số 12", "Giờ đúng (0 phút)"], ["Một tuần lễ", "7 ngày"], ["Tháng 2 của năm thường", "28 ngày"], ["Tháng 12", "31 ngày"], ["Một năm", "12 tháng"], ["Tờ 100 000 đồng", "10 tờ 10 000 đồng"], ["Tờ 50 000 đồng", "5 tờ 10 000 đồng"]],
   "tv3-cau": [["Câu kể", "Kể lại sự việc"], ["Câu hỏi", "Hỏi điều chưa biết"], ["Câu cảm", "Bộc lộ cảm xúc"], ["Câu khiến", "Yêu cầu, đề nghị"]],
   "tnxh3-suckhoe": [["Tim", "Đưa máu đi khắp cơ thể"], ["Não", "Điều khiển suy nghĩ, hoạt động"], ["Dạ dày", "Nghiền nhỏ, trộn thức ăn"], ["Miệng", "Nhai và nuốt thức ăn"]],
   "tnxh3-traidat": [["Mặt Trời mọc", "Hướng đông"], ["Mặt Trời lặn", "Hướng tây"], ["La bàn", "Chỉ hướng bắc"], ["Lục địa", "Phần đất nổi lớn trên Trái Đất"]],
@@ -691,7 +750,7 @@ function g3DigitAsk(digits) {
     var n = rand(lo, hi), places = PL.filter(function (p) { return p[0] < Math.pow(10, digits); });
     var p = pick(places), d = Math.floor(n / p[0]) % 10;
     var wrongs = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(function (x) { return x !== d; })).slice(0, 2);
-    return calcMCQ("Đọc số rồi trả lời nhé!", String(fmtN(n)), d, 0, 9, "Số " + fmtN(n) + ": chữ số ở hàng " + p[1] + " là " + d + ".");
+    return calcMCQ("Chữ số ở hàng " + p[1] + " của số này là chữ số nào?", String(fmtN(n)), d, 0, 9, "Số " + fmtN(n) + ": chữ số ở hàng " + p[1] + " là " + d + ".");
   };
 }
 function g3SeqGap() {
@@ -735,8 +794,12 @@ function g3MoneyChange() {
 }
 function g3ClockElapsed() {
   var h = rand(1, 11), m1 = pick([0, 5, 10, 15, 20, 25, 30]), add = pick([10, 15, 20, 25, 30, 35, 40, 45]);
-  var m2 = m1 + add, txt = function (m) { return h + " giờ " + (m === 0 ? "" : m + " phút"); };
-  return calcMCQ("Từ " + txt(m1) + " đến " + txt(m2) + " là bao nhiêu phút?", txt(m1) + " → " + txt(m2), add, 5, 60, txt(m1) + " → " + txt(m2) + ": thêm " + add + " phút.");
+  /* Sửa B1-P0 (2026-10-15): trước đây mốc cuối = h giờ (m1+add) phút KHÔNG trừ
+     giờ khi phút >= 60 → sinh mốc không tồn tại kiểu "5 giờ 65 phút". Nay tính
+     theo tổng số phút rồi đổi lại giờ–phút có nhớ (phút luôn 0–59). */
+  var tot1 = h * 60 + m1, tot2 = tot1 + add;
+  var txt = function (tot) { var hh = Math.floor(tot / 60), mm = tot % 60; return hh + " giờ" + (mm === 0 ? "" : " " + mm + " phút"); };
+  return calcMCQ("Từ " + txt(tot1) + " đến " + txt(tot2) + " là bao nhiêu phút?", txt(tot1) + " → " + txt(tot2), add, 5, 60, txt(tot1) + " → " + txt(tot2) + ": thêm " + add + " phút.");
 }
 function g3StatFill() {
   var vs = new Set();
@@ -762,6 +825,540 @@ function g3TableBlankMissing() {
   return { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số còn thiếu vào phép nhân:", visual: '<div class="bigvisual">' + eq + "</div>", blankText: String(k), options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(k), cols: 3, explain: a + " × " + k + " = " + prod + " nên số còn thiếu là " + k + "." };
 }
 
+/* ================= B1-SỬA (2026-10-15) — XÂY LẠI NGÂN HÀNG MỎNG =================
+   Ba chủ đề Toán 3 được xây lại tại nguồn:
+   • m3-so100000 / m3-so10000: tầng nâng cao cũ suy biến quanh đúng 2 phép tính
+     nền của trang vỏ (12345 + 23456 và 56789 − 12345 chiếm ~95% câu nâng cao đo
+     được). Bộ sinh "nm" dưới đây bốc SỐ NGẪU NHIÊN MỚI trong đúng phạm vi chủ
+     đề ở mỗi lần gọi — không còn phép tính nền cố định: bài toán có lời văn
+     (hai bước, dữ kiện thừa, tìm số chưa biết), giá trị chữ số, đổi chỗ chữ số,
+     làm tròn xuôi và ngược, tìm khẳng định sai (chỉ trong phạm trù số), dãy số.
+   • m3-giotien: tiền luôn là số TRÒN hợp thực tế (bội của 1 000 đồng, nhiễu
+     cũng tròn); khẳng định đúng/sai lấy từ ngân hàng khẳng định theo phạm trù
+     (giờ / lịch / tiền) — khẳng định sai chỉ sai GIÁ TRỊ trong cùng phạm trù,
+     không còn ghép "một tuần lễ" với "đồng". */
+function g3SortBigCap(max) {
+  /* Thay g3SortBig của trang vỏ cho hai chủ đề số: bản vỏ sinh dãy tới
+     200 000 (chủ đề 100 000) và 43 000 (chủ đề 10 000) — vượt phạm vi bài. */
+  return function () {
+    var step = pick(max >= 100000 ? [100, 500, 1000, 5000] : [50, 100, 250, 500]);
+    var kmax = Math.max(2, Math.floor((max - step * 3) / step));
+    var start = step * rand(1, kmax);
+    var arr = shuffle([0, 1, 2, 3].map(function (i) { return start + i * step; }));
+    return sortQ("Sắp xếp các số sau theo thứ tự từ bé đến lớn nhé!", arr.map(function (n) { return { html: '<span class="opt-num">' + fmtN(n) + "</span>", text: String(fmtN(n)) }; }), "Thứ tự đúng: " + [0, 1, 2, 3].map(function (i) { return fmtN(start + i * step); }).join(", ") + ".");
+  };
+}
+function nmNum(R) { return rand(Math.floor(R / 10), R - 1); }
+function nmWrongs(res, steps) {
+  var out = [];
+  (steps || [1000, 100, 2000, 10, 500, 5000]).forEach(function (d) {
+    [res + d, res - d].forEach(function (v) { if (out.length < 2 && v > 0 && v !== res && out.indexOf(v) === -1) out.push(v); });
+  });
+  while (out.length < 2) { var v = res + (out.length + 3) * 1000; if (out.indexOf(v) === -1) out.push(v); }
+  return out;
+}
+function nmMCQ(prompt, res, explain) {
+  var w = nmWrongs(res);
+  return mcqQ(prompt, [String(fmtN(w[0])), String(fmtN(w[1]))], String(fmtN(res)), explain);
+}
+var NM_PLACE_NAMES = { 1: "đơn vị", 10: "chục", 100: "trăm", 1000: "nghìn", 10000: "chục nghìn" };
+function nmPlacesOf(R) { return R >= 100000 ? [10000, 1000, 100, 10, 1] : [1000, 100, 10, 1]; }
+
+function nmStoryAddSub(R) {
+  return function () {
+    var form = rand(0, 7), a, b, c, res;
+    if (form === 0) {
+      a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(a * 0.7));
+      res = a - b;
+      return nmMCQ("Thư viện trường có " + fmtN(a) + " quyển sách. Học sinh mượn " + fmtN(b) + " quyển. Thư viện còn lại bao nhiêu quyển sách?", res, fmtN(a) + " − " + fmtN(b) + " = " + fmtN(res) + " (quyển).");
+    }
+    if (form === 1) {
+      a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(a * 0.7));
+      res = a - b;
+      return nmMCQ("Một cửa hàng có " + fmtN(a) + " kg gạo. Buổi sáng, cửa hàng bán được " + fmtN(b) + " kg gạo. Cửa hàng còn lại bao nhiêu ki-lô-gam gạo?", res, fmtN(a) + " − " + fmtN(b) + " = " + fmtN(res) + " (kg).");
+    }
+    if (form === 2) {
+      a = rand(Math.floor(R / 10), Math.floor(R * 0.55)); b = rand(Math.floor(R / 10), Math.floor(R * 0.4));
+      res = a + b;
+      return nmMCQ("Trường Tiểu học A có " + fmtN(a) + " học sinh, trường Tiểu học B có " + fmtN(b) + " học sinh. Cả hai trường có tất cả bao nhiêu học sinh?", res, fmtN(a) + " + " + fmtN(b) + " = " + fmtN(res) + " (học sinh).");
+    }
+    if (form === 3) {
+      a = rand(Math.floor(R / 10), Math.floor(R * 0.55)); b = rand(Math.floor(R / 10), Math.floor(R * 0.4));
+      res = a + b;
+      return nmMCQ("Một ô tô buổi sáng đi được " + fmtN(a) + " m, buổi chiều đi được " + fmtN(b) + " m. Cả ngày ô tô đi được bao nhiêu mét?", res, fmtN(a) + " + " + fmtN(b) + " = " + fmtN(res) + " (m).");
+    }
+    if (form === 4) {
+      a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(a * 0.6));
+      res = a - b;
+      return nmMCQ("Xưởng thứ nhất làm được " + fmtN(a) + " sản phẩm. Xưởng thứ hai làm được ít hơn xưởng thứ nhất " + fmtN(b) + " sản phẩm. Xưởng thứ hai làm được bao nhiêu sản phẩm?", res, fmtN(a) + " − " + fmtN(b) + " = " + fmtN(res) + " (sản phẩm).");
+    }
+    if (form === 5) {
+      a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(a * 0.8));
+      res = a - b;
+      return nmMCQ("Số " + fmtN(a) + " hơn số " + fmtN(b) + " bao nhiêu?", res, fmtN(a) + " − " + fmtN(b) + " = " + fmtN(res) + ".");
+    }
+    if (form === 6) {
+      a = rand(Math.floor(R / 10), Math.floor(R * 0.5)); b = rand(Math.floor(R / 20), Math.floor(R * 0.3)); c = rand(50, Math.floor((a + b) * 0.6));
+      res = a + b - c;
+      return nmMCQ("Một kho có " + fmtN(a) + " bao gạo. Kho nhập thêm " + fmtN(b) + " bao gạo rồi xuất đi " + fmtN(c) + " bao gạo. Trong kho còn lại bao nhiêu bao gạo?", res, "Nhập thêm: " + fmtN(a) + " + " + fmtN(b) + " = " + fmtN(a + b) + "; còn lại: " + fmtN(a + b) + " − " + fmtN(c) + " = " + fmtN(res) + " (bao).");
+    }
+    a = rand(Math.floor(R / 10), Math.floor(R * 0.5)); b = rand(Math.floor(R / 20), Math.floor(R * 0.35));
+    res = a + b;
+    var extra = R >= 100000 ? "một hộp bút giá " + fmtN(rand(5, 40) * 1000) + " đồng" : "một cái thước kẻ dài 20 cm";
+    return nmMCQ("Nam có " + fmtN(a) + " viên bi xanh, " + fmtN(b) + " viên bi đỏ và " + extra + ". Nam có tất cả bao nhiêu viên bi?", res, "Chỉ cộng số bi: " + fmtN(a) + " + " + fmtN(b) + " = " + fmtN(res) + " (viên). Dữ kiện về " + (R >= 100000 ? "hộp bút" : "cái thước") + " không dùng đến.");
+  };
+}
+function nmStoryMulDiv(R) {
+  return function () {
+    var form = rand(0, 4), per, n, res;
+    if (form === 0) {
+      per = rand(12, Math.floor(R / 12)); n = rand(2, 9); res = per * n;
+      return nmMCQ("Mỗi hộp có " + fmtN(per) + " cái bút. Có " + n + " hộp như thế. Có tất cả bao nhiêu cái bút?", res, fmtN(per) + " × " + n + " = " + fmtN(res) + " (cái).");
+    }
+    if (form === 1) {
+      per = rand(12, Math.floor(R / 12)); n = rand(2, 9); res = per;
+      return nmMCQ(fmtN(per * n) + " cái kẹo được chia đều cho " + n + " bạn. Mỗi bạn được bao nhiêu cái kẹo?", res, fmtN(per * n) + " : " + n + " = " + fmtN(per) + " (cái).");
+    }
+    if (form === 2) {
+      per = rand(12, Math.floor(R / 12)); n = rand(2, 9); res = per;
+      return nmMCQ("Có " + fmtN(per * n) + " quyển sách, xếp đều vào " + n + " chồng. Mỗi chồng có bao nhiêu quyển sách?", res, fmtN(per * n) + " : " + n + " = " + fmtN(per) + " (quyển).");
+    }
+    if (form === 3) {
+      per = rand(12, Math.floor(R / 15)); n = rand(2, 9); var add = rand(5, 60); res = per * n + add;
+      return nmMCQ("Cô giáo mua " + n + " hộp bút, mỗi hộp " + fmtN(per) + " cái, và mua thêm " + add + " cái bút lẻ. Cô giáo mua tất cả bao nhiêu cái bút?", res, n + " hộp có " + fmtN(per) + " × " + n + " = " + fmtN(per * n) + " cái; tất cả: " + fmtN(per * n) + " + " + add + " = " + fmtN(res) + " (cái).");
+    }
+    per = rand(12, Math.floor(R / 12)); n = rand(2, 9);
+    if (Math.random() < 0.5) {
+      res = per * n;
+      return nmMCQ("Một sợi dây dài " + fmtN(per) + " cm. Một sợi dây khác dài gấp " + n + " lần sợi dây đó. Sợi dây khác dài bao nhiêu xăng-ti-mét?", res, fmtN(per) + " × " + n + " = " + fmtN(res) + " (cm).");
+    }
+    res = per;
+    return nmMCQ("Một thùng có " + fmtN(per * n) + " quả cam, chia đều vào " + n + " túi. Số cam trong mỗi túi ít hơn số cam trong thùng bao nhiêu quả?", per * n - per, "Mỗi túi có " + fmtN(per * n) + " : " + n + " = " + fmtN(per) + " quả; ít hơn thùng: " + fmtN(per * n) + " − " + fmtN(per) + " = " + fmtN(per * n - per) + " (quả).");
+  };
+}
+function nmDigitValue(R) {
+  return function () {
+    var n = 0, s = "", idxs = [], tries = 0;
+    /* Chỉ hỏi chữ số xuất hiện ĐÚNG một lần trong số — tránh câu mơ hồ kiểu
+       "chữ số 8 trong số 88 881" (bốn chữ số 8 có bốn giá trị khác nhau). */
+    while (tries++ < 15) {
+      n = nmNum(R); s = String(n); idxs = [];
+      for (var i = 0; i < s.length; i++) if (s[i] !== "0" && s.split(s[i]).length - 1 === 1) idxs.push(i);
+      if (idxs.length) break;
+    }
+    if (!idxs.length) return nmCompose(R)();
+    var i = pick(idxs), d = +s[i], place = Math.pow(10, s.length - 1 - i), val = d * place;
+    var cand = [d, d * 10, d * 100, d * 1000, d * 10000, place, val + place, val * 10].filter(function (v, ix, arr) { return v !== val && v > 0 && arr.indexOf(v) === ix; });
+    var w = shuffle(cand).slice(0, 2);
+    return mcqQ("Chữ số " + d + " trong số " + fmtN(n) + " có giá trị là bao nhiêu?", [String(fmtN(w[0])), String(fmtN(w[1]))], String(fmtN(val)), "Chữ số " + d + " ở hàng " + NM_PLACE_NAMES[place] + " nên có giá trị là " + fmtN(val) + ".");
+  };
+}
+function nmDigitSwap(R) {
+  return function () {
+    var n = nmNum(R), s = String(n), tries = 0, i = -1;
+    while (tries++ < 20) { var j = rand(0, s.length - 2); if (s[j] !== s[j + 1] && !(j === 0 && s[j + 1] === "0")) { i = j; break; } }
+    if (i < 0) { i = 0; if (s[0] === s[1]) return nmDigitValue(R)(); }
+    var arr = s.split(""); var tmp = arr[i]; arr[i] = arr[i + 1]; arr[i + 1] = tmp;
+    var n2 = +arr.join(""), diff = Math.abs(n2 - n);
+    var p1 = Math.pow(10, s.length - 1 - i), p2 = Math.pow(10, s.length - 2 - i);
+    var dir = n2 > n ? "Số mới lớn hơn số cũ: " + fmtN(n2) + " − " + fmtN(n) : "Số mới bé hơn số cũ: " + fmtN(n) + " − " + fmtN(n2);
+    return nmMCQ("Đổi chỗ chữ số hàng " + NM_PLACE_NAMES[p1] + " và chữ số hàng " + NM_PLACE_NAMES[p2] + " của số " + fmtN(n) + ", ta được một số mới. Số mới và số cũ hơn kém nhau bao nhiêu?", diff, "Đổi chỗ hai chữ số được số " + fmtN(n2) + ". " + dir + " = " + fmtN(diff) + ".");
+  };
+}
+function nmCompose(R) {
+  return function () {
+    var L = R >= 100000 ? 5 : 4, digs = [rand(1, 9)];
+    for (var i = 1; i < L; i++) digs.push(rand(0, 9));
+    var places = nmPlacesOf(R), n = 0;
+    digs.forEach(function (d, ix) { n += d * places[ix]; });
+    var parts = digs.map(function (d, ix) { return d + " " + NM_PLACE_NAMES[places[ix]]; });
+    var swapIx = rand(0, L - 2), arr = digs.slice(), tmp = arr[swapIx]; arr[swapIx] = arr[swapIx + 1]; arr[swapIx + 1] = tmp;
+    var nSwap = 0; arr.forEach(function (d, ix) { nSwap += d * places[ix]; });
+    var wrongs = [nSwap, n + places[rand(0, L - 1)], n - places[rand(0, L - 1)]].filter(function (v, ix, a2) { return v > 0 && v !== n && a2.indexOf(v) === ix; }).slice(0, 2);
+    while (wrongs.length < 2) { var v = n + (wrongs.length + 2) * 1000; if (wrongs.indexOf(v) === -1) wrongs.push(v); }
+    return mcqQ("Số gồm " + parts.join(", ") + " là số nào?", wrongs.map(function (v) { return String(fmtN(v)); }), String(fmtN(n)), "Ghép các hàng theo thứ tự: " + parts.join(", ") + " → " + fmtN(n) + ".");
+  };
+}
+function nmReadReverse(R) {
+  return function () {
+    var n = nmNum(R);
+    var read = (typeof window !== "undefined" && (window.vnNum3 || window.vnNum4)) ? (window.vnNum3 || window.vnNum4)(n) : String(n);
+    read = read.charAt(0).toUpperCase() + read.slice(1);
+    var s = String(n), arr = s.split(""), j = rand(0, s.length - 2), tmp = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = tmp;
+    var nSwap = +arr.join("");
+    var place = pick(nmPlacesOf(R));
+    var wrongs = [nSwap, n + place, n - place].filter(function (v, ix, a2) { return v > 0 && v !== n && a2.indexOf(v) === ix; }).slice(0, 2);
+    while (wrongs.length < 2) { var v = n + (wrongs.length + 2) * 100; if (wrongs.indexOf(v) === -1) wrongs.push(v); }
+    return mcqQ("Số nào dưới đây đọc là «" + read + "»?", wrongs.map(function (v) { return String(fmtN(v)); }), String(fmtN(n)), "«" + read + "» là cách đọc của số " + fmtN(n) + ".");
+  };
+}
+function nmRevCalc(R) {
+  return function () {
+    var op = Math.random() < 0.5 ? "+" : "−", a, b;
+    if (op === "+") { a = rand(Math.floor(R / 10), Math.floor(R * 0.6)); b = rand(Math.floor(R / 20), R - a); }
+    else { a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(R * 0.5)); if (b >= a) b = Math.floor(a / 2); }
+    var res = op === "+" ? a + b : a - b;
+    function expr(x, o, y) { return fmtN(x) + " " + o + " " + fmtN(y); }
+    function val(x, o, y) { return o === "+" ? x + y : x - y; }
+    var correct = expr(a, op, b), seen = {}, opts = [correct]; seen[res] = 1;
+    var variants = [[a + 1000, op, b], [a, op, b + 100], [a, op === "+" ? "−" : "+", b], [a - 1000, op, b], [a, op, b + 1000]];
+    for (var i = 0; i < variants.length && opts.length < 4; i++) {
+      var v = variants[i], vv = val(v[0], v[1], v[2]);
+      if (v[0] > 0 && v[2] > 0 && vv > 0 && !seen[vv]) { seen[vv] = 1; opts.push(expr(v[0], v[1], v[2])); }
+    }
+    var o2 = shuffle(opts.slice()).map(function (e) { return { html: '<span class="opt-expr">' + e + "</span>", text: e }; });
+    return { kind: "choose", big: true, prompt: "Phép tính nào dưới đây có kết quả bằng " + fmtN(res) + "?", options: o2, answer: o2.findIndex(function (o) { return o.text === correct; }), explain: correct + " = " + fmtN(res) + "." };
+  };
+}
+function nmRoundTo(R) {
+  return function () {
+    var p = pick(R >= 100000 ? [1000, 10000] : [100, 1000]);
+    var n = nmNum(R), tries = 0;
+    while (tries++ < 6) { var dg = Math.floor(n / (p / 10)) % 10; if (dg >= 3 && dg <= 7) break; n = nmNum(R); }
+    var d = Math.floor(n / (p / 10)) % 10;
+    var res = (d >= 5 ? Math.floor(n / p) + 1 : Math.floor(n / p)) * p;
+    return nmMCQ("Làm tròn số " + fmtN(n) + " đến hàng " + NM_PLACE_NAMES[p] + " được số nào?", res, "Chữ số hàng " + NM_PLACE_NAMES[p / 10] + " của " + fmtN(n) + " là " + d + (d >= 5 ? " (từ 5 trở lên) nên tròn lên" : " (dưới 5) nên tròn xuống") + ": " + fmtN(res) + ".");
+  };
+}
+function nmRoundReverse(R) {
+  return function () {
+    var p = pick(R >= 100000 ? [1000, 10000] : [100, 1000]);
+    var K = p * rand(2, Math.floor(R / p) - 2);
+    function inRange(lo, hi) { return rand(Math.ceil(lo), Math.floor(hi)); }
+    var correct = inRange(K - p / 2, K + p / 2 - 1);
+    var w1 = inRange(K + p / 2, K + 3 * p / 2 - 1), w2 = inRange(K - 3 * p / 2, K - p / 2 - 1);
+    var w3 = Math.random() < 0.5 ? inRange(K + p / 2, K + 3 * p / 2 - 1) : inRange(K - 3 * p / 2, K - p / 2 - 1);
+    if (w3 === w1 || w3 === w2) w3 += 1;
+    function rounded(x) { var d = Math.floor(x / (p / 10)) % 10; return (d >= 5 ? Math.floor(x / p) + 1 : Math.floor(x / p)) * p; }
+    return mcqQ("Số nào dưới đây làm tròn đến hàng " + NM_PLACE_NAMES[p] + " được " + fmtN(K) + "?", [String(fmtN(w1)), String(fmtN(w2)), String(fmtN(w3))], String(fmtN(correct)), "Làm tròn đến hàng " + NM_PLACE_NAMES[p] + ": " + fmtN(correct) + " → " + fmtN(K) + "; còn " + fmtN(w1) + " → " + fmtN(rounded(w1)) + ", " + fmtN(w2) + " → " + fmtN(rounded(w2)) + ", " + fmtN(w3) + " → " + fmtN(rounded(w3)) + ".");
+  };
+}
+function nmStmt(R, kind, wantTrue) {
+  var a, b, c;
+  if (kind === 0 || kind === 1) {
+    a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(R * 0.5));
+    if (kind === 0 && a + b > R) { a = Math.floor(R * 0.6); b = rand(Math.floor(R / 20), Math.floor(R * 0.35)); }
+    var delta = pick([100, 1000, -100, -1000, 10, -10]);
+    if (kind === 0) { c = a + b + (wantTrue ? 0 : delta); if (c <= 0) c = a + b + 1000; return { text: fmtN(a) + " + " + fmtN(b) + " = " + fmtN(c) + ".", truth: wantTrue, fix: fmtN(a) + " + " + fmtN(b) + " = " + fmtN(a + b) + "." }; }
+    if (b >= a) b = Math.floor(a / 2);
+    c = a - b + (wantTrue ? 0 : delta); if (c <= 0) c = a - b + 1000;
+    return { text: fmtN(a) + " − " + fmtN(b) + " = " + fmtN(c) + ".", truth: wantTrue, fix: fmtN(a) + " − " + fmtN(b) + " = " + fmtN(a - b) + "." };
+  }
+  if (kind === 2) {
+    var p = pick(R >= 100000 ? [1000, 10000] : [100, 1000]);
+    a = nmNum(R); var d = Math.floor(a / (p / 10)) % 10;
+    var real = (d >= 5 ? Math.floor(a / p) + 1 : Math.floor(a / p)) * p;
+    c = wantTrue ? real : real + (Math.random() < 0.5 ? p : -p); if (c <= 0) c = real + p;
+    return { text: "Làm tròn số " + fmtN(a) + " đến hàng " + NM_PLACE_NAMES[p] + " được " + fmtN(c) + ".", truth: wantTrue, fix: "Làm tròn số " + fmtN(a) + " đến hàng " + NM_PLACE_NAMES[p] + " được " + fmtN(real) + "." };
+  }
+  if (kind === 3) {
+    a = nmNum(R); b = nmNum(R); if (a === b) b += 7;
+    var bigger = Math.max(a, b), smaller = Math.min(a, b);
+    var shownBig = wantTrue ? bigger : smaller, shownSmall = wantTrue ? smaller : bigger;
+    return { text: "Số " + fmtN(shownBig) + " lớn hơn số " + fmtN(shownSmall) + ".", truth: wantTrue, fix: "Số " + fmtN(bigger) + " lớn hơn số " + fmtN(smaller) + "." };
+  }
+  a = nmNum(R); var s = String(a), places = nmPlacesOf(R);
+  var ix = rand(0, s.length - 1), realD = +s[ix], place = places[ix];
+  var shownD = wantTrue ? realD : (realD + rand(1, 9)) % 10;
+  return { text: "Chữ số hàng " + NM_PLACE_NAMES[place] + " của số " + fmtN(a) + " là " + shownD + ".", truth: wantTrue, fix: "Chữ số hàng " + NM_PLACE_NAMES[place] + " của số " + fmtN(a) + " là " + realD + "." };
+}
+function nmFalseStmt(R) {
+  return function () {
+    var kinds = shuffle([0, 1, 2, 3, 4]).slice(0, 3);
+    var truths = shuffle([true, true, false]);
+    var ss = kinds.map(function (k, i) { return nmStmt(R, k, truths[i]); });
+    var falseOne = ss.filter(function (x) { return !x.truth; })[0];
+    var trueOnes = ss.filter(function (x) { return x.truth; }).map(function (x) { return x.text; });
+    var q = mcqQ("Khẳng định nào dưới đây SAI?", trueOnes, falseOne.text, "Khẳng định sai là: «" + falseOne.text + "» Đúng phải là: «" + falseOne.fix + "»");
+    q.roundIdentity = { type: "bundle", facts: ss.map(function (x) { return x.text; }) };
+    return q;
+  };
+}
+function nmTFCalc(R) {
+  return function () {
+    var kinds = shuffle([0, 1, 2, 3, 4]).slice(0, 3);
+    var truths = shuffle([true, true, false]);
+    var rounds = kinds.map(function (k, i) { var st = nmStmt(R, k, truths[i]); return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + st.text + "</div>", truth: st.truth }; });
+    return tfQ("Đúng hay sai? Đọc kĩ từng ý nhé!", rounds);
+  };
+}
+function nmSeqSteps(R) { return R >= 100000 ? [250, 500, 1000, 2500, 5000] : [50, 100, 250, 500]; }
+function nmSeqData(R) {
+  var step = pick(nmSeqSteps(R)) * (Math.random() < 0.3 ? -1 : 1);
+  var start = Math.abs(step) * rand(2, Math.max(3, Math.floor(R / Math.abs(step)) - 6));
+  if (step < 0) start = Math.abs(step) * rand(6, Math.max(7, Math.floor(R / Math.abs(step)) - 2));
+  var terms = [0, 1, 2, 3, 4].map(function (i) { return start + i * step; });
+  return { step: step, terms: terms };
+}
+function nmSeq(R) {
+  return function () {
+    var d = nmSeqData(R), terms = d.terms;
+    if (Math.random() < 0.5) {
+      var res = terms[4] + d.step;
+      return nmMCQ("Số tiếp theo trong dãy số " + terms.map(fmtN).join(", ") + ", … là số nào?", res, "Dãy số " + (d.step > 0 ? "tăng" : "giảm") + " dần mỗi lần " + fmtN(Math.abs(d.step)) + ": số tiếp theo là " + fmtN(terms[4]) + (d.step > 0 ? " + " : " − ") + fmtN(Math.abs(d.step)) + " = " + fmtN(res) + ".");
+    }
+    var miss = rand(1, 3), val = terms[miss];
+    var shown = terms.map(function (v, i) { return i === miss ? "…" : fmtN(v); }).join(", ");
+    return nmMCQ("Số còn thiếu trong dãy số " + shown + " là số nào?", val, "Dãy số " + (d.step > 0 ? "tăng" : "giảm") + " dần mỗi lần " + fmtN(Math.abs(d.step)) + " nên số còn thiếu là " + fmtN(val) + ".");
+  };
+}
+function nmSeqBlank(R) {
+  return function () {
+    var d = nmSeqData(R), terms = d.terms.slice(0, 4);
+    var miss = rand(1, 2), val = terms[miss];
+    var row = terms.map(function (v, i) { return i === miss ? blankSlot() : '<span class="seq-num">' + fmtN(v) + "</span>"; }).join(" ");
+    var vals = shuffle([val, val + d.step, val - d.step].filter(function (v, i, a2) { return v > 0 && a2.indexOf(v) === i; }));
+    return { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số còn thiếu trong dãy số:", visual: '<div class="seqrow">' + row + "</div>", blankText: String(val), options: vals.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: vals.indexOf(val), cols: 3, explain: "Dãy số " + (d.step > 0 ? "tăng" : "giảm") + " dần mỗi lần " + fmtN(Math.abs(d.step)) + ": " + terms.map(fmtN).join(", ") + "." };
+  };
+}
+function nmMissingBlank(R) {
+  return function () {
+    var form = rand(0, 4), a, b, c, ans, expr;
+    if (form === 0) { a = rand(Math.floor(R / 10), Math.floor(R * 0.85)); ans = rand(50, R - a); c = a + ans; expr = fmtN(a) + " + " + blankSlot() + " = " + fmtN(c); }
+    else if (form === 1) { b = rand(Math.floor(R / 20), Math.floor(R * 0.4)); ans = b + rand(Math.floor(R / 20), Math.floor(R * 0.4)); c = ans - b; expr = blankSlot() + " − " + fmtN(b) + " = " + fmtN(c); }
+    else if (form === 2) { a = nmNum(R); c = rand(Math.floor(R / 20), Math.floor(a * 0.6)); ans = a - c; expr = fmtN(a) + " − " + blankSlot() + " = " + fmtN(c); }
+    else if (form === 3) { a = rand(12, 999); ans = rand(2, 9); c = a * ans; expr = fmtN(a) + " × " + blankSlot() + " = " + fmtN(c); }
+    else { b = rand(2, 9); var q4 = rand(12, Math.floor(R / 12)); ans = b * q4; expr = blankSlot() + " : " + b + " = " + fmtN(q4); }
+    var dUp = ans < 20 ? pick([2, 3]) : pick([10, 100, 1000]);
+    var dDn = ans < 20 ? 1 : pick([1, 10, 100]);
+    var vals = shuffle([ans, ans + dUp, Math.max(1, ans - dDn)].filter(function (v, i, a2) { return v > 0 && a2.indexOf(v) === i; }));
+    while (vals.length < 3) vals.push(ans + vals.length * 7 + 3);
+    return { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số còn thiếu vào ô trống:", visual: '<div class="bigvisual">' + expr + "</div>", blankText: String(ans), options: vals.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: vals.indexOf(ans), cols: 3, explain: "Số còn thiếu là " + fmtN(ans) + ": " + expr.replace(blankSlot(), fmtN(ans)) + "." };
+  };
+}
+function nmCompareExpr(R) {
+  return function () {
+    var form = rand(0, 2), a = rand(Math.floor(R / 10), Math.floor(R * 0.5));
+    var b = rand(100, Math.floor(R / 4)), c = rand(100, Math.floor(R / 4));
+    if (b === c) c += 111;
+    var e1, e2, sign, why;
+    if (form === 0) { e1 = fmtN(a) + " + " + fmtN(b); e2 = fmtN(a) + " + " + fmtN(c); sign = b > c ? ">" : "<"; why = "Hai biểu thức cùng cộng với " + fmtN(a) + " nên chỉ cần so sánh " + fmtN(b) + " và " + fmtN(c) + "."; }
+    else if (form === 1) { e1 = fmtN(a) + " − " + fmtN(b); e2 = fmtN(a) + " − " + fmtN(c); sign = b < c ? ">" : "<"; why = "Cùng trừ đi từ " + fmtN(a) + ": trừ số càng nhỏ thì hiệu càng lớn, nên so sánh " + fmtN(b) + " và " + fmtN(c) + " ngược lại."; }
+    else { var bb = rand(2, 8), cc = bb + rand(1, 9 - bb); e1 = fmtN(a) + " × " + bb; e2 = fmtN(a) + " × " + cc; sign = "<"; why = "Cùng nhân với " + fmtN(a) + ": thừa số còn lại càng lớn thì tích càng lớn (" + bb + " < " + cc + ")."; }
+    var wrongs = [">", "<", "="].filter(function (x) { return x !== sign; }).map(function (x) { return x === "<" ? "&lt;" : (x === ">" ? "&gt;" : x); });
+    return mcqQ("Không cần tính kết quả, hãy chọn dấu đúng: " + e1 + " … " + e2, wrongs, sign === "<" ? "&lt;" : (sign === ">" ? "&gt;" : sign), why + " Vậy " + e1 + (sign === ">" ? " lớn hơn " : " bé hơn ") + e2 + ".");
+  };
+}
+function nmMatchCalc(R) {
+  return function () {
+    var pairs = [], seenRes = {}, tries = 0;
+    while (pairs.length < 4 && tries++ < 40) {
+      var kind = pairs.length % 4, a, b, res, e;
+      if (kind === 0) { a = rand(Math.floor(R / 10), Math.floor(R * 0.8)); b = rand(Math.floor(R / 20), R - a); res = a + b; e = fmtN(a) + " + " + fmtN(b); }
+      else if (kind === 1) { a = nmNum(R); b = rand(Math.floor(R / 20), Math.floor(a * 0.6)); res = a - b; e = fmtN(a) + " − " + fmtN(b); }
+      else if (kind === 2) { a = rand(12, Math.floor(R / 12)); b = rand(2, 9); res = a * b; e = fmtN(a) + " × " + b; }
+      else { a = rand(12, Math.floor(R / 12)); b = rand(2, 9); res = a; a = a * b; e = fmtN(a) + " : " + b; }
+      if (res > 0 && !seenRes[res]) { seenRes[res] = 1; pairs.push([e, String(fmtN(res))]); }
+    }
+    return pairsMatch("Nối phép tính với kết quả đúng nhé!", pairs);
+  };
+}
+function nmAdvPools(R) {
+  return {
+    choose: [nmStoryAddSub(R), nmStoryMulDiv(R), nmDigitValue(R), nmDigitSwap(R), nmCompose(R), nmReadReverse(R), nmRevCalc(R), nmRoundTo(R), nmRoundReverse(R), nmFalseStmt(R), nmSeq(R), nmCompareExpr(R)],
+    blank: [nmMissingBlank(R), nmSeqBlank(R)],
+    match: [nmMatchCalc(R)],
+    games: [nmTFCalc(R), g3SortBigCap(R), g3MemRead(R)]
+  };
+}
+
+/* ---------- m3-giotien: tiền tròn, khẳng định cùng phạm trù ---------- */
+var GT_DENOMS = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
+var GT_ITEMS = [["quyển vở", 8000], ["cây bút", 5000], ["cái thước", 3000], ["hộp bút chì", 12000], ["quyển truyện", 25000], ["ổ bánh mì", 10000], ["hộp sữa", 6000], ["chai nước", 5000], ["gói kẹo", 7000], ["cái bánh bao", 8000], ["tờ vé xe buýt", 5000], ["cốc trà sữa", 15000]];
+function gtMoneyMCQ(prompt, res, explain) {
+  var cand = [res + 1000, res - 1000, res + 2000, res - 2000, res + 5000, res - 5000, res + 10000, res - 10000].filter(function (v, i, a2) { return v > 0 && v !== res && a2.indexOf(v) === i; });
+  var w = shuffle(cand).slice(0, 2);
+  return mcqQ(prompt, [String(fmtN(w[0])) + " đồng", String(fmtN(w[1])) + " đồng"], String(fmtN(res)) + " đồng", explain);
+}
+function gtComboText(combo) {
+  return combo.map(function (cd) { return cd[1] + " tờ " + fmtN(cd[0]) + " đồng"; }).join(" và ");
+}
+function gtCombo() {
+  var ds = shuffle(GT_DENOMS.slice()).slice(0, rand(2, 3));
+  return ds.map(function (d) { return [d, rand(1, 2)]; });
+}
+function gtComboTotal(combo) { return combo.reduce(function (s, cd) { return s + cd[0] * cd[1]; }, 0); }
+function gtMoneyStd() {
+  var combo = gtCombo(), total = gtComboTotal(combo);
+  return gtMoneyMCQ("Em có " + gtComboText(combo) + ". Em có tất cả bao nhiêu tiền?", total, "Cộng số tiền của các tờ: " + combo.map(function (cd) { return cd[1] + " × " + fmtN(cd[0]); }).join(" + ") + " = " + fmtN(total) + " đồng.");
+}
+function gtMoneyBlankStd() {
+  var combo = gtCombo(), total = gtComboTotal(combo);
+  var vals = shuffle([total, total + 1000, total + 2000].filter(function (v, i, a2) { return a2.indexOf(v) === i; }));
+  return { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số tiền còn thiếu:", visual: '<div class="sentence">Em có ' + gtComboText(combo) + ". Em có tất cả " + blankSlot() + " đồng.</div>", blankText: String(total), options: vals.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: vals.indexOf(total), cols: 3, explain: "Tổng số tiền là " + fmtN(total) + " đồng." };
+}
+function gtMoneyChange() {
+  return function () {
+    var item = pick(GT_ITEMS), pay = item[1] <= 40000 ? pick([50000, 100000]) : 100000;
+    var change = pay - item[1];
+    return gtMoneyMCQ("Mua một " + item[0] + " giá " + fmtN(item[1]) + " đồng, em đưa tờ " + fmtN(pay) + " đồng. Người bán trả lại em bao nhiêu tiền?", change, "Tiền trả lại = " + fmtN(pay) + " − " + fmtN(item[1]) + " = " + fmtN(change) + " đồng.");
+  };
+}
+function gtMoneyTwoStep() {
+  return function () {
+    var items = shuffle(GT_ITEMS.slice()).slice(0, 2);
+    var total = items[0][1] + items[1][1], pay = total <= 50000 ? pick([50000, 100000]) : 100000;
+    if (pay <= total) pay = 100000;
+    var left = pay - total;
+    return gtMoneyMCQ("Em có tờ " + fmtN(pay) + " đồng. Em mua một " + items[0][0] + " giá " + fmtN(items[0][1]) + " đồng và một " + items[1][0] + " giá " + fmtN(items[1][1]) + " đồng. Em còn lại bao nhiêu tiền?", left, "Hai món hết " + fmtN(items[0][1]) + " + " + fmtN(items[1][1]) + " = " + fmtN(total) + " đồng; còn lại " + fmtN(pay) + " − " + fmtN(total) + " = " + fmtN(left) + " đồng.");
+  };
+}
+function gtMoneyDiff() {
+  return function () {
+    var c1 = gtCombo(), c2 = gtCombo(), t1 = gtComboTotal(c1), t2 = gtComboTotal(c2), tries = 0;
+    while ((t1 === t2 || Math.abs(t1 - t2) < 3000) && tries++ < 12) { c2 = gtCombo(); t2 = gtComboTotal(c2); }
+    var more = t1 > t2 ? ["Lan", c1, t1] : ["Mai", c2, t2], less = t1 > t2 ? ["Mai", c2, t2] : ["Lan", c1, t1];
+    return gtMoneyMCQ("Lan có " + gtComboText(c1) + ". Mai có " + gtComboText(c2) + ". " + more[0] + " có nhiều hơn " + less[0] + " bao nhiêu tiền?", Math.abs(t1 - t2), more[0] + " có " + fmtN(more[2]) + " đồng, " + less[0] + " có " + fmtN(less[2]) + " đồng; hơn: " + fmtN(more[2]) + " − " + fmtN(less[2]) + " = " + fmtN(Math.abs(t1 - t2)) + " đồng.");
+  };
+}
+function gtTimeText(tot) {
+  var hh = Math.floor(tot / 60), mm = tot % 60;
+  return hh + " giờ" + (mm === 0 ? "" : " " + mm + " phút");
+}
+function gtClockEnd() {
+  return function () {
+    var start = rand(6, 19) * 60 + pick([0, 15, 30, 35, 40, 45, 50]);
+    var dur = pick([20, 25, 30, 35, 40, 45, 50, 55, 70, 80, 90]);
+    var end = start + dur;
+    var acts = [["Buổi học thêm", "buổi học"], ["Buổi tập thể dục", "buổi tập"], ["Chuyến xe buýt", "chuyến xe"], ["Buổi xem phim", "buổi xem phim"], ["Buổi tập bơi", "buổi tập"]];
+    var act = pick(acts);
+    var cand = [end, end + 15, end - 15, end + 30, end - 30].filter(function (v, i, a2) { return v > start && a2.indexOf(v) === i; });
+    var w = shuffle(cand.filter(function (v) { return v !== end; })).slice(0, 2);
+    return mcqQ(act[0] + " bắt đầu lúc " + gtTimeText(start) + " và kéo dài " + dur + " phút. " + act[0] + " kết thúc lúc mấy giờ?", [gtTimeText(w[0]), gtTimeText(w[1])], gtTimeText(end), act[1].charAt(0).toUpperCase() + act[1].slice(1) + " bắt đầu lúc " + gtTimeText(start) + ", kéo dài " + dur + " phút nên kết thúc lúc " + gtTimeText(end) + ".");
+  };
+}
+var GT_WEEKDAYS = ["thứ hai", "thứ ba", "thứ tư", "thứ năm", "thứ sáu", "thứ bảy", "chủ nhật"];
+function gtCalendarAdv() {
+  return function () {
+    var form = rand(0, 2);
+    if (form === 0) {
+      var w0 = rand(0, 6), add = pick([7, 14]), day = rand(1, 31 - add);
+      return mcqQ("Hôm nay là " + GT_WEEKDAYS[w0] + ", ngày " + day + ". Đúng " + (add === 7 ? "một tuần" : "hai tuần") + " nữa là " + GT_WEEKDAYS[w0] + ", ngày bao nhiêu?", [String(day + add + 1), String(day + add - 1)], String(day + add), "Sau mỗi tuần, thứ trong tuần giữ nguyên, ngày tăng thêm 7: " + day + " + " + add + " = " + (day + add) + ".");
+    }
+    if (form === 1) {
+      var w1 = rand(0, 6), d1 = pick([8, 15, 22, 9, 16, 23, 10, 17, 24]);
+      var wAns = (w1 + (d1 - 1)) % 7;
+      var wrongs = shuffle(GT_WEEKDAYS.filter(function (x, ix) { return ix !== wAns; })).slice(0, 2);
+      return mcqQ("Ngày 1 của tháng này là " + GT_WEEKDAYS[w1] + ". Ngày " + d1 + " của tháng này là thứ mấy?", wrongs, GT_WEEKDAYS[wAns], "Từ ngày 1 đến ngày " + d1 + " cách nhau " + (d1 - 1) + " ngày = " + Math.floor((d1 - 1) / 7) + " tuần" + ((d1 - 1) % 7 ? " và " + ((d1 - 1) % 7) + " ngày" : "") + " nên ngày " + d1 + " là " + GT_WEEKDAYS[wAns] + ".");
+    }
+    var w2 = rand(0, 6), days = pick([30, 31]);
+    var wEnd = (w2 + days - 1) % 7;
+    var wrongs2 = shuffle(GT_WEEKDAYS.filter(function (x, ix) { return ix !== wEnd; })).slice(0, 2);
+    return mcqQ("Một tháng có " + days + " ngày và ngày 1 của tháng là " + GT_WEEKDAYS[w2] + ". Ngày cuối cùng của tháng là thứ mấy?", wrongs2, GT_WEEKDAYS[wEnd], "Ngày cuối là ngày " + days + ", cách ngày 1 đúng " + (days - 1) + " ngày = " + Math.floor((days - 1) / 7) + " tuần và " + ((days - 1) % 7) + " ngày nên là " + GT_WEEKDAYS[wEnd] + ".");
+  };
+}
+var GT_STMTS = {
+  gio: [
+    ["Kim phút chỉ số 6 là 30 phút.", "Kim phút chỉ số 6 là 6 phút."],
+    ["Kim phút chỉ số 3 là 15 phút.", "Kim phút chỉ số 3 là 3 phút."],
+    ["Kim phút chỉ số 9 là 45 phút.", "Kim phút chỉ số 9 là 20 phút."],
+    ["Một giờ có 60 phút.", "Một giờ có 100 phút."],
+    ["Nửa giờ là 30 phút.", "Nửa giờ là 15 phút."],
+    ["Kim phút quay một vòng là 60 phút.", "Kim phút quay một vòng là 12 phút."],
+    ["7 giờ kém 15 phút là 6 giờ 45 phút.", "7 giờ kém 15 phút là 7 giờ 15 phút."],
+    ["Kim giờ chỉ giữa số 7 và số 8, kim phút chỉ số 6 là 7 giờ 30 phút.", "Kim giờ chỉ giữa số 7 và số 8, kim phút chỉ số 6 là 6 giờ 30 phút."]
+  ],
+  lich: [
+    ["Một tuần lễ có 7 ngày.", "Một tuần lễ có 5 ngày."],
+    ["Một năm có 12 tháng.", "Một năm có 10 tháng."],
+    ["Tháng 1 có 31 ngày.", "Tháng 1 có 30 ngày."],
+    ["Tháng 4 có 30 ngày.", "Tháng 4 có 31 ngày."],
+    ["Tháng 2 của năm thường có 28 ngày.", "Tháng 2 của năm thường có 30 ngày."],
+    ["Tháng 12 là tháng cuối cùng của năm.", "Tháng 10 là tháng cuối cùng của năm."],
+    ["Sau chủ nhật là thứ hai.", "Sau chủ nhật là thứ bảy."],
+    ["Một năm thường có 365 ngày.", "Một năm thường có 360 ngày."]
+  ],
+  tien: [
+    ["Tờ 500 000 đồng là tờ tiền có mệnh giá lớn nhất đang lưu hành.", "Tờ 100 000 đồng là tờ tiền có mệnh giá lớn nhất đang lưu hành."],
+    ["Một tờ 100 000 đồng đổi được 10 tờ 10 000 đồng.", "Một tờ 100 000 đồng đổi được 5 tờ 10 000 đồng."],
+    ["Ba tờ 20 000 đồng là 60 000 đồng.", "Ba tờ 20 000 đồng là 40 000 đồng."],
+    ["Có tờ tiền mệnh giá 2 000 đồng.", "Có tờ tiền mệnh giá 3 000 đồng."],
+    ["Một tờ 50 000 đồng bằng năm tờ 10 000 đồng.", "Một tờ 50 000 đồng bằng hai tờ 10 000 đồng."],
+    ["Ba tờ 5 000 đồng là 15 000 đồng.", "Ba tờ 5 000 đồng là 10 000 đồng."],
+    ["Một tờ 200 000 đồng đổi được hai tờ 100 000 đồng.", "Một tờ 200 000 đồng đổi được bốn tờ 100 000 đồng."]
+  ]
+};
+function gtFindFalse() {
+  var cat = pick(["gio", "lich", "tien"]);
+  var bank = shuffle(GT_STMTS[cat].slice()).slice(0, 3);
+  var fi = rand(0, 2);
+  var trues = bank.filter(function (p, i) { return i !== fi; }).map(function (p) { return p[0]; });
+  var q = mcqQ("Khẳng định nào dưới đây SAI?", trues, bank[fi][1], "Khẳng định sai là: «" + bank[fi][1] + "» Khẳng định đúng là: «" + bank[fi][0] + "»");
+  q.roundIdentity = { type: "bundle", facts: bank.map(function (p, i) { return i === fi ? p[1] : p[0]; }) };
+  return q;
+}
+function gtTF() {
+  var all = GT_STMTS.gio.concat(GT_STMTS.lich, GT_STMTS.tien);
+  var sel = shuffle(all.slice()).slice(0, 3);
+  var pattern = shuffle(Math.random() < 0.5 ? [true, true, false] : [true, false, false]);
+  var rounds = sel.map(function (p, i) {
+    var truth = pattern[i];
+    return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + (truth ? p[0] : p[1]) + "</div>", truth: truth };
+  });
+  return tfQ("Đúng hay sai? Đọc kĩ từng ý nhé!", rounds);
+}
+function gtMoneyBlank() {
+  return function () {
+    var item = pick(GT_ITEMS), pay = item[1] <= 40000 ? pick([50000, 100000]) : 100000;
+    var change = pay - item[1];
+    var vals = shuffle([change, change + 1000, change + 2000].filter(function (v, i, a2) { return a2.indexOf(v) === i; }));
+    return { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số tiền còn thiếu:", visual: '<div class="sentence">Mua một ' + item[0] + " giá " + fmtN(item[1]) + " đồng, đưa tờ " + fmtN(pay) + " đồng. Người bán trả lại " + blankSlot() + " đồng.</div>", blankText: String(change), options: vals.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: vals.indexOf(change), cols: 3, explain: "Tiền trả lại = " + fmtN(pay) + " − " + fmtN(item[1]) + " = " + fmtN(change) + " đồng." };
+  };
+}
+function gtAdvPools() {
+  return {
+    choose: [gtMoneyStd, gtMoneyChange(), gtMoneyTwoStep(), gtMoneyDiff(), gtClockEnd(), gtCalendarAdv(), gtFindFalse, g3ClockElapsed, g3MoneyChange],
+    blank: [gtMoneyBlank(), qBlankClock],
+    match: [g3MoneyMatch, mClockHour],
+    games: [gtTF, gSortDays, gMemClock, gTFClock]
+  };
+}
+function nmRevFacts(factsArr) {
+  /* B1-sửa lớp nhỏ (2026-10-15): bản cũ là bộ sinh hỏi ĐẢO NGƯỢC ("Đáp án
+     … là câu trả lời đúng cho câu hỏi nào?") — cùng họ khuôn T4 mà chuẩn
+     §6.3 loại khỏi Lớp 1–3. Nay hỏi thẳng vào nội dung dữ kiện, giữ nguyên
+     vị trí bộ sinh trong pools nên ngân hàng không đổi cấu trúc. */
+  return function () {
+    var f = pick(factsArr);
+    var wrongs = shuffle(factsArr.filter(function (x) { return x !== f && x[1] !== f[1]; })).slice(0, 2).map(function (x) { return x[1]; });
+    return mcqQ(f[0], wrongs, f[1], f[4] || (f[0].replace(/\?$/, "") + ": " + f[1] + "."));
+  };
+}
+function nmFixLabel(t) {
+  var seen = {}, seenA = {}, n = 0, a = 0, k, g, i, q;
+  ["choose", "blank", "match", "games"].forEach(function (pk) {
+    (t.pools[pk] || []).forEach(function (gen) {
+      for (i = 0; i < 20; i++) { try { q = gen(); } catch (e) { q = null; } if (q) { k = qSig3(q); if (!seen[k]) { seen[k] = 1; n++; } } }
+    });
+  });
+  if (t.advPools) ["choose", "blank", "match", "games"].forEach(function (pk) {
+    (t.advPools[pk] || []).forEach(function (gen) {
+      for (i = 0; i < 20; i++) { try { q = gen(); } catch (e) { q = null; } if (q) { k = qSig3(q); if (!seenA[k]) { seenA[k] = 1; a++; } } }
+    });
+  });
+  t.bankB = n; t.advBankB = a;
+  t.sub = String(t.sub).replace(/ • \d+\+ câu( hỏi)?( · \d+\+ nâng cao)?$/, "") + " • " + n + "+ câu · " + a + "+ nâng cao";
+  try { if (window.__BANKB) { for (var key in window.__BANKB) { if (key.split("|")[2] === t.id && window.__BANKB[key]) { window.__BANKB[key].n = n; window.__BANKB[key].adv = a; } } } } catch (e) {}
+}
+function nmRebuild3(gtLen) {
+  if (typeof GRADES === "undefined" || !GRADES[3]) return;
+  GRADES[3].subjects.forEach(function (s) {
+    s.topics.forEach(function (t) {
+      if (t.id === "m3-so10000") { t.advPools = nmAdvPools(10000); nmFixLabel(t); }
+      if (t.id === "m3-so100000") { t.advPools = nmAdvPools(100000); nmFixLabel(t); }
+      if (t.id === "m3-giotien") {
+        if (gtLen) ["choose", "blank", "match", "games"].forEach(function (pk) {
+          if (t.pools[pk] && gtLen[pk] != null && t.pools[pk].length > gtLen[pk]) t.pools[pk].length = gtLen[pk];
+        });
+        t.pools.choose.push(gtFindFalse, nmRevFacts(G3_EXTRA_FACTS["m3-giotien"]));
+        t.pools.games.push(gtTF);
+        t.advPools = gtAdvPools();
+        nmFixLabel(t);
+      }
+    });
+  });
+}
+
 /* ---------- TIẾNG ANH 3: BỘ SINH THÊM CHO MỖI UNIT ---------- */
 function eng3OddOne(u) {
   var mine = shuffle(u.words.slice()).slice(0, 3);
@@ -779,12 +1376,16 @@ function eng3BlankTail(u) {
 }
 function eng3TFUnit(u) {
   return function () {
-    var rounds = [], used = shuffle(u.words.slice());
+    var items = [], used = shuffle(u.words.slice());
     for (var i = 0; i < 3 && i < used.length; i++) {
       var w = used[i], truth = Math.random() < 0.5;
       var shown = truth ? w[1] : pick(u.words.filter(function (x) { return x !== w; }))[1];
-      rounds.push({ visual: w[2] + " <b>" + w[0] + "</b> nghĩa là «" + shown + "»", truth: truth });
+      items.push({ w: w, truth: truth, shown: shown, correct: w[1] });
     }
+    /* B6: cân bằng phán quyết — trước đây 3 vòng độc lập, ~25% màn đồng phán quyết
+       (họ lớn nhất còn lại ở Lớp 3: các màn «Unit» — Đúng hay sai?). */
+    tfBalanceItems(items, function (it) { var c = u.words.filter(function (x) { return x !== it.w && x[1] !== it.w[1]; }); return c.length ? pick(c)[1] : null; });
+    var rounds = items.map(function (it) { return { visual: it.w[2] + " <b>" + it.w[0] + "</b> nghĩa là «" + it.shown + "»", truth: it.truth }; });
     return tfQ("«" + u.title + "» — Đúng hay sai?", rounds);
   };
 }
@@ -919,7 +1520,7 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 "m3-donvi": ["1 cm = 10 mm; 1 m = 1000 mm.","1 kg = 1000 g; 1 l = 1000 ml.","Nhiệt độ đo bằng độ C (°C): nước đá đang tan ở 0°C, nước đang sôi ở 100°C."],
 "m3-nc1000": ["Thứ tự tính biểu thức: trong ngoặc trước; không có ngoặc thì nhân, chia trước, cộng, trừ sau.","Biểu thức chỉ có cộng, trừ (hoặc chỉ có nhân, chia) thì tính lần lượt từ trái sang phải.","Nhân, chia số có ba chữ số với số có một chữ số: đặt tính thẳng cột như đã học."],
 "m3-so10000": ["Số đến 10 000 gồm các hàng: chục nghìn, nghìn, trăm, chục, đơn vị.","So sánh các số: số có nhiều chữ số hơn thì lớn hơn; bằng nhau về số chữ số thì so từng hàng từ trái sang phải.","Làm tròn số đến hàng trăm: nhìn chữ số hàng chục — từ 5 trở lên thì tròn lên, dưới 5 thì tròn xuống."],
-"m3-lama": ["Chữ số La Mã cơ bản: I = 1, V = 5, X = 10, L = 50.","Chữ nhỏ đứng trước chữ lớn thì trừ: IV = 4, IX = 9; chữ giống nhau lặp lại tối đa 3 lần: III = 3, XX = 20.","Đọc số La Mã từ trái sang phải, cộng giá trị các chữ số (trừ trường hợp trừ ở trên)."],
+"m3-lama": ["Chữ số La Mã cơ bản: I = 1, V = 5, X = 10. Lớp 3 viết các số La Mã trong phạm vi 20.","Chữ nhỏ đứng trước chữ lớn thì trừ: IV = 4, IX = 9; chữ giống nhau lặp lại tối đa 3 lần: III = 3, XX = 20.","Đọc số La Mã từ trái sang phải, cộng giá trị các chữ số (trừ trường hợp trừ ở trên)."],
 "m3-cvdt": ["Chu vi của hình bằng tổng độ dài các cạnh của hình.","Chu vi hình chữ nhật = (chiều dài + chiều rộng) × 2; chu vi hình vuông = độ dài 1 cạnh × 4.","Diện tích hình chữ nhật = chiều dài × chiều rộng; diện tích hình vuông = cạnh × cạnh (đơn vị diện tích: cm²)."],
 "m3-calc10000": ["Cộng, trừ số có bốn chữ số: đặt thẳng cột theo hàng, tính từ phải sang trái.","Nhân, chia số có bốn chữ số với số có một chữ số làm như với số có ba chữ số; kiểm tra kết quả bằng phép tính ngược."],
 "m3-so100000": ["Số có năm chữ số gồm các hàng: chục nghìn, nghìn, trăm, chục, đơn vị; số lớn nhất có năm chữ số là 99 999.","Làm tròn số đến hàng nghìn hay chục nghìn: xét chữ số ở hàng ngay bên phải hàng làm tròn.","Cộng, trừ, nhân, chia trong phạm vi 100 000 vẫn đặt tính theo hàng như các phạm vi đã học."],
@@ -935,5 +1536,19 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 if (typeof window.vnNum4 !== "function") {
   window.vnNum4 = function (n) { return window.vnNum3(n); };
 }
+  /* B1-SỬA (2026-10-15): cất độ dài pools của m3-giotien TRƯỚC Phase B để sau
+     đó gỡ phần mở rộng tầng thường do trang vỏ thêm vào (nguồn câu tìm khẳng
+     định sai lệch phạm trù + đáp án nhiễu tiền không tròn), thay bằng bộ sinh
+     an toàn phạm trù của chính file này. */
+  var __nmGtLen = null;
+  try {
+    GRADES[3].subjects.forEach(function (s) { s.topics.forEach(function (t) {
+      if (t.id === "m3-giotien") { __nmGtLen = {}; ["choose", "blank", "match", "games"].forEach(function (k) { __nmGtLen[k] = (t.pools[k] || []).length; }); }
+    }); });
+  } catch (e) {}
   if (typeof window.__phaseBProcessGrade === "function") window.__phaseBProcessGrade(3);
+  /* B1-SỬA (2026-10-15): thay tầng nâng cao của m3-so10000 / m3-so100000 /
+     m3-giotien bằng bộ sinh nm/gt ở trên (số ngẫu nhiên mới mỗi câu, tiền
+     tròn, khẳng định cùng phạm trù) và đo lại nhãn số câu cho khớp. */
+  try { nmRebuild3(__nmGtLen); } catch (e) {}
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(3);

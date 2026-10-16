@@ -6,28 +6,42 @@
    ================================================================ */
     /* ================= TOÁN 7 ================= */
     function fmt(n){ return (Math.round(n*100)/100).toString().replace(".", ","); }
-    function g7Fraction(n,d){
-      if(!Number.isInteger(n)||!Number.isInteger(d)||d===0)throw Error('Invalid rational');
-      if(d<0){n=-n;d=-d;}var a=Math.abs(n),b=d;while(b){var r=a%b;a=b;b=r;}var g=a||1;return (n/g)+'/'+(d/g);
-    }
-    function g7FractionQuestion(prompt,n,d,candidates,explain,visual){
-      var answer=g7Fraction(n,d),values=[answer];
-      (candidates||[]).concat([[n+d,d],[n-d,d],[n+2*d,d],[n-2*d,d],[-n,d]]).forEach(function(p){
-        if(!p||p[1]===0||values.length>=4)return;var s=g7Fraction(p[0],p[1]);if(values.indexOf(s)<0)values.push(s);
-      });
-      for(var k=3;values.length<4;k++){var s=g7Fraction(n+k*d,d);if(values.indexOf(s)<0)values.push(s);}
-      var options=shuffle(values),q={prompt:prompt,visual:visual||'',options:options.map(function(s){return {html:'<span class="opt-num rational-num">'+s+'</span>'};}),answer:options.indexOf(answer),cols:2,explain:explain||('Kết quả chính xác, rút gọn: '+answer+'.')};
-      return identifyRoundFact(q,prompt+(visual?' | '+roundText(visual):''));
+    function g7Gcd(x, y){ x = Math.abs(x); y = Math.abs(y); while (y) { var t = x % y; x = y; y = t; } return x || 1; }
+    /* Dạng hiển thị CHUẨN của phân số (đợt sửa phân số 2026-10-15): tính bằng tử/mẫu
+       nguyên, rút gọn bằng ƯCLN, mẫu luôn dương, mẫu sau rút gọn = 1 thì viết số
+       nguyên trơn (không "/1"). Mọi toán hạng/đáp án/lựa chọn của các bộ sinh phân
+       số m7-huu-ti đều qua hàm này nên khử trùng theo chuỗi = theo GIÁ TRỊ. */
+    function g7FracStr(n, d){
+      if (d < 0) { n = -n; d = -d; }
+      var g = g7Gcd(n, d); n = n / g; d = d / g;
+      return d === 1 ? String(n) : n + "/" + d;
     }
     function g7FracCalc(){
       var a=rand(1,9), b=pick([2,3,4,5,6]), c=rand(1,9), d=pick([2,3,4,5,6]);
       var add = Math.random()<0.5;
-      var n=add?a*d+c*b:a*d-c*b,den=b*d;
-      return g7FractionQuestion('Tính: '+a+'/'+b+(add?' + ':' − ')+c+'/'+d,n,den,[[add?a+c:a-c,b+d]],'Quy đồng mẫu '+den+': '+n+'/'+den+' = '+g7Fraction(n,den)+'.');
+      /* Toán hạng ở dạng đơn giản nhất: rút gọn trước khi hiển thị; toán hạng có
+         giá trị nguyên thì viết số nguyên (4/4 + 6/5 -> "1 + 6/5"; 6/2 -> 3). */
+      var ga = g7Gcd(a, b), a1 = a / ga, b1 = b / ga, gc = g7Gcd(c, d), c1 = c / gc, d1 = d / gc;
+      var opA = g7FracStr(a, b), opC = g7FracStr(c, d), sym = add ? " + " : " − ";
+      var n = add ? a1 * d1 + c1 * b1 : a1 * d1 - c1 * b1, den = b1 * d1;
+      var ans = g7FracStr(n, den);
+      /* Nhiễu dựng ở tầng tử/mẫu rồi chuẩn hoá qua g7FracStr: khử trùng theo GIÁ
+         TRỊ sau rút gọn (không theo chuỗi), có nhiễu dự phòng để luôn đủ 4 lựa chọn. */
+      var candPairs = [[n + den, den], [n - den, den], [n + 2 * den, den], [n - 2 * den, den], [add ? a1 + c1 : a1 - c1, b1 + d1], [n + 1, den], [n - 1, den]];
+      var vals = [ans];
+      candPairs.forEach(function (pr) { var s = g7FracStr(pr[0], pr[1]); if (vals.indexOf(s) === -1 && vals.length < 4) vals.push(s); });
+      var kk = 3;
+      while (vals.length < 4) { var s2 = g7FracStr(n + kk * den, den); if (vals.indexOf(s2) === -1) vals.push(s2); kk++; }
+      var opts = shuffle(vals);
+      var rawStr = n + "/" + den, explain;
+      if (den === 1) explain = (add ? "Cộng" : "Trừ") + " hai số nguyên: " + opA + sym + opC + " = " + ans + ".";
+      else if (n === 0) explain = "Quy đồng mẫu số chung " + den + ": " + opA + sym + opC + " = 0/" + den + " = 0.";
+      else explain = "Quy đồng mẫu số chung " + den + ": " + opA + sym + opC + " = " + rawStr + (rawStr !== ans ? " = " + ans : "") + ".";
+      return { prompt:"Tính: " + opA + sym + opC, visual:'<div class="expr">' + opA + sym + opC + " = ?</div>", options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(ans), cols:4, explain: explain };
     }
     function g7Power(){
       var base=pick([2,3,5]), e=pick([2,3]); var ans=Math.pow(base,e); var sup = e===2? "²" : "³";
-      return g7FractionQuestion('Tính '+base+sup+' và viết kết quả dưới dạng phân số.',ans,1,[[base*e,1],[Math.pow(base,e-1),1]],base+sup+' = '+Array(e+1).join(base+'×').slice(0,-1)+' = '+g7Fraction(ans,1)+'.');
+      return calcMCQ("Luỹ thừa",""+base+sup+" = ?", ans, 0, 200, base+sup+" = "+Array(e+1).join(base+"×").slice(0,-1)+" = "+ans+".");
     }
     function g7Sqrt(){
       var r=pick([3,4,5,6,7,8,9,11,12,15]); var n=r*r;
@@ -48,12 +62,16 @@
     function g7Prob(){
       var total=pick([4,5,6,10,20]); var fav=rand(1,total-1);
       if (fav*2===total) fav = fav>1? fav-1 : fav+1; /* tránh đáp án trùng (total-fav)/total = fav/total */
-      var ans = fav+"/"+total;
-      var rawP = [ans, total+"/"+fav, fav+"/"+(total+fav), (total-fav)+"/"+total, "1/"+total];
-      var uniqP = [];
-      rawP.forEach(function(o){ if (uniqP.indexOf(o)===-1) uniqP.push(o); });
+      /* B6: kết quả xác suất LUÔN tối giản (đây là kết quả, không thuộc ngoại lệ nghịch đảo);
+         mọi lựa chọn cũng tối giản, mẫu 1 viết thành số nguyên, khử trùng theo GIÁ TRỊ. */
+      var ans = probRed(fav,total);
+      function pVal(s){ var p=String(s).split("/"); return p.length===2? (+p[0])/(+p[1]) : +s; }
+      function fmtP(n,d){ var s=probRed(n,d); var p=s.split("/"); return p[1]==="1"? p[0] : s; }
+      var candP = [ans, fmtP(total,fav), fmtP(fav,total+fav), fmtP(total-fav,total), "1/"+total, fmtP(fav+1,total), fmtP(1,total+fav)];
+      var uniqP = [], seenV = {};
+      candP.forEach(function(o){ var v=pVal(o); if (!seenV[v]) { seenV[v]=1; uniqP.push(o); } });
       var opts = shuffle(uniqP.slice(0,4));
-      return { prompt:"Xác suất", visual:'<div class="sentence">Một hộp có '+total+" thẻ giống nhau, trong đó "+fav+" thẻ màu đỏ. Rút ngẫu nhiên 1 thẻ. Xác suất rút được thẻ đỏ là?</div>", options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(ans), cols:4, explain:"Xác suất = số kết quả thuận lợi / tổng số kết quả = "+fav+"/"+total+"." };
+      return { prompt:"Xác suất", visual:'<div class="sentence">Một hộp có '+total+" thẻ giống nhau, trong đó "+fav+" thẻ màu đỏ. Rút ngẫu nhiên 1 thẻ. Xác suất rút được thẻ đỏ là?</div>", options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(ans), cols:4, explain:"Xác suất = số kết quả thuận lợi / tổng số kết quả = "+fav+"/"+total+((ans!==fav+"/"+total)? " = "+ans : "")+"." };
     }
     function g7BoxVol(){
       var a=rand(2,6), b=rand(2,5), c=rand(2,5); var v=a*b*c;
@@ -2153,16 +2171,43 @@ if (typeof __applyExtra127 === "function") __applyExtra127(7);
 /* ---------- Bộ sinh biến thể Lớp 7 (gốc: block 7 của master) ---------- */
 function g7OppInvAbs() {
   var type = rand(0, 2);
-  if (type === 0) { var a = rand(2, 9), b = pick([2, 3, 4, 5]); return g7FractionQuestion('Số đối của '+a+'/'+b+' là phân số nào?',-a,b,[[b,a],[-b,a],[a,b]],'Hai số đối có tổng bằng 0. Số đối cần tìm: '+g7Fraction(-a,b)+'.'); }
-  if (type === 1) { var c = rand(2, 8), d = pick([3, 4, 5, 6]); return g7FractionQuestion('Số nghịch đảo của '+c+'/'+d+' là phân số nào?',d,c,[[c,d],[-d,c],[-c,d]],'Đổi tử và mẫu của phân số khác 0: '+g7Fraction(d,c)+'.'); }
+  if (type === 0) { var a = rand(2, 9), b = pick([2, 3, 4, 5]); var frac = g7FracStr(a, b); var ans = g7FracStr(-a, b);
+    /* Số đối: phân số đã cho hiện ở dạng tối giản, đáp án là phân số tối giản;
+       nhiễu khử trùng theo GIÁ TRỊ qua dạng chuẩn g7FracStr. */
+    var cands = [g7FracStr(b, a), g7FracStr(-b, a), g7FracStr(a, b), g7FracStr(-(a + 1), b), g7FracStr(a + 1, b), g7FracStr(-a, b + 1)];
+    var wrongs = []; cands.forEach(function (s) { if (s !== ans && wrongs.indexOf(s) === -1 && wrongs.length < 2) wrongs.push(s); });
+    return mcqQ("Số đối của " + frac + " là?", wrongs, ans, "Số đối của " + frac + " là " + ans + " (hai số đối nhau có tổng bằng 0)."); }
+  if (type === 1) { var c = rand(2, 8), d = pick([3, 4, 5, 6]);
+    /* NGOẠI LỆ do vu chốt (2026-10-15): đáp án số nghịch đảo giữ NGUYÊN DẠNG đảo của
+       phân số đã cho (nghịch đảo của 2/4 là "4/2", KHÔNG rút gọn thành 2); phân số đã
+       cho cũng giữ nguyên dạng sinh ra. Nhiễu hiển thị nguyên dạng nhưng phải khác
+       GIÁ TRỊ với đáp án và với nhau (so sánh qua dạng rút gọn g7FracStr). */
+    var ansR = d + "/" + c, ansKey = g7FracStr(d, c);
+    var candPairs = [[c, d], [-d, c], [d, c + 1], [c + 1, d], [-c, d], [d + 1, c]];
+    var wrongsR = [], seenKeys = {};
+    candPairs.forEach(function (pr) { if (wrongsR.length >= 2) return; var key = g7FracStr(pr[0], pr[1]); if (key === ansKey || seenKeys[key]) return; seenKeys[key] = 1; wrongsR.push(pr[0] < 0 ? "-" + (-pr[0]) + "/" + pr[1] : pr[0] + "/" + pr[1]); });
+    return mcqQ("Số nghịch đảo của " + c + "/" + d + " là?", wrongsR, ansR, "Nghịch đảo của a/b (a, b ≠ 0) là b/a: nghịch đảo của " + c + "/" + d + " là " + ansR + "."); }
   var e = rand(2, 12);
-  return g7FractionQuestion('Giá trị tuyệt đối của '+(-e)+' viết dưới dạng phân số là bao nhiêu?',e,1,[[-e,1],[0,1]],'|'+(-e)+'| = '+g7Fraction(e,1)+'.');
+  return mcqQ("Giá trị tuyệt đối của " + (-e) + " là?", [String(-e), "0"], String(e), "|" + (-e) + "| = " + e + " (giá trị tuyệt đối luôn không âm).");
 }
 function g7FracMulDiv() {
   var a = rand(1, 6), b = pick([2, 3, 4, 5]), c = rand(1, 6), d = pick([2, 3, 4, 5]), mul = Math.random() < 0.5;
-  var num = mul ? a * c : a * d, den = mul ? b * d : b * c;
-  function red(n, dd) { var g = 1; for (var i = 2; i <= Math.min(n, dd); i++) if (n % i === 0 && dd % i === 0) g = i; return (n / g) + "/" + (dd / g); }
-  return g7FractionQuestion('Tính: '+a+'/'+b+(mul?' × ':' : ')+c+'/'+d,num,den,[[num+den,den],[num,den+num],[num+1,den]],(mul?'Nhân tử với tử, mẫu với mẫu':'Chia là nhân với nghịch đảo')+' rồi rút gọn: '+g7Fraction(num,den)+'.');
+  /* Toán hạng ở dạng đơn giản nhất: rút gọn trước khi hiển thị; giá trị nguyên -> số nguyên. */
+  var ga = g7Gcd(a, b), a1 = a / ga, b1 = b / ga, gc = g7Gcd(c, d), c1 = c / gc, d1 = d / gc;
+  var opA = g7FracStr(a, b), opC = g7FracStr(c, d), sym = mul ? " × " : " : ";
+  var num = mul ? a1 * c1 : a1 * d1, den = mul ? b1 * d1 : b1 * c1;
+  var ans = g7FracStr(num, den);
+  /* Nhiễu chuẩn hoá qua g7FracStr (hết dạng "1/1", "k/1"), khử trùng theo GIÁ TRỊ,
+     có nhiễu dự phòng để luôn đủ 4 lựa chọn phân biệt. */
+  var candPairs = [[num + den, den], [num, den + num], [num + 1, den], [num + 2, den + 1], [num + 2 * den, den], [num - den, den], [num, den + 1]];
+  var vals = [ans];
+  candPairs.forEach(function (pr) { if (pr[0] <= 0) return; var s = g7FracStr(pr[0], pr[1]); if (vals.indexOf(s) === -1 && vals.length < 4) vals.push(s); });
+  var kk = 3;
+  while (vals.length < 4) { var s2 = g7FracStr(num + kk * den, den); if (vals.indexOf(s2) === -1) vals.push(s2); kk++; }
+  var opts = shuffle(vals);
+  return { prompt: "Tính: " + opA + sym + opC, visual: '<div class="expr">' + opA + sym + opC + " = ?</div>",
+    options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(ans), cols: 4,
+    explain: (mul ? "Nhân tử với tử, mẫu với mẫu" : "Chia là nhân với nghịch đảo") + " rồi rút gọn: kết quả " + ans + "." };
 }
 function g7PolyDegree() {
   var a = rand(2, 6), b = rand(2, 9), deg = pick([2, 3, 4]);
@@ -2173,7 +2218,10 @@ function g7ProbDice2() {
   var favCount = 6 - face + 1;
   function red(n, dd) { var g = 1; for (var i = 2; i <= Math.min(n, dd); i++) if (n % i === 0 && dd % i === 0) g = i; return (n / g) + "/" + (dd / g); }
   var ans = red(favCount, 6);
-  var raw = [ans, red(1, 6), red(5, 6), red(favCount + 1, 6), "1/2"];
+  /* B6: red(favCount + 1, 6) khi favCount = 5 cho ra "1/1" — dạng mẫu 1 bị cấm;
+     chỉ dùng khi favCount < 5 và bổ sung sẵn hai nhiễu tối giản để luôn đủ 4 lựa chọn. */
+  var raw = [ans, red(1, 6), red(5, 6), "1/2", red(2, 6), red(4, 6)];
+  if (favCount < 5) raw.push(red(favCount + 1, 6));
   var un = []; raw.forEach(function (o) { if (un.indexOf(o) === -1) un.push(o); });
   var opts = shuffle(un.slice(0, 4));
   return { prompt: "Xác suất", visual: '<div class="sentence">Gieo một con xúc xắc cân đối. Xác suất xuất hiện mặt có số chấm lớn hơn hoặc bằng ' + face + " là?</div>",
@@ -2373,7 +2421,8 @@ function g7ProbBag() {
 }
 function g7ProbSpin() {
   var n = rand(4, 10), ans = "1/" + n;
-  var opts = probOpts(ans, ["1/" + (n + 1), "1/" + (n - 1), n + "/1", "1/2"]);
+  /* B6: bỏ nhiễu dạng "n/1" (kết quả/hiển thị không bao giờ có mẫu 1) — thay bằng phân số tối giản (n−1)/n */
+  var opts = probOpts(ans, ["1/" + (n + 1), "1/" + (n - 1), probRed(n - 1, n), "1/2"]);
   return { prompt: "Xác suất", visual: '<div class="sentence">Một bánh xe may mắn có ' + n + " ô bằng nhau đánh số từ 1 đến " + n + ". Xác suất kim chỉ vào ô số 3 là?</div>",
     options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(ans), cols: 4,
     explain: "Chỉ có 1 ô số 3 trong " + n + " ô bằng nhau: xác suất = 1/" + n + "." };
@@ -2636,34 +2685,25 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 });
   if (typeof __labelGrade127 === "function") __labelGrade127(7);
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(7);
-
-/* Bản vá bàn giao 15/10/2026: kết quả số của Chương I giữ dạng phân số.
-   Các phép tính gốc ở trên đã tính bằng tử/mẫu nguyên trước khi thu hoạch
-   dữ kiện. Lớp bao này chỉ chuẩn hoá cách hiển thị kết quả, không làm tròn. */
+/* ================= B2 — ĐỒ THỊ QUÃNG ĐƯỜNG – THỜI GIAN (KHTN 7, chủ đề kh-tocdo) =================
+   Bộ sinh mới: vật chuyển động đều với tốc độ v trong t giây; đồ thị s–t là đoạn
+   thẳng từ gốc O tới (t, v·t) — hình sinh từ chính (v, t) bằng figSTSVG của vỏ.
+   Đáp án (tốc độ v) KHÔNG in trên hình: học sinh đọc điểm cuối đồ thị rồi tính
+   v = s : t, đúng kĩ năng SGK KHTN 7 Bài 9. figureOnly=true để tầng thu hoạch
+   không suy diễn thành câu chữ thiếu hình. */
+function kh7STGraph() {
+  var v = pick([2, 3, 4, 5, 6, 8, 10]), t = pick([2, 3, 4, 5, 6]), s = v * t;
+  var q = numMCQ6("Một vật chuyển động đều. Đồ thị quãng đường – thời gian của vật trong " + t + " giây đầu được vẽ như hình. Tốc độ của vật bằng bao nhiêu m/s?", "v = s : t = ?", v, "Trên đồ thị, sau " + t + " s vật đi được " + s + " m. Tốc độ v = s : t = " + s + " : " + t + " = " + v + " m/s.", 2);
+  q.figure = figSTSVG(t, s); q.figureOnly = true;
+  return q;
+}
 (function () {
-  var subj=GRADES[7].subjects.find(function(s){return s.id==='g7-math';});
-  var t=subj&&subj.topics.find(function(t){return t.id==='m7-huu-ti';});
-  if(!t)return;
-  function numberFraction(s){
-    s=String(s).trim().replace(/−/g,'-').replace(',','.');
-    var m=/^(-?\d+)\/(-?\d+)$/.exec(s);
-    if(m&&+m[2]!==0)return g7Fraction(+m[1],+m[2]);
-    m=/^(-?)(\d+)(?:\.(\d+))?$/.exec(s);
-    if(!m)return null;
-    var den=Math.pow(10,(m[3]||'').length),num=(+m[2]*den+ +(m[3]||0))*(m[1]?-1:1);
-    return g7Fraction(num,den);
-  }
-  function face(html){var v=numberFraction(roundText(html));return v===null?html:'<span class="opt-num rational-num">'+v+'</span>';}
-  function normalize(q){
-    if(!q)return q;
-    if(q.options)q.options.forEach(function(o){o.html=face(o.html);});
-    if(q.blankText!=null){var v=numberFraction(q.blankText);if(v!==null)q.blankText=v;}
-    if(q.pairs)q.pairs.forEach(function(p){['l','r','a','b'].forEach(function(k){if(p[k]!=null)p[k]=face(p[k]);});});
-    if(q.kind==='catch'&&q.items)q.items.forEach(function(i){i.html=face(i.html);});
-    return q;
-  }
-  [t.pools,t.advPools].forEach(function(pools){if(!pools)return;['choose','blank','match','games'].forEach(function(k){pools[k]=(pools[k]||[]).map(function(gen){return function(){return normalize(gen());};});});});
-  if(t.knowledge){(t.knowledge.facts||[]).forEach(function(f){var v=numberFraction(f.a);if(v!==null)f.a=v;(f.wrongs||[]).forEach(function(w,i){var v=numberFraction(w);if(v!==null)f.wrongs[i]=v;});});(t.knowledge.examples||[]).forEach(function(e){var v=numberFraction(e.answer);if(v!==null)e.answer=v;});}
-  if(t.knowledge&&t.knowledge.pairs)t.knowledge.pairs.forEach(function(p){var v=numberFraction(p[1]);if(v!==null)p[1]=v;});
-  t.exactRationalResults=true;
+  try {
+    if (typeof GRADES === "undefined" || !GRADES || !GRADES[7]) return;
+    GRADES[7].subjects.forEach(function (sj) {
+      (sj.topics || []).forEach(function (tp) {
+        if (tp.id === "kh-tocdo" && tp.pools && tp.pools.choose) tp.pools.choose.push(kh7STGraph, kh7STGraph);
+      });
+    });
+  } catch (e) {}
 })();

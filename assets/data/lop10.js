@@ -173,7 +173,12 @@
     if (v === 0) { var b = rand(2, 9), c2 = rand(2, 9); var a2 = b * b + c2 * c2 - b * c2; return calcMCQ("Tam giác có b = " + b + ", c = " + c2 + ", góc A = 60°. Tính a².", "a² = " + b + "² + " + c2 + "² − 2·" + b + "·" + c2 + "·cos 60°", a2, 4, 200, "cos 60° = 1/2 nên a² = b² + c² − bc."); }
     if (v === 1) { var b2 = pick([2, 4, 6, 8]), c3 = rand(2, 8); return calcMCQ("Tam giác có b = " + b2 + ", c = " + c3 + ", góc A = 90°. Tính diện tích S.", "S = (1/2)·" + b2 + "·" + c3, (b2 * c3) / 2, 1, 60, "Góc A = 90°: hai cạnh b, c là hai cạnh góc vuông, S = bc/2."); }
     if (v === 2) { var a = rand(4, 12); return calcMCQ("Tam giác có cạnh a = " + a + " và góc A = 30°. Bán kính đường tròn ngoại tiếp R bằng bao nhiêu?", "R = a/(2 sin A)", a, 2, 30, "a = 2R sin A, sin 30° = 1/2 nên R = a."); }
-    var s = pick([2, 4, 6]); return calcMCQ("Tam giác đều cạnh " + s + " có chiều cao bằng bao nhiêu?", "h = (" + s + "√3)/2 = " + (s / 2) + "√3", s / 2, 0, 10, "Chiều cao tam giác đều cạnh a: h = a√3/2. Ở đây đáp án là hệ số của √3.");
+    var s = pick([2, 4, 6]); var hs = (s / 2 === 1) ? "√3" : (s / 2) + "√3";
+    /* Sửa B1-P0 (2026-10-15): bản cũ chấm ĐÚNG cho riêng hệ số của √3 (s/2) trong
+       khi câu hỏi hỏi CHIỀU CAO h = s√3/2 — đáp án khóa sai (kiểm chứng độc lập:
+       s=4 → h = 2√3 ≈ 3,46 chứ không phải 2). Nay đáp án là giá trị đầy đủ của h,
+       hệ số cũ trở thành một lựa chọn nhiễu. */
+    return mcqQ("Tam giác đều cạnh " + s + " có chiều cao bằng bao nhiêu?", [s + "√3", "" + (s / 2), (s / 2) + "√2"], hs, "Chiều cao tam giác đều cạnh a: h = a√3/2. Với a = " + s + ": h = " + s + "√3/2 = " + hs + ".");
   }
 
   /* ----- Chương IV: Vectơ ----- */
@@ -710,8 +715,20 @@
      TIẾNG ANH 10 — Global Success
      words = [từ, hình, nghĩa]; patterns = mẫu câu ngữ pháp; gfacts = sự kiện ngữ pháp
      ================================================================== */
+  /* B6-T9: khử nhiễm chữ cái cho Lớp 6–12 — bỏ các bộ sinh chữ cái (vốn rút từ
+     ngân hàng Lớp 1 toàn cục) khỏi engPools: choose qEngFirstLetter, blank
+     qEngBlankLetter, match mEngLetterWord, games gSortLetters. Lớp 1–5 giữ nguyên. */
+  function eng10NoLetter(base) {
+    function has(f, name) { return String(f).indexOf(name) !== -1; }
+    return {
+      choose: base.choose.filter(function (f) { return !has(f, "qEngFirstLetter"); }),
+      blank: base.blank.filter(function (f) { return !has(f, "qEngBlankLetter"); }),
+      match: base.match.filter(function (f) { return f !== mEngLetterWord && !has(f, "mEngLetterWord"); }),
+      games: base.games.filter(function (f) { return f !== gSortLetters && !has(f, "gSortLetters"); })
+    };
+  }
   function eng10Pools(u, gfacts) {
-    var base = engPools(u.words);
+    var base = eng10NoLetter(engPools(u.words));
     function patGen() {
       var pat = pick(u.patterns);
       var all = shuffle(pat.w.slice());
@@ -901,6 +918,15 @@
     ["Đồ thị vận tốc – thời gian cho ta biết đại lượng nào qua diện tích dưới đồ thị?", "Độ dịch chuyển của vật", "Gia tốc của vật", "Khối lượng của vật", "Diện tích giới hạn bởi đồ thị v–t và trục thời gian bằng độ dịch chuyển."],
     ["Chuyển động của xe khi phanh gấp trên đường thẳng là chuyển động gì?", "Thẳng chậm dần đều (nếu gia tốc không đổi)", "Thẳng đều", "Tròn đều", "Phanh làm vận tốc giảm dần đều tới 0."]
   ];
+  /* B2: đọc đồ thị vận tốc – thời gian của chuyển động thẳng đều — hình vẽ sinh
+     từ chính (v, t); quãng đường = diện tích hình chữ nhật dưới đồ thị.
+     figureOnly: dữ kiện vận tốc chỉ nằm trên hình. */
+  function vl10VTGraph() {
+    var v = pick([2, 3, 4, 5, 6, 8, 10]), t = rand(2, 8), s = v * t;
+    var q = numBlank6("Đồ thị vận tốc – thời gian của một vật chuyển động thẳng được vẽ như hình. Quãng đường vật đi được trong " + t + " s đầu bằng bao nhiêu m?", "s = v × t = ?", s, "Đồ thị v–t là đường nằm ngang ở mức v = " + v + " m/s. Quãng đường bằng diện tích hình chữ nhật dưới đồ thị: s = " + v + " × " + t + " = " + s + " m.");
+    q.figure = figVTSVG(v, t); q.figureOnly = true;
+    return q;
+  }
   function vl10Kin() {
     var v = rand(0, 3);
     if (v === 0) { var s = rand(2, 12) * 10, t = rand(2, 10); return numBlank6("Một vật đi được quãng đường " + s + " m trong " + t + " s. Tốc độ trung bình của vật bằng bao nhiêu m/s?", "v = s/t = ?", s / t, "v_tb = s/t = " + s + "/" + t + (Number.isInteger(s / t) ? "" : "") + "."); }
@@ -1054,7 +1080,7 @@
   ];
   var VL10 = [
     TP("vl10-c1", "🔬", "Chương I: Mở đầu", "Bài 1–3 • Đối tượng Vật lí, phép đo, an toàn thí nghiệm", KP(vl10c1F, []), KN(vl10c1F, [], "Vật lí")),
-    TP("vl10-c2", "🏃", "Chương II: Động học", "Bài 4–12 • Độ dịch chuyển, vận tốc, gia tốc, rơi tự do", MP(KP(vl10c2F, []), { choose: [vl10Kin], blank: [vl10Kin], match: [], games: [] }), KN(vl10c2F, [], "Vật lí")),
+    TP("vl10-c2", "🏃", "Chương II: Động học", "Bài 4–12 • Độ dịch chuyển, vận tốc, gia tốc, rơi tự do", MP(KP(vl10c2F, []), { choose: [vl10Kin, vl10VTGraph], blank: [vl10Kin, vl10VTGraph], match: [], games: [] }), KN(vl10c2F, [], "Vật lí")),
     TP("vl10-c3", "🧲", "Chương III: Động lực học", "Bài 13–22 • Ba định luật Newton, các lực, mômen lực", MP(KP(vl10c3F, []), { choose: [vl10Dyn], blank: [vl10Dyn], match: [], games: [] }), KN(vl10c3F, [], "Vật lí")),
     TP("vl10-c4", "⚡", "Chương IV: Năng lượng, công, công suất", "Bài 23–27 • Công, động năng, thế năng, bảo toàn cơ năng", MP(KP(vl10c4F, []), { choose: [vl10Energy], blank: [vl10Energy], match: [], games: [] }), KN(vl10c4F, [], "Vật lí")),
     TP("vl10-c5", "💥", "Chương V: Động lượng", "Bài 28–30 • Động lượng, bảo toàn động lượng, va chạm", MP(KP(vl10c5F, []), { choose: [vl10Momentum], blank: [vl10Momentum], match: [], games: [] }), KN(vl10c5F, [], "Vật lí")),
@@ -2590,8 +2616,25 @@
     ["Công nghệ vi sinh trong cải tạo đất gồm ứng dụng nào?", "Bổ sung vi sinh cố định đạm, phân giải lân tăng độ phì đất", "Diệt trừ mọi vi sinh vật trong đất", "Biến đất cát thành đất sét", "Đất “khoẻ” giàu vi sinh có ích giúp cây ít bệnh rễ hơn."],
     ["Enzyme được ứng dụng trong chế biến nông sản thế nào?", "Làm trong nước quả, làm đường từ tinh bột, chế biến thức ăn", "Enzyme chỉ dùng trong y học", "Không ứng dụng được vào thực phẩm", "Công nghệ enzyme là một nhánh của công nghệ sinh học ứng dụng."],
     ["An toàn sinh học trong ứng dụng công nghệ sinh học là yêu cầu gì?", "Đánh giá rủi ro sinh vật biến đổi gen trước khi sản xuất", "Cấm mọi nghiên cứu sinh học", "Không cần đánh giá gì", "Việt Nam có Luật Đa dạng sinh học và các nghị định quản lí an toàn sinh học."],
-    ["Công nghệ tế bào trong bảo tồn nguồn gen cây trồng có vai trò gì?", "Lưu giống quý hiếm dạng in vitro và ngân hàng gen", "Chỉ để trưng bày trong bảo tàng", "Thay thế bảo tồn tại vườn quốc gia hoàn toàn", "Ngân hàng gen là “két sắt” của đa dạng sinh học nông nghiệp."]
+    ["Công nghệ tế bào trong bảo tồn nguồn gen cây trồng có vai trò gì?", "Lưu giống quý hiếm dạng in vitro và ngân hàng gen", "Chỉ để trưng bày trong bảo tàng", "Thay thế bảo tồn tại vườn quốc gia hoàn toàn", "Ngân hàng gen là “két sắt” của đa dạng sinh học nông nghiệp."],
+    ["Chỉ thị phân tử (DNA marker) trong chọn giống là gì?", "Đoạn DNA ngắn đã biết vị trí, liên kết với gene tính trạng", "Một loại phân bón sinh học", "Một giống cây trồng mới", "Chỉ thị phân tử còn gọi là chỉ thị di truyền (Bài 2)."],
+    ["Chỉ thị phân tử giúp chọn giống nhanh hơn ở điểm nào?", "Biết cây mang gene mong muốn ngay giai đoạn cây con", "Không cần lai tạo giữa các dòng", "Cây trồng lớn nhanh gấp đôi", "Nhờ đó loại bỏ sớm cây không mong muốn, giảm chi phí, công sức (Bài 2)."],
+    ["Chọn giống nhờ chỉ thị phân tử thường viết tắt là gì?", "MAS (chọn lọc nhờ chỉ thị phân tử)", "GMO (sinh vật biến đổi gene)", "PCR (phản ứng chuỗi trùng hợp)", "MAS = Marker-Assisted Selection (Bài 2)."],
+    ["Trong ví dụ SGK, lai dòng lúa G1 với G2 nhằm mục đích gì?", "Giống mới năng suất cao, gạo ngon và kháng bệnh tốt", "Tạo giống lúa chỉ để làm cảnh", "Tạo giống không cần chọn lọc con lai", "G1 năng suất cao, gạo ngon nhưng dễ nhiễm bệnh; G2 kháng bệnh (Bài 2)."],
+    ["Phân bón hữu cơ sinh học được sản xuất từ nguồn nguyên liệu nào?", "Phế phụ phẩm nông nghiệp: rơm rạ, bã mía, phân chuồng", "Hoá chất tổng hợp trong phòng thí nghiệm", "Đất sét và cát sạch", "Còn có thân cây ngô, lạc, vỏ cà phê, phụ phẩm lò mổ (Bài 3)."],
+    ["Vi khuẩn Bacillus subtilis có vai trò gì trong sản xuất phân bón?", "Sinh enzyme và kháng sinh ức chế vi khuẩn, nấm gây bệnh", "Cố định đạm trực tiếp cho cây", "Làm cho phân bón có màu đẹp", "Bacillus subtilis sinh amylase, protease… (Bài 3)."],
+    ["Nấm Trichoderma được dùng trong phân bón sinh học vì khả năng gì?", "Phân huỷ cellulose mạnh và đối kháng nấm bệnh", "Quang hợp tạo chất hữu cơ", "Hút đạm từ không khí cho đất", "Trichoderma còn sinh chất điều tiết giúp cây phát triển (Bài 3)."],
+    ["Vi khuẩn Lactobacillus trong ủ phân hữu cơ có tác dụng gì?", "Sinh acid lactic, ức chế vi khuẩn gây thối và khử mùi hôi", "Tạo màu vàng cho phân ủ", "Diệt mọi vi sinh vật trong đống ủ", "Môi trường acid lactic không thuận lợi cho vi khuẩn, nấm gây bệnh (Bài 3)."],
+    ["Bệnh do virus gây ra cho cây trồng khó kiểm soát ở điểm nào?", "Nặng thì phải bỏ hoang đất trên 5 năm để hạn chế lây lan", "Chỉ làm lá cây đổi màu nhẹ", "Tự khỏi sau một trận mưa", "Phát hiện nhanh virus là ưu tiên hàng đầu trong phòng trừ (Bài 4)."],
+    ["Công nghệ sinh học giúp phát hiện virus hại cây bằng cách nào?", "Phát hiện kịp thời virus gây bệnh ngay từ giai đoạn sớm", "Nhìn lá cây bằng mắt thường", "Chờ cây chết mới xét nghiệm", "Phát hiện sớm giúp ngăn chặn, giảm thiểu tổn thất do bệnh (Bài 4)."],
+    ["Chế phẩm vi sinh trừ sâu đặc trị được những đối tượng nào?", "Nhện đỏ, rầy, rệp, tuyến trùng, sâu và côn trùng chích hút", "Chỉ diệt được chuột đồng", "Mọi loài chim và cá", "Thuốc trừ sâu vi sinh thế hệ mới: sạch và an toàn (Bài 4)."],
+    ["Nuôi cấy mô tế bào thực vật dựa trên tính chất nào của tế bào?", "Một tế bào có thể tái sinh thành cây hoàn chỉnh", "Tế bào thực vật không thể phân chia", "Chỉ mô lá mới nuôi cấy được", "Nhờ tính toàn năng mới nhân giống in vitro được (Chuyên đề 1)."],
+    ["Cây giống nuôi cấy mô thường được nhân từ bộ phận nào của cây mẹ?", "Mô phân sinh đỉnh hoặc chồi non sạch bệnh", "Hạt của cây mẹ bất kỳ", "Rễ cây già cỗi", "Mô đỉnh sạch virus cho cây con đồng đều, sạch bệnh (Chuyên đề 1)."],
+    ["Ưu điểm lớn nhất của phân bón hữu cơ vi sinh đối với đất là gì?", "Tăng vi sinh có ích, cải tạo đất, giảm phụ thuộc hoá chất", "Làm đất cứng và chặt hơn", "Diệt sạch mọi sinh vật trong đất", "Đất khoẻ, giàu vi sinh có ích giúp cây ít bệnh rễ (Bài 3)."],
+    ["Vì sao chế phẩm sinh học thường cho hiệu quả chậm hơn thuốc hoá học?", "Vi sinh cần thời gian sinh trưởng và phát huy tác dụng", "Vì chế phẩm sinh học không có tác dụng thật", "Vì phải pha với hoá chất mới hiệu quả", "Đổi lại, chế phẩm sinh học an toàn và bảo vệ thiên địch (Bài 4)."],
+    ["Trong chọn tạo giống, chỉ thị phân tử liên kết chặt với điều gì?", "Gene quy định một tính trạng cụ thể của cây trồng", "Màu sắc của bao bì giống", "Giá bán của giống trên thị trường", "Nhờ liên kết chặt, chỉ thị được di truyền kèm tính trạng (Bài 2)."]
   ];
+  var cn10cdtt1P = [["Chỉ thị phân tử", "Đoạn DNA ngắn liên kết với gene quy định tính trạng"], ["MAS", "Chọn lọc giống nhờ chỉ thị phân tử"], ["Nuôi cấy mô", "Nhân giống in vitro từ mô sạch bệnh"], ["Tính toàn năng", "Khả năng tế bào tái sinh thành cây hoàn chỉnh"], ["Bacillus subtilis", "Vi khuẩn sinh enzyme, kháng sinh ức chế mầm bệnh"], ["Trichoderma", "Nấm đối kháng, phân huỷ cellulose trong phân ủ"], ["Lactobacillus", "Vi khuẩn sinh acid lactic, khử mùi phân ủ"], ["Phế phụ phẩm nông nghiệp", "Rơm rạ, bã mía, phân chuồng… làm phân hữu cơ"], ["Chế phẩm vi sinh", "Sản phẩm chứa vi sinh vật có ích phòng trừ sâu bệnh"], ["Phát hiện virus", "Ứng dụng CNSH chẩn đoán sớm bệnh virus hại cây"]];
   var cn10cdtt2F = [
     ["Trồng và chăm sóc hoa, cây cảnh thuộc nhóm cây trồng nào?", "Nhóm cây phục vụ thẩm mĩ, trang trí; giá trị kinh tế cao", "Nhóm cây lương thực chính", "Nhóm cây lấy gỗ rừng tự nhiên", "Chuyên đề 2 (định hướng Trồng trọt): Trồng và chăm sóc hoa, cây cảnh."],
     ["Cây cảnh được phân loại phổ biến theo tiêu chí nào?", "Theo nơi trồng, bộ phận thưởng thức (lá, hoa, bonsai…)", "Theo chiều cao của người trồng", "Theo giá tiền tăng dần mà thôi", "Mỗi nhóm cây có yêu cầu ánh sáng, nước và chăm sóc khác nhau."],
@@ -2629,8 +2672,29 @@
     ["GlobalGAP khác VietGAP ở phạm vi áp dụng thế nào?", "Tiêu chuẩn quốc tế, “giấy thông hành” cho nông sản xuất khẩu", "Hai tiêu chuẩn hoàn toàn trái ngược nhau", "GlobalGAP chỉ áp dụng trong nước", "Nhiều doanh nghiệp Việt Nam đạt GlobalGAP cho thanh long, xoài, rau quả xuất khẩu."],
     ["Để được chứng nhận VietGAP, cơ sở sản xuất phải trải qua quy trình nào?", "Xây quy trình → đánh giá nội bộ → chứng nhận cấp chứng chỉ", "Tự tuyên bố đạt chuẩn không cần đánh giá", "Chỉ cần nộp một khoản phí", "Chứng chỉ hết hạn hoặc vi phạm sẽ bị thu hồi."],
     ["Sản xuất theo VietGAP mang lại lợi ích kinh tế nào?", "Dễ vào siêu thị, xuất khẩu, giá bán ổn định, cao hơn", "Không có lợi ích kinh tế rõ ràng", "Chỉ tốn thêm chi phí ghi chép", "Người tiêu dùng ngày càng ưu tiên nông sản có chứng nhận an toàn."],
-    ["Điểm khác biệt lớn nhất giữa sản xuất truyền thống và sản xuất VietGAP là gì?", "Có kiểm soát, ghi chép, đánh giá độc lập theo tiêu chí", "Chỉ khác ở bao bì sản phẩm", "Dùng nhiều thuốc hơn cho chắc chắn", "VietGAP là bước đệm để tiến tới sản xuất hữu cơ và GlobalGAP."]
+    ["Điểm khác biệt lớn nhất giữa sản xuất truyền thống và sản xuất VietGAP là gì?", "Có kiểm soát, ghi chép, đánh giá độc lập theo tiêu chí", "Chỉ khác ở bao bì sản phẩm", "Dùng nhiều thuốc hơn cho chắc chắn", "VietGAP là bước đệm để tiến tới sản xuất hữu cơ và GlobalGAP."],
+    ["VietGAP là cách viết tắt của cụm từ tiếng Anh nào?", "Vietnamese Good Agricultural Practices", "Vietnam Good Agriculture Program", "Vietnamese Global Agriculture Practices", "VietGAP nghĩa là Thực hành sản xuất nông nghiệp tốt ở Việt Nam (Bài 11)."],
+    ["Tiêu chuẩn VietGAP trồng trọt do cơ quan nào ban hành?", "Bộ Nông nghiệp và Môi trường", "Bộ Y tế", "Bộ Công Thương", "Trước đây do Bộ Nông nghiệp và Phát triển nông thôn ban hành (Bài 11)."],
+    ["Bốn nhóm tiêu chí của VietGAP trồng trọt gồm những nhóm nào?", "An toàn thực phẩm; môi trường; lao động; truy xuất gốc", "Giá rẻ; mẫu mã; năng suất; quảng cáo", "Giống; phân bón; nước tưới; thu hoạch", "Bốn nhóm: an toàn thực phẩm, bảo vệ môi trường, sức khoẻ người lao động và phúc lợi xã hội, truy xuất nguồn gốc (Bài 11)."],
+    ["Theo nhóm tiêu chí an toàn thực phẩm, sản phẩm VietGAP phải đạt điều gì?", "Hoá chất độc, vi sinh gây hại dưới mức cho phép", "Không cần kiểm tra dư lượng hoá chất", "Chỉ cần hình thức bên ngoài đẹp", "Hàm lượng hoá chất độc và mức ô nhiễm vi sinh vật phải dưới mức tiêu chuẩn cho phép của Bộ Y tế (Bài 11)."],
+    ["Sản phẩm trồng trọt VietGAP cần có tem nhãn như thế nào?", "Tem nhãn đủ thông tin hoặc tem điện tử truy xuất", "Không cần tem nhãn gì", "Chỉ ghi tên người bán", "Tem nhãn giúp người tiêu dùng và cơ quan quản lí truy xuất được nguồn gốc sản phẩm (Bài 11)."],
+    ["Hồ sơ ghi chép trong sản xuất VietGAP phải lưu trữ tối thiểu bao lâu?", "12 tháng tính từ ngày thu hoạch", "1 tháng tính từ ngày thu hoạch", "Không cần lưu trữ hồ sơ", "Hồ sơ phục vụ kiểm tra nội bộ và truy xuất nguồn gốc sản phẩm (Bài 12)."],
+    ["Khi chọn vùng sản xuất VietGAP cần tránh những khu vực nào?", "Gần bệnh viện, khu chăn nuôi, làng nghề ô nhiễm", "Gần đường giao thông lớn", "Gần nơi có nhiều lao động", "Khu vực sản xuất không bị ô nhiễm bởi chất thải, hoá chất độc hại từ giao thông, công nghiệp, làng nghề, bệnh viện, khu chăn nuôi (Bài 12)."],
+    ["Giống cây trồng dùng trong sản xuất VietGAP phải bảo đảm điều gì?", "Nguồn gốc rõ ràng, được phép sản xuất, kinh doanh", "Giống nào rẻ nhất thì dùng", "Không cần biết nguồn gốc giống", "Nên chọn giống kháng sâu, bệnh và dùng hạt giống, cây giống khoẻ, sạch sâu, bệnh (Bài 11, 12)."],
+    ["Vì sao sản xuất VietGAP nên chọn giống có khả năng kháng sâu, bệnh?", "Giảm thiểu việc dùng hoá chất bảo vệ thực vật", "Để cây không cần tưới nước", "Để không phải bón phân", "Giống khoẻ, sạch sâu, bệnh giúp giảm sử dụng thuốc bảo vệ thực vật (Bài 12)."],
+    ["Đất trồng theo tiêu chuẩn VietGAP phải đáp ứng yêu cầu gì?", "Kim loại nặng không vượt ngưỡng cho phép", "Đất càng chua càng tốt", "Không cần kiểm tra chất lượng đất", "Đất phải phù hợp nông hoá, thổ nhưỡng từng loại cây và đạt giới hạn kim loại nặng theo QCVN (Bài 11, 12)."],
+    ["Phân gia súc, gia cầm dùng làm phân bón trong VietGAP phải xử lí thế nào?", "Phải ủ hoai mục và kiểm soát kim loại nặng", "Bón tươi trực tiếp không cần xử lí", "Trộn thêm hoá chất tuỳ ý", "Phân bón phải được phép sản xuất, kinh doanh tại Việt Nam và dùng theo khuyến cáo (Bài 11, 12)."],
+    ["Trong chăm sóc cây trồng VietGAP, cần ưu tiên sử dụng loại phân bón nào?", "Phân hữu cơ vi sinh", "Phân hoá học liều cao", "Bất cứ loại phân nào sẵn có", "SGK Bài 12: ưu tiên sử dụng phân bón hữu cơ vi sinh trong sản xuất VietGAP."],
+    ["Nguyên tắc bốn đúng khi sử dụng thuốc bảo vệ thực vật gồm những gì?", "Đúng thuốc; đúng lúc; đúng nồng độ, liều lượng; đúng cách", "Đúng giá; đúng mùa; đúng người; đúng máy", "Đúng thuốc; đúng liều gấp đôi; phun càng sớm càng tốt", "Bốn đúng: đúng thuốc; đúng lúc; đúng nồng độ, liều lượng; đúng cách — hoặc theo hướng dẫn nhà sản xuất (Bài 11, 12)."],
+    ["Thuốc bảo vệ thực vật đã pha nhưng không dùng hết trong VietGAP xử lí thế nào?", "Thu gom, xử lí theo quy định chất thải nguy hại", "Đổ xuống mương nước gần ruộng", "Đổ lại vào chai nước sinh hoạt", "Phải có biển cảnh báo khu vực mới phun thuốc và ngăn phát tán sang ruộng xung quanh (Bài 11)."],
+    ["Khi thu hoạch sản phẩm VietGAP phải bảo đảm điều gì về thuốc bảo vệ thực vật?", "Đủ thời gian cách li theo quy định, hướng dẫn", "Thu hoạch ngay sau khi phun thuốc", "Không cần quan tâm thời gian cách li", "Thu hoạch vào thời điểm sản phẩm có chất lượng tốt nhất, đảm bảo thời gian cách li (Bài 11, 12)."],
+    ["Thu hoạch sản phẩm VietGAP nên tiến hành vào thời điểm nào trong ngày?", "Lúc trời râm mát, tránh đang mưa hoặc sau mưa", "Giữa trưa nắng gắt", "Ngay khi trời đang mưa to", "Cần kiểm soát động vật xâm nhập khu vực chuẩn bị thu hoạch (Bài 11)."],
+    ["Vì sao khi sơ chế không được để sản phẩm tươi trực tiếp trên mặt đất, nền nhà?", "Tránh nhiễm bẩn, vi sinh gây hại từ đất, nền", "Để sản phẩm nhanh héo hơn", "Vì đất giúp bảo quản sản phẩm lâu", "Thiết bị, dụng cụ, vật liệu đóng gói trong sơ chế phải bảo đảm vệ sinh (Bài 12)."],
+    ["Nước rửa sản phẩm trong khâu sơ chế VietGAP phải đáp ứng yêu cầu gì?", "Đáp ứng quy định chất lượng nước dùng sơ chế", "Dùng nước ao tù cũng được", "Không cần yêu cầu gì về nước rửa", "Nước rửa sản phẩm và nước vệ sinh thiết bị, thùng chứa đều phải đạt quy định (Bài 12)."],
+    ["Rác thải độc hại như vỏ bao thuốc bảo vệ thực vật trong VietGAP xử lí thế nào?", "Thu gom, xử lí theo pháp luật bảo vệ môi trường", "Vứt chung với rác sinh hoạt", "Đốt ngay tại ruộng trồng", "Rác thải, chất thải trong sản xuất, sơ chế phải thu gom, phân loại và xử lí đúng quy định (Bài 12)."],
+    ["Tập huấn về VietGAP trồng trọt áp dụng cho những đối tượng nào?", "Người sản xuất, quản lí và kiểm tra nội bộ", "Chỉ dành cho người tiêu dùng", "Không cần tập huấn cho ai", "Cơ sở VietGAP còn có quy định về điều kiện làm việc, vệ sinh cá nhân tối thiểu và giải quyết khiếu nại (Bài 11)."]
   ];
+  var cn10cdtt3P = [["VietGAP", "Thực hành sản xuất nông nghiệp tốt ở Việt Nam"], ["Truy xuất nguồn gốc", "Tìm lại xuất xứ sản phẩm qua hồ sơ, tem nhãn"], ["Bốn đúng", "Đúng thuốc, đúng lúc, đúng nồng độ – liều lượng, đúng cách"], ["Hồ sơ ghi chép", "Nhật kí sản xuất lưu tối thiểu 12 tháng từ thu hoạch"], ["Tem nhãn VietGAP", "Dấu hiệu nhận biết, truy xuất sản phẩm đạt chuẩn"], ["Dư lượng nitrate", "Hàm lượng nitrate còn lại trong rau, củ, quả"], ["Chất thải nguy hại", "Vỏ bao thuốc, phân bón phải thu gom, xử lí riêng"], ["Vùng sản xuất", "Khu đất được đánh giá, chọn không bị ô nhiễm"], ["Phân hữu cơ vi sinh", "Loại phân được ưu tiên dùng trong VietGAP"], ["Kiểm tra nội bộ", "Tự kiểm tra việc tuân thủ quy trình tại cơ sở"]];
   var cn10tk1F = [
     ["Công nghệ được hiểu theo nghĩa rộng là gì?", "Tổng thể phương pháp, phương tiện tạo ra sản phẩm", "Chỉ là các máy móc hiện đại", "Chỉ là công nghệ thông tin", "Lịch sử công nghệ gắn liền với các cuộc cách mạng công nghiệp (Chuyên đề Thiết kế: Chương I)."],
     ["Một hệ thống kĩ thuật thường gồm những thành phần cơ bản nào?", "Đầu vào → xử lí/biến đổi → đầu ra, có điều khiển, phản hồi", "Chỉ có một động cơ duy nhất", "Chỉ gồm con người vận hành", "Ví dụ: hệ thống tưới tự động gồm cảm biến (vào), bộ điều khiển (xử lí), van/bơm (ra)."],
@@ -2703,8 +2767,25 @@
     ["In 3D (chế tạo cộng đắp) hoạt động theo nguyên tắc nào?", "Đắp từng lớp vật liệu theo mô hình 3D đã cắt lớp", "Đúc khuôn như đúc tượng đồng", "Cắt gọt từ một khối đặc bằng dao như tiện gỗ", "In 3D dùng nhiều trong tạo mẫu nhanh (rapid prototyping)."],
     ["Tệp STL trong quy trình in 3D có vai trò gì?", "Định dạng lưới tam giác, slicer chuyển thành G-code in 3D", "Là tệp chứa bản vẽ 2D", "Là phần mềm vẽ CAD", "Slicer phổ biến: Cura, PrusaSlicer (miễn phí)."],
     ["Máy CNC khác máy công cụ thông thường ở điểm nào?", "CNC điều khiển tự động bằng G-code, chính xác, lặp lại cao", "CNC chạy bằng sức người", "CNC chỉ dùng để in giấy khổ lớn", "CAD → CAM → CNC là chuỗi thiết kế – sản xuất số hiện đại."],
-    ["Khi học CAD, học sinh cần rèn luyện năng lực nền tảng nào?", "Đọc bản vẽ, tư duy không gian, thiết kế, thao tác phần mềm", "Chỉ cần nhớ các nút bấm của phần mềm", "Không cần biết vẽ kĩ thuật", "Phần mềm thay đổi nhanh, tư duy thiết kế mới là năng lực lâu dài."]
+    ["Khi học CAD, học sinh cần rèn luyện năng lực nền tảng nào?", "Đọc bản vẽ, tư duy không gian, thiết kế, thao tác phần mềm", "Chỉ cần nhớ các nút bấm của phần mềm", "Không cần biết vẽ kĩ thuật", "Phần mềm thay đổi nhanh, tư duy thiết kế mới là năng lực lâu dài."],
+    ["Các lệnh vẽ hai chiều trong CAD gồm những nhóm lệnh nào?", "Vẽ (Draw), hiệu chỉnh (Modify), ghi chú (Annotation)", "Chỉ có nhóm lệnh in ấn", "Nhóm lệnh nghe nhạc, xem phim", "Còn nhóm quản lí đặc tính (Properties) (Bài 2)."],
+    ["Nhóm lệnh Modify trong CAD dùng để làm gì?", "Hiệu chỉnh và vẽ nhanh các đối tượng đã có", "Tạo khối ba chiều mới", "Ghi kích thước lên bản vẽ", "Draw là nhóm lệnh vẽ mới; Modify là hiệu chỉnh (Bài 2)."],
+    ["Nhóm lệnh Annotation trong CAD phục vụ việc gì?", "Viết chữ và ghi kích thước cho bản vẽ", "Quan sát mô hình ba chiều", "Liên kết các khối vật thể", "Annotation = ghi chú, kích thước (Bài 2)."],
+    ["Các lệnh ba chiều trong CAD gồm những nhóm nào?", "Quan sát (View), vẽ khối (Creat), liên kết khối (Edit)", "Chỉ gồm lệnh in 3D", "Nhóm lệnh soạn thảo văn bản", "Lệnh 3D dùng để xây dựng khối vật thể (Bài 2)."],
+    ["Công cụ Osnap trong CAD có tác dụng gì?", "Bắt điểm tự động, bảo đảm độ chính xác của bản vẽ", "Phóng to thu nhỏ bản vẽ", "Định hướng vẽ theo trục Ox, Oy", "Osnap là lệnh tiện ích hỗ trợ thao tác vẽ (Bài 2)."],
+    ["Chế độ Ortho trong CAD giúp người vẽ điều gì?", "Vẽ nhanh các đường thẳng song song với trục Ox, Oy", "Tự động bắt điểm trên đối tượng", "Xoay mô hình ba chiều tự do", "Zoom mới là lệnh thu, phóng để quan sát (Bài 2)."],
+    ["Thực hiện một lệnh trong CAD thường qua ba bước nào?", "Ra lệnh → nhập dữ liệu → kết thúc lệnh", "Mở máy → tắt máy → in bản vẽ", "Vẽ tay → quét ảnh → gửi thư", "Ba bước này áp dụng cho hầu hết lệnh vẽ (Bài 2)."],
+    ["Theo Bài 1, công nghệ thông tin hỗ trợ tạo lập bản vẽ ở khâu nào?", "Vẽ, lưu trữ, chia sẻ và xuất bản vẽ nhanh, chính xác", "Chỉ giúp in bản vẽ ra giấy", "Thay thế hoàn toàn người thiết kế", "CNTT là nền tảng của CAD và thiết kế số (Bài 1)."],
+    ["Bản vẽ kĩ thuật lập bằng CAD được lưu trữ có lợi ích gì?", "Dễ sao lưu, chỉnh sửa, tái sử dụng và chia sẻ qua mạng", "Chỉ xem được một lần duy nhất", "Không thể gửi cho người khác", "Hồ sơ số giúp quản lí bản vẽ khoa học (Bài 1)."],
+    ["Lệnh Zoom trong CAD thuộc nhóm lệnh nào?", "Nhóm lệnh tiện ích hỗ trợ quan sát bản vẽ", "Nhóm lệnh vẽ khối ba chiều", "Nhóm lệnh ghi kích thước", "Zoom hỗ trợ thu, phóng khi quan sát, thao tác (Bài 2)."],
+    ["Khi vẽ hình chữ nhật 70 × 40 trong CAD, người vẽ cần nhập dữ liệu gì?", "Kích thước hai cạnh (dài 70, rộng 40) theo đúng đơn vị", "Chỉ cần vẽ áng chừng bằng mắt", "Màu sắc của hình chữ nhật", "Hình 2.1 SGK: hình chữ nhật ABCD cạnh 70 và 40 (Bài 2)."],
+    ["Nhóm lệnh Properties trong CAD quản lí điều gì?", "Đặc tính của đối tượng: lớp, màu, kiểu nét, độ dày nét", "Âm thanh của phần mềm", "Danh sách người dùng máy tính", "Quản lí đặc tính giúp bản vẽ đúng quy cách (Bài 2)."],
+    ["Điểm khác nhau cơ bản giữa lệnh 2D và lệnh 3D trong CAD là gì?", "2D lập bản vẽ phẳng; 3D xây dựng khối vật thể không gian", "2D khó hơn 3D rất nhiều", "3D chỉ dùng để chơi game", "Hai hệ thống lệnh cùng tồn tại trong phần mềm CAD (Bài 2)."],
+    ["Dự án cuối Chuyên đề 1 yêu cầu học sinh thực hiện sản phẩm gì?", "Lập bản vẽ kĩ thuật với sự trợ giúp của máy tính", "Chế tạo máy CNC hoàn chỉnh", "Viết báo cáo về lịch sử máy tính", "Đó là Bài 3: Dự án lập bản vẽ kĩ thuật bằng CAD (Bài 3)."],
+    ["Vì sao bản vẽ CAD dễ chia sẻ cho sản xuất hơn bản vẽ tay?", "Dữ liệu số xuất trực tiếp cho máy CNC, in 3D", "Vì bản vẽ CAD luôn có màu đẹp hơn", "Vì máy móc tự đọc được giấy vẽ tay", "Chuỗi CAD → CAM → CNC là quy trình sản xuất số (Bài 1, 2)."],
+    ["Khi lập bản vẽ bằng CAD, yếu tố nào quyết định bản vẽ đúng kĩ thuật?", "Đúng tiêu chuẩn trình bày: nét, kích thước, tỉ lệ, khung tên", "Vẽ càng nhanh càng đúng", "Chỉ cần mô hình 3D đẹp", "Phần mềm chỉ là công cụ; người vẽ chịu trách nhiệm (Bài 2)."]
   ];
+  var cn10cdtk1P = [["Draw", "Nhóm lệnh vẽ đối tượng hai chiều"], ["Modify", "Nhóm lệnh hiệu chỉnh, vẽ nhanh"], ["Annotation", "Nhóm lệnh viết chữ, ghi kích thước"], ["Properties", "Nhóm lệnh quản lí đặc tính đối tượng"], ["Osnap", "Bắt điểm tự động trên đối tượng"], ["Ortho", "Vẽ đường thẳng song song trục Ox, Oy"], ["Zoom", "Thu, phóng để quan sát bản vẽ"], ["View (3D)", "Nhóm lệnh quan sát ba chiều"], ["Lệnh tiện ích", "Lệnh hỗ trợ quá trình vẽ: Zoom, Osnap, Ortho"], ["Dự án CAD", "Lập bản vẽ kĩ thuật với trợ giúp của máy tính"]];
   var cn10cdtk2F = [
     ["Nhà thông minh (smart home) là gì?", "Nhà có thiết bị kết nối, điều khiển tự động hoặc từ xa", "Ngôi nhà xây bằng vật liệu đắt tiền nhất", "Ngôi nhà có nhiều tivi nhất", "Chuyên đề 2 (định hướng Thiết kế): Thiết kế mạch điều khiển cho ngôi nhà thông minh."],
     ["Một hệ thống điều khiển nhà thông minh cơ bản gồm những thành phần nào?", "Cảm biến → bộ xử lí trung tâm → cơ cấu chấp hành → giao diện", "Chỉ gồm một công tắc thông minh duy nhất", "Chỉ gồm camera an ninh", "Nguyên lí giống mọi hệ thống điều khiển tự động khác."],
@@ -2735,8 +2816,25 @@
     ["Vai trò của nữ giới trong lĩnh vực STEM hiện nay thế nào?", "Nhiều phụ nữ thành công; khuyến khích nữ sinh theo STEM", "STEM chỉ dành cho nam giới", "Không có nhà khoa học nữ nổi tiếng", "Marie Curie là biểu tượng khoa học nữ với hai giải Nobel hai lĩnh vực khác nhau."],
     ["Dự án STEM ở trường phổ thông thường có sản phẩm đầu ra là gì?", "Mô hình, thiết bị, giải pháp cho vấn đề thực tế, kèm báo cáo", "Chỉ là bài kiểm tra trắc nghiệm", "Không cần sản phẩm gì", "Ví dụ: hệ thống tưới cây tự động, thùng rác thông minh, mô hình nhà chống lũ."],
     ["Kĩ năng thế kỉ 21 mà STEM rèn luyện gồm những gì?", "Phản biện, sáng tạo, giao tiếp, hợp tác (4C) và năng lực số", "Chỉ kĩ năng ghi nhớ", "Chỉ kĩ năng tính nhẩm nhanh", "4C: Critical thinking, Creativity, Communication, Collaboration."],
-    ["Học sinh có thể trải nghiệm nghề STEM qua những hoạt động nào?", "CLB STEM, thi khoa học kĩ thuật, trại hè công nghệ", "Chỉ đọc sách về nghề nghiệp", "Chờ tới khi tốt nghiệp đại học", "Cuộc thi KHKT dành cho học sinh trung học được tổ chức hằng năm ở Việt Nam."]
+    ["Học sinh có thể trải nghiệm nghề STEM qua những hoạt động nào?", "CLB STEM, thi khoa học kĩ thuật, trại hè công nghệ", "Chỉ đọc sách về nghề nghiệp", "Chờ tới khi tốt nghiệp đại học", "Cuộc thi KHKT dành cho học sinh trung học được tổ chức hằng năm ở Việt Nam."],
+    ["Trong thuật ngữ STEM, chữ E (Engineering) chỉ lĩnh vực nào?", "Kĩ thuật", "Kinh tế học", "Năng lượng", "STEM = Science, Technology, Engineering, Mathematics (Bài 7)."],
+    ["Theo SGK, “Khoa học” trong STEM được hiểu là khoa học nào?", "Khoa học tự nhiên: nhận thức, giải thích quy luật tự nhiên", "Khoa học xã hội và nhân văn", "Chỉ riêng môn Sinh học", "Khoa học tự nhiên gồm Vật lí, Hoá học, Sinh học, Thiên văn… (Bài 7)."],
+    ["Khoa học tự nhiên gồm những lĩnh vực nào?", "Vật lí, Hoá học, Thiên văn học, Khoa học Trái Đất, Sinh học", "Chỉ Vật lí và Hoá học", "Toán học và Tin học", "Đây là các lĩnh vực của khoa học tự nhiên trong STEM (Bài 7)."],
+    ["Theo SGK, Công nghệ được hiểu như thế nào?", "Giải pháp, quy trình, bí quyết kĩ thuật tạo ra sản phẩm", "Chỉ là các thiết bị điện tử", "Một môn học trong nhà trường", "Công nghệ có tính chuyển giao và luôn được đổi mới (Bài 7)."],
+    ["Kĩ thuật trong STEM là hoạt động gì?", "Ứng dụng nguyên lí khoa học vào thiết kế, chế tạo, vận hành", "Học thuộc các công thức toán", "Nghiên cứu lí thuyết thuần tuý", "Kết quả nghiên cứu kĩ thuật tạo ra giải pháp, sản phẩm mới (Bài 7)."],
+    ["Toán học trong STEM nghiên cứu về những vấn đề gì?", "Cấu trúc, trật tự và quan hệ giữa các đối tượng", "Chỉ các phép tính cộng trừ", "Lịch sử của các con số", "Toán phát triển từ đếm, đo lường, mô tả hình dạng vật thể (Bài 7)."],
+    ["Theo Chương trình GDPT 2018, giáo dục STEM là mô hình giáo dục nào?", "Tiếp cận liên môn, vận dụng kiến thức vào vấn đề thực tiễn", "Dạy riêng từng môn như truyền thống", "Chỉ dạy qua sách giáo khoa", "Học sinh áp dụng Khoa học, Công nghệ, Kĩ thuật, Toán cùng lúc (Bài 7)."],
+    ["Nghề nghiệp STEM được định nghĩa như thế nào?", "Nghề trong hoặc liên quan tới các lĩnh vực STEM", "Chỉ nghề làm việc trong phòng thí nghiệm", "Nghề không cần qua đào tạo", "Đây là nhóm nghề có nhu cầu nhân lực cao (Bài 7)."],
+    ["Vì sao nghề nghiệp STEM được coi là động lực phát triển kinh tế – xã hội?", "Nhu cầu nhân lực cao trong cách mạng công nghiệp lần thứ tư", "Vì mọi nghề khác sẽ biến mất", "Vì chỉ STEM mới tạo ra sản phẩm", "STEM tạo ra giá trị của cải vật chất cho quốc gia (Bài 7)."],
+    ["Người làm nghề STEM cần có kĩ năng giải quyết vấn đề, được hiểu là gì?", "Nhận thức, phát hiện vấn đề và đề xuất giải pháp thực tế", "Chỉ tính toán nhanh, chính xác", "Ghi nhớ càng nhiều càng tốt", "Kĩ năng này vận dụng kiến thức cả bốn lĩnh vực STEM (Bài 7)."],
+    ["Trong giáo dục, nhắc tới STEM là nhấn mạnh điều gì?", "Dạy học tích hợp liên môn, gắn với thực tiễn", "Tăng thêm nhiều môn học mới", "Bỏ hẳn các môn khoa học tự nhiên", "Các môn STEM cần được quan tâm đúng mức (Bài 7)."],
+    ["Công nghệ có tính chất nào nổi bật theo SGK?", "Có tính chuyển giao và luôn đổi mới nhờ khoa học, kĩ thuật", "Không bao giờ thay đổi", "Chỉ tồn tại trong nhà máy", "Công nghệ là kết quả của hoạt động kĩ thuật (Bài 7)."],
+    ["Bài 8 của Chuyên đề 3 là dự án gì?", "Lập kế hoạch lựa chọn nghề nghiệp STEM", "Thiết kế mạch điều khiển nhà thông minh", "Lập bản vẽ kĩ thuật bằng CAD", "Dự án giúp học sinh định hướng nghề từ sớm (Bài 8)."],
+    ["Kế hoạch lựa chọn nghề nghiệp STEM cần dựa trên cơ sở nào?", "Năng lực, sở thích bản thân và nhu cầu nhân lực xã hội", "Chỉ nghe theo bạn bè chọn", "Chọn nghề có tên gọi nghe hay nhất", "Kết hợp đam mê với thực tế thị trường lao động (Bài 8)."],
+    ["Nhờ có kĩ năng STEM, chất lượng công việc của người lao động thế nào?", "Chất lượng, hiệu quả công việc được nâng cao", "Không thay đổi gì", "Chỉ lãnh đạo mới cần kĩ năng STEM", "Kĩ năng STEM còn tiếp tục phát triển trong quá trình làm việc (Bài 7)."],
+    ["Lĩnh vực STEM đóng vai trò gì với sức cạnh tranh của nền kinh tế?", "Ý nghĩa quyết định trong nâng cao sức cạnh tranh quốc gia", "Chỉ ảnh hưởng tới giáo dục", "Không liên quan tới kinh tế", "STEM tạo ra các giá trị của cải vật chất của mỗi quốc gia (Bài 7)."]
   ];
+  var cn10cdtk3P = [["Science", "Khoa học (tự nhiên) trong STEM"], ["Technology", "Công nghệ trong STEM"], ["Engineering", "Kĩ thuật trong STEM"], ["Mathematics", "Toán học trong STEM"], ["Giáo dục STEM", "Mô hình giáo dục theo tiếp cận liên môn"], ["Nghề nghiệp STEM", "Nghề thuộc hoặc liên quan các lĩnh vực STEM"], ["Kĩ năng giải quyết vấn đề", "Phát hiện vấn đề, đề xuất giải pháp thực tế"], ["Khoa học tự nhiên", "Vật lí, Hoá học, Sinh học, Thiên văn, Trái Đất"], ["Tính chuyển giao", "Đặc tính của công nghệ: lan truyền, đổi mới"], ["Dự án Bài 8", "Lập kế hoạch lựa chọn nghề nghiệp STEM"]];
   var CN10 = [
     TP("cn10-tt1", "🌾", "Trồng trọt — Chương I: Giới thiệu chung về trồng trọt", "Định hướng Trồng trọt • Bài 1–2 • Vai trò, phân loại cây trồng và xu hướng phát triển", KP(cn10tt1F, []), KN(cn10tt1F, [], "Công nghệ")),
     TP("cn10-tt2", "🟫", "Trồng trọt — Chương II: Đất trồng", "Định hướng Trồng trọt • Bài 3–6 • Thành phần, tính chất và cải tạo đất", KP(cn10tt2F, []), KN(cn10tt2F, [], "Công nghệ")),
@@ -2749,12 +2847,12 @@
     TP("cn10-tk1", "⚙️", "Thiết kế — Chương I: Đại cương về công nghệ", "Định hướng Thiết kế và công nghệ • Bài 1–7 • Hệ thống kĩ thuật, vật liệu, mạch điện", KP(cn10tk1F, cn10tk1P), KN(cn10tk1F, cn10tk1P, "Công nghệ")),
     TP("cn10-tk2", "📐", "Thiết kế — Chương II: Vẽ kĩ thuật", "Định hướng Thiết kế và công nghệ • Bài 8–16 • Hình chiếu, hình cắt, ghi kích thước, bản vẽ nhà", KP(cn10tk2F, []), KN(cn10tk2F, [], "Công nghệ")),
     TP("cn10-tk3", "💡", "Thiết kế — Chương III: Thiết kế kĩ thuật", "Định hướng Thiết kế và công nghệ • Bài 17–22 • Quy trình thiết kế và đánh giá sản phẩm", KP(cn10tk3F, []), KN(cn10tk3F, [], "Công nghệ")),
-    TP("cn10-cdtt1", "🧬", "Chuyên đề (Trồng trọt) 1: Công nghệ sinh học trong trồng trọt", "Chuyên đề Công nghệ — Định hướng Trồng trọt • Nuôi cấy mô, công nghệ gen, an toàn sinh học", KP(cn10cdtt1F, []), KN(cn10cdtt1F, [], "Công nghệ")),
+    TP("cn10-cdtt1", "🧬", "Chuyên đề (Trồng trọt) 1: Công nghệ sinh học trong trồng trọt", "Chuyên đề Công nghệ — Định hướng Trồng trọt • Nuôi cấy mô, công nghệ gen, an toàn sinh học", KP(cn10cdtt1F, cn10cdtt1P), KN(cn10cdtt1F, cn10cdtt1P, "Công nghệ")),
     TP("cn10-cdtt2", "🌷", "Chuyên đề (Trồng trọt) 2: Trồng và chăm sóc hoa, cây cảnh", "Chuyên đề Công nghệ — Định hướng Trồng trọt • Bonsai, cây cảnh trong nhà, hoa theo mùa vụ", KP(cn10cdtt2F, cn10cdtt2P), KN(cn10cdtt2F, cn10cdtt2P, "Công nghệ")),
-    TP("cn10-cdtt3", "✅", "Chuyên đề (Trồng trọt) 3: Trồng trọt theo tiêu chuẩn VietGAP", "Chuyên đề Công nghệ — Định hướng Trồng trọt • An toàn thực phẩm, truy xuất nguồn gốc, chứng nhận", KP(cn10cdtt3F, []), KN(cn10cdtt3F, [], "Công nghệ")),
-    TP("cn10-cdtk1", "🖥️", "Chuyên đề (Thiết kế) 1: Vẽ và thiết kế với sự trợ giúp của máy tính", "Chuyên đề Công nghệ — Định hướng Thiết kế • CAD, mô hình 3D, in 3D và CNC", KP(cn10cdtk1F, []), KN(cn10cdtk1F, [], "Công nghệ")),
+    TP("cn10-cdtt3", "✅", "Chuyên đề (Trồng trọt) 3: Trồng trọt theo tiêu chuẩn VietGAP", "Chuyên đề Công nghệ — Định hướng Trồng trọt • An toàn thực phẩm, truy xuất nguồn gốc, chứng nhận", KP(cn10cdtt3F, cn10cdtt3P), KN(cn10cdtt3F, cn10cdtt3P, "Công nghệ")),
+    TP("cn10-cdtk1", "🖥️", "Chuyên đề (Thiết kế) 1: Vẽ và thiết kế với sự trợ giúp của máy tính", "Chuyên đề Công nghệ — Định hướng Thiết kế • CAD, mô hình 3D, in 3D và CNC", KP(cn10cdtk1F, cn10cdtk1P), KN(cn10cdtk1F, cn10cdtk1P, "Công nghệ")),
     TP("cn10-cdtk2", "🏠", "Chuyên đề (Thiết kế) 2: Thiết kế mạch điều khiển cho ngôi nhà thông minh", "Chuyên đề Công nghệ — Định hướng Thiết kế • Cảm biến, rơ-le, kịch bản nhà thông minh", KP(cn10cdtk2F, []), KN(cn10cdtk2F, [], "Công nghệ")),
-    TP("cn10-cdtk3", "🔭", "Chuyên đề (Thiết kế) 3: Nghề nghiệp STEM", "Chuyên đề Công nghệ — Định hướng Thiết kế • Nhóm nghề STEM và lộ trình học tập", KP(cn10cdtk3F, []), KN(cn10cdtk3F, [], "Công nghệ"))
+    TP("cn10-cdtk3", "🔭", "Chuyên đề (Thiết kế) 3: Nghề nghiệp STEM", "Chuyên đề Công nghệ — Định hướng Thiết kế • Nhóm nghề STEM và lộ trình học tập", KP(cn10cdtk3F, cn10cdtk3P), KN(cn10cdtk3F, cn10cdtk3P, "Công nghệ"))
   ];
   /* ---------- ghi chú công thức / hệ thống cho các chủ đề tính toán ---------- */
   try {

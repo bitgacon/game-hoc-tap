@@ -822,8 +822,18 @@
      TIẾNG ANH 12 — Global Success
      words = [từ, hình, nghĩa]; patterns = mẫu câu ngữ pháp; gfacts = sự kiện ngữ pháp
      ================================================================== */
+  /* B6-T9: khử nhiễm chữ cái cho Lớp 6–12 (xem eng10NoLetter ở lop10.js). */
+  function eng12NoLetter(base) {
+    function has(f, name) { return String(f).indexOf(name) !== -1; }
+    return {
+      choose: base.choose.filter(function (f) { return !has(f, "qEngFirstLetter"); }),
+      blank: base.blank.filter(function (f) { return !has(f, "qEngBlankLetter"); }),
+      match: base.match.filter(function (f) { return f !== mEngLetterWord && !has(f, "mEngLetterWord"); }),
+      games: base.games.filter(function (f) { return f !== gSortLetters && !has(f, "gSortLetters"); })
+    };
+  }
   function eng12Pools(u, gfacts) {
-    var base = engPools(u.words);
+    var base = eng12NoLetter(engPools(u.words));
     function patGen() {
       var pat = pick(u.patterns);
       var all = shuffle(pat.w.slice());

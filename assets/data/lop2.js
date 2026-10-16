@@ -22,7 +22,9 @@
       return mcqQ("Trong phép trừ "+sum+" − "+b+" = "+a+", số "+sum+" gọi là gì?", ["Số trừ","Hiệu"], "Số bị trừ", "Số bị trừ − Số trừ = Hiệu.");
     }
     function g2HonKem(){
-      var a = rand(15,90), d = rand(3,25); var b = a+d;
+      /* B1-sửa lớp nhỏ (2026-10-15): giữ cả hai số trong phạm vi 100 của
+         chủ đề (bản cũ a+d có thể tới 115 — "111 hơn 89" lọt vào m2-so100). */
+      var a = rand(15,85), d = rand(3,15); var b = a+d;
       return calcMCQ(b+" hơn "+a+" bao nhiêu đơn vị?", b+" − "+a, d, 0, 40, "Muốn biết hơn nhau bao nhiêu, lấy số lớn trừ số bé: "+b+" − "+a+" = "+d+".");
     }
     function g2Qua10(add){
@@ -90,7 +92,7 @@
           ["Vật nào thường được cân bằng ki-lô-gam?", "Bao gạo", "Chai nước", "Sợi dây", "Bao gạo nặng nên cân bằng kg; chai nước đo dung tích bằng lít."],
           ["2 kg + 5 kg = ?", "7 kg", "3 kg", "25 kg", "2 + 5 = 7 (kg)."],
           ["Chai nước 1 l rót vào cốc, còn lại nửa chai. Lượng nước đã rót khoảng bao nhiêu?", "Khoảng nửa lít", "Khoảng 2 lít", "Khoảng 5 lít", "Nửa của 1 lít là khoảng nửa lít."],
-          ["Cân đĩa thăng bằng khi quả cân 2 kg ở một bên, bên kia là túi đường. Túi đường nặng bao nhiêu?", "2 kg", "1 kg", "4 kg", "Cân thăng bằng thì hai bên bằng nhau: 2 kg."],
+          ["Quả cân 2 kg thăng bằng với túi đường. Túi đường nặng bao nhiêu?", "2 kg", "1 kg", "4 kg", "Cân thăng bằng thì hai bên bằng nhau: 2 kg."],
           ["12 l − 7 l = ?", "5 l", "19 l", "7 l", "12 − 7 = 5 (l)."]
         ], [["1 kg","1000 g"],["Ki-lô-gam","Đo khối lượng"],["Lít","Đo dung tích"],["Cân đĩa","Đo khối lượng"]], "Nối cho đúng nhé!") },
       { id:"m2-nho100", emoji:"🧮", name:"Cộng trừ có nhớ phạm vi 100", sub:"Bài 19–24 • Cộng, trừ có nhớ", pools:{ choose:[g2CoNho(true), g2CoNho(false)], blank:[qBlankCalcFactory(100)], match:[mCalcResultFactory(100)], games:[gMemCalcFactory(100), gTFCalcFactory(100), gCatchAnswerFactory(100)] } },
@@ -408,6 +410,14 @@ function g2PreSuccWord() {
   var n = rand(101, 998), mode = rand(0, 1), ans = mode === 0 ? n - 1 : n + 1;
   return calcMCQ(mode === 0 ? "Số liền trước của " + n + " là số nào?" : "Số liền sau của " + n + " là số nào?", String(n), ans, 0, 1000, (mode === 0 ? "Số liền trước bé hơn 1 đơn vị: " : "Số liền sau lớn hơn 1 đơn vị: ") + n + (mode === 0 ? " − 1 = " : " + 1 = ") + ans + ".");
 }
+/* B1-sửa lớp nhỏ (2026-10-15): biến thể cho chủ đề "Số đến 100" (m2-so100) —
+   bản gốc sinh số 101–998 nên chủ đề đến-100 lẫn số ba chữ số (B1-đo §6.4
+   ví dụ 5: "Số liền sau của 519" trong chủ đề Số đến 100). Ở đây số gốc
+   12–99 để cả số liền trước (>=11) và liền sau (<=100) đều trong phạm vi. */
+function g2PreSuccWord100() {
+  var n = rand(12, 99), mode = rand(0, 1), ans = mode === 0 ? n - 1 : n + 1;
+  return calcMCQ(mode === 0 ? "Số liền trước của " + n + " là số nào?" : "Số liền sau của " + n + " là số nào?", String(n), ans, 0, 100, (mode === 0 ? "Số liền trước bé hơn 1 đơn vị: " : "Số liền sau lớn hơn 1 đơn vị: ") + n + (mode === 0 ? " − 1 = " : " + 1 = ") + ans + ".");
+}
 (function () {
   if (!GRADES[2]) return;
   GRADES[2].subjects.forEach(function (s) {
@@ -415,7 +425,7 @@ function g2PreSuccWord() {
     s.topics.forEach(function (t, i) { if (i < UNITS2.length) engExtraPush(t, UNITS2[i].words, ALL_WORDS2); });
   });
   var t;
-  t = findTopic127(2, "m2-so100"); if (t) { t.pools.choose.push(g2PreSuccWord, g2PreSuccWord); }
+  t = findTopic127(2, "m2-so100"); if (t) { t.pools.choose.push(g2PreSuccWord100, g2PreSuccWord100); }
   t = findTopic127(2, "m2-nhanchia"); if (t) { t.pools.choose.push(g2WordMulDiv, g2WordMulDiv); }
   t = findTopic127(2, "m2-1000calc"); if (t) { t.pools.choose.push(g2WordBig, g2WordBig); }
   t = findTopic127(2, "m2-1000"); if (t) { t.pools.choose.push(g2PreSuccWord); }

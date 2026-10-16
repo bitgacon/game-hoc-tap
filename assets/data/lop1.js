@@ -105,12 +105,15 @@
       return catchQ("Bắt chữ! Chạm vào chữ “" + t[0] + "” đang rơi nhé!", items.map(function (o) { return { html: '<span class="opt-word">' + o[0] + "</span>", ok: o === t }; }));
     }
     function gTFLetter() {
-      var rounds = [];
+      var items = [];
       for (var k = 0; k < 3; k++) {
         var t = pick(LETTERS1), truth = Math.random() < 0.5;
         var shown = truth ? t : letterDistractors(t, 1)[0];
-        rounds.push({ visual: '<div class="big-word">' + t[0].toUpperCase() + " — " + shown[0] + "</div>", truth: truth, explain: "Chữ hoa của “" + t[0] + "” là “" + t[0].toUpperCase() + "”" });
+        items.push({ t: t, truth: truth, shown: shown, correct: t });
       }
+      /* B6: cân bằng phán quyết — trước đây 3 vòng độc lập, ~25% màn đồng phán quyết */
+      tfBalanceItems(items, function (it) { return letterDistractors(it.t, 1)[0] || null; });
+      var rounds = items.map(function (it) { return { visual: '<div class="big-word">' + it.t[0].toUpperCase() + " — " + it.shown[0] + "</div>", truth: it.truth, explain: "Chữ hoa của “" + it.t[0] + "” là “" + it.t[0].toUpperCase() + "”" }; });
       return tfQ("Đúng hay sai? Chữ hoa đi với chữ thường nhé!", rounds);
     }
     function gSortLetters1() {
@@ -160,12 +163,15 @@
       });
     }
     function gTFTone() {
-      var rounds = [];
+      var items = [];
       for (var k = 0; k < 3; k++) {
         var t = pick(TONES1), w = pick(t.words), truth = Math.random() < 0.5;
         var shown = truth ? t : pick(TONES1.filter(function (x) { return x.id !== t.id; }));
-        rounds.push({ visual: '<div class="big-word">' + w + '</div><div class="sentence">Tiếng “' + w + "” có " + shown.name + "</div>", truth: truth, explain: "Tiếng “" + w + "” có " + t.name });
+        items.push({ t: t, w: w, truth: truth, shown: shown, correct: t });
       }
+      /* B6: cân bằng phán quyết (xem gTFLetter) */
+      tfBalanceItems(items, function (it) { return pick(TONES1.filter(function (x) { return x.id !== it.t.id; })); });
+      var rounds = items.map(function (it) { return { visual: '<div class="big-word">' + it.w + '</div><div class="sentence">Tiếng “' + it.w + "” có " + it.shown.name + "</div>", truth: it.truth, explain: "Tiếng “" + it.w + "” có " + it.t.name }; });
       return tfQ("Đúng hay sai? Nhìn dấu thanh nhé!", rounds);
     }
 
@@ -247,12 +253,15 @@
       return catchQ("Bắt tiếng chứa vần “" + v + "” nhé!", items.map(function (w) { return { html: '<span class="opt-word">' + w + "</span>", ok: w === good }; }));
     }
     function gTFVan() {
-      var rounds = [];
+      var items = [];
       for (var k = 0; k < 3; k++) {
         var v = pick(VAN_KEYS), w = pick(VAN1[v]), truth = Math.random() < 0.5;
         var shownV = truth ? v : pick(VAN_KEYS.filter(function (x) { return x !== v && VAN1[x].indexOf(w) === -1; }));
-        rounds.push({ visual: '<div class="big-word">' + w + '</div><div class="sentence">Tiếng “' + w + "” chứa vần " + shownV + "</div>", truth: truth, explain: "Tiếng “" + w + "” chứa vần " + v });
+        items.push({ v: v, w: w, truth: truth, shown: shownV, correct: v });
       }
+      /* B6: cân bằng phán quyết (xem gTFLetter) */
+      tfBalanceItems(items, function (it) { return pick(VAN_KEYS.filter(function (x) { return x !== it.v && VAN1[x].indexOf(it.w) === -1; })); });
+      var rounds = items.map(function (it) { return { visual: '<div class="big-word">' + it.w + '</div><div class="sentence">Tiếng “' + it.w + "” chứa vần " + it.shown + "</div>", truth: it.truth, explain: "Tiếng “" + it.w + "” chứa vần " + it.v }; });
       return tfQ("Đúng hay sai? Tìm vần trong tiếng nhé!", rounds);
     }
     var SORT_SYL = [["bàn","b","à","n"],["con","c","o","n"],["tay","t","a","y"],["sao","s","a","o"],["mèo","m","è","o"],["hoa","h","o","a"],["cân","c","â","n"],["bay","b","a","y"]];
@@ -419,7 +428,7 @@
         ["Bố mẹ dặn dò điều đúng, em nên thế nào?", "Vâng lời và làm theo", "Cãi lại ngay", "Giả vờ không nghe", "Vâng lời bố mẹ là ngoan."],
         ["Em nhỏ muốn chơi đồ chơi của em, em nên làm gì?", "Nhường và chơi cùng em", "Giật lại và mắng em", "Giấu hết đồ chơi", "Nhường nhịn em nhỏ."],
         ["Em nhỏ ngã, em nên làm gì?", "Đỡ em dậy và xem em có đau không", "Cười em", "Bỏ đi", "Đỡ em dậy là chăm sóc em."],
-        ["Người lớn đang nói chuyện, em có chuyện muốn nói, em nên làm gì?", "Chờ người lớn nói xong rồi mới nói", "Nói chen thật to", "Kéo tay liên tục", "Chờ đợi là lễ phép."]
+        ["Người lớn đang nói chuyện, em muốn nói thì nên làm gì?", "Chờ người lớn nói xong rồi mới nói", "Nói chen thật to", "Kéo tay liên tục", "Chờ đợi là lễ phép."]
       ], [["Gặp người lớn","Chào hỏi lễ phép"],["Bố mẹ dặn dò","Vâng lời làm theo"],["Em muốn chơi cùng","Nhường và chơi với em"],["Em bị ngã","Đỡ em dậy"]]),
       ddTopic("dd1-rules", "🏫", "Thực hiện nội quy trường lớp", "Chủ đề 4 • Đúng giờ, trật tự, vệ sinh, tài sản chung", [
         ["Đi học, em cần đến trường lúc nào?", "Đúng giờ", "Muộn bao nhiêu cũng được", "Khi nào thích thì đến", "Đi học đúng giờ là nội quy."],
@@ -502,13 +511,16 @@
     }
     function gSortNotes() { return sortQ("Sắp xếp các nốt từ thấp đến cao nhé!", ["Đô", "Rê", "Mi", "Pha", "Son"]); }
     function gTFNotes() {
-      var rounds = [];
+      var items = [];
       for (var k = 0; k < 3; k++) {
         var i = rand(0, 3), truth = Math.random() < 0.5;
         var lo = NOTES1[i].n, hi = NOTES1[i + 1].n;
         var stmt = truth ? ("Nốt " + lo + " thấp hơn nốt " + hi) : ("Nốt " + hi + " thấp hơn nốt " + lo);
-        rounds.push({ visual: '<div class="big-word">' + lo + " — " + hi + '</div><div class="sentence">' + stmt + "</div>", truth: truth, explain: "Thứ tự từ thấp đến cao: Đô, Rê, Mi, Pha, Son" });
+        items.push({ lo: lo, hi: hi, truth: truth, shown: stmt, correct: "Nốt " + lo + " thấp hơn nốt " + hi });
       }
+      /* B6: cân bằng phán quyết (xem gTFLetter) */
+      tfBalanceItems(items, function (it) { return "Nốt " + it.hi + " thấp hơn nốt " + it.lo; });
+      var rounds = items.map(function (it) { return { visual: '<div class="big-word">' + it.lo + " — " + it.hi + '</div><div class="sentence">' + it.shown + "</div>", truth: it.truth, explain: "Thứ tự từ thấp đến cao: Đô, Rê, Mi, Pha, Son" }; });
       return tfQ("Đúng hay sai? Nhớ thứ tự Đô – Rê – Mi – Pha – Son nhé!", rounds);
     }
     var MUSIC_FACTS = [
@@ -627,12 +639,15 @@
       return catchQ("Bắt hiệu lệnh! Chạm nhanh vào thẻ “" + c[0] + "” nhé!", items.map(function (o) { return { html: '<span class="opt-emoji">' + o[1] + '</span><span class="opt-word">' + o[0] + "</span>", ok: o[0] === c[0] }; }));
     }
     function gTFCommand() {
-      var rounds = [];
+      var items = [];
       for (var k = 0; k < 3; k++) {
         var c = pick(COMMANDS1), truth = Math.random() < 0.5;
         var shown = truth ? c : pick(COMMANDS1.filter(function (x) { return x[0] !== c[0]; }));
-        rounds.push({ visual: '<div class="big-word">' + c[0] + '</div><div class="sentence">Lệnh này nghĩa là: ' + shown[1] + "</div>", truth: truth, explain: "Lệnh “" + c[0] + "” nghĩa là " + c[1].toLowerCase() });
+        items.push({ c: c, truth: truth, shown: shown, correct: c });
       }
+      /* B6: cân bằng phán quyết (xem gTFLetter) */
+      tfBalanceItems(items, function (it) { return pick(COMMANDS1.filter(function (x) { return x[0] !== it.c[0]; })); });
+      var rounds = items.map(function (it) { return { visual: '<div class="big-word">' + it.c[0] + '</div><div class="sentence">Lệnh này nghĩa là: ' + it.shown[1] + "</div>", truth: it.truth, explain: "Lệnh “" + it.c[0] + "” nghĩa là " + it.c[1].toLowerCase() }; });
       return tfQ("Đúng hay sai? Nhớ khẩu lệnh nhé!", rounds);
     }
     var GDTC1_TOPICS = [
@@ -667,7 +682,7 @@
       hdtnTopic("hd1-school", "🏫", "Truyền thống trường em", "Chủ đề 3 • Kính yêu thầy cô, thân thiện", [
         ["Gặp thầy cô trong trường, em làm gì?", "Đứng nghiêm chào lễ phép", "Chạy tránh đi", "Không chào hỏi", "Chào thầy cô lễ phép."],
         ["Bạn bè trong trường cư xử với nhau thế nào?", "Thân thiện, giúp đỡ nhau", "Hay bắt nạt nhau", "Không chơi với ai", "Thân thiện với bạn bè."],
-        ["Năm điều Bác Hồ dạy thiếu nhi có điều nào sau đây?", "Yêu Tổ quốc, yêu đồng bào", "Chỉ cần học giỏi là đủ, không cần ngoan", "Không phải giúp đỡ ai", "Điều 1 Bác Hồ dạy: Yêu Tổ quốc, yêu đồng bào."],
+        ["Một điều Bác Hồ dạy thiếu nhi là gì?", "Yêu Tổ quốc, yêu đồng bào", "Chỉ cần học giỏi là đủ, không cần ngoan", "Không phải giúp đỡ ai", "Điều 1 Bác Hồ dạy: Yêu Tổ quốc, yêu đồng bào."],
         ["Thầy cô ốm không đến lớp được, em nên làm gì?", "Hỏi thăm và chúc thầy cô mau khoẻ", "Nghịch phá vì không có cô", "Quên luôn thầy cô", "Quan tâm thầy cô là kính yêu."],
         ["Em giữ gìn truyền thống trường bằng việc nào?", "Học tốt, ngoan ngoãn, giữ trường sạch đẹp", "Vẽ bậy lên tường trường", "Làm hỏng cây xanh trong sân", "Học tốt và giữ trường sạch đẹp."]
       ], [["Gặp thầy cô", "Chào lễ phép"], ["Với bạn bè", "Thân thiện, giúp đỡ"], ["Bác Hồ dạy điều 1", "Yêu Tổ quốc, yêu đồng bào"], ["Trường lớp", "Giữ sạch đẹp"]]),
@@ -822,9 +837,12 @@ function g1WordAddSub100() {
     options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(ans), cols: 3 };
 }
 function g1DayOrder() {
+  /* B1-sửa lớp nhỏ (2026-10-15): Lớp 1 chỉ học hôm nay/hôm qua/ngày mai
+     (lùi/tiến 1 ngày). Bản cũ hỏi cả "ngày kia/hôm kia" (lùi/tiến 2 ngày) —
+     vượt phạm vi Lớp 1 (B1-đo §6.4 ví dụ 4). */
   var i = rand(0, 6), mode = rand(0, 1), ansIdx, prompt;
-  if (mode === 0) { ansIdx = (i + 2) % 7; prompt = "Hôm nay là " + DAYS[i] + ". Ngày kia là ngày nào?"; }
-  else { ansIdx = (i + 5) % 7; prompt = "Hôm nay là " + DAYS[i] + ". Hôm kia là ngày nào?"; }
+  if (mode === 0) { ansIdx = (i + 1) % 7; prompt = "Hôm nay là " + DAYS[i] + ". Ngày mai là ngày nào?"; }
+  else { ansIdx = (i + 6) % 7; prompt = "Hôm nay là " + DAYS[i] + ". Hôm qua là ngày nào?"; }
   var wrongs = shuffle([0, 1, 2, 3, 4, 5, 6].filter(function (x) { return x !== ansIdx; })).slice(0, 2).map(function (x) { return DAYS[x]; });
   return mcqQ(prompt, wrongs, DAYS[ansIdx], "Đếm thứ tự các ngày trong tuần: " + DAYS.join(" → ") + ".");
 }

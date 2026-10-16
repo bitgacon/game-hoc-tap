@@ -441,8 +441,7 @@ var NV9_TOPICS = [
     ["“Ngọc nữ về tay chân chủ” là truyện như thế nào?", "Truyện truyền kì khuyết danh", "Truyện cổ tích do trẻ em sáng tác", "Truyện cười dân gian", "Đây là truyện truyền kì không rõ tác giả, được học ở phần Thực hành đọc."],
     ["Vì sao Trương Sinh lập đàn giải oan cho Vũ Nương?", "Vì biết vợ bị oan sau khi gặp Phan Lang", "Vì được vua ra lệnh", "Vì muốn được thăng quan", "Nghe Phan Lang kể lại, Trương Sinh mới biết vợ mình bị oan."]
   ], [["Chuyện người con gái Nam Xương", "Nguyễn Dữ"], ["Dế chọi", "Bồ Tùng Linh"], ["Sơn Tinh – Thuỷ Tinh (truyện thơ)", "Nguyễn Nhược Pháp"], ["Truyền kì mạn lục", "Nguyễn Dữ"],
-        ["Nguyễn Dữ", "Truyền kì mạn lục"],
-        ["Bồ Tùng Linh", "Liêu trai chí dị"],
+        ["Liêu trai chí dị", "Bồ Tùng Linh"],
         ["Vũ Nương", "Người con gái Nam Xương"]], "Nối tác phẩm với tác giả nhé!"),
   topic("nv9-b2", "🎐", "Bài 2: Những cung bậc tâm trạng", "Thơ trữ tình • Chinh phụ ngâm • Cung oán ngâm khúc • Tiếng đàn mưa", [
     ["“Chinh phụ ngâm” là tác phẩm của ai, bản dịch thơ Nôm nổi tiếng do ai thực hiện?", "Đặng Trần Côn sáng tác bằng chữ Hán; Đoàn Thị Điểm dịch ra thơ Nôm song thất lục bát", "Nguyễn Gia Thiều sáng tác và dịch", "Bích Khê dịch", "Bản dịch của Đoàn Thị Điểm được coi là đạt đến mức “dịch mà như sáng tác”."],
@@ -478,10 +477,7 @@ var NV9_TOPICS = [
     ["Giọng điệu chung của “Nỗi niềm chinh phụ” là gì?", "Buồn thương, da diết", "Hào hùng, sôi nổi", "Hài hước, châm biếm", "Đoạn trích mang giọng buồn thương, nhớ nhung da diết."],
     ["“Tiếng đàn mưa” gợi lên âm thanh của thiên nhiên nào?", "Tiếng mưa rơi", "Tiếng sấm sét", "Tiếng sóng biển", "Bài thơ ví tiếng mưa rơi như tiếng đàn réo rắt."],
     ["Tác phẩm nào sau đây thuộc thể loại ngâm khúc?", "Cung oán ngâm khúc", "Truyện Kiều", "Liêu trai chí dị", "Cung oán ngâm khúc và Chinh phụ ngâm là hai ngâm khúc tiêu biểu."]
-  ], [["Chinh phụ ngâm (nguyên tác)", "Đặng Trần Côn"], ["Chinh phụ ngâm (bản dịch Nôm)", "Đoàn Thị Điểm"], ["Cung oán ngâm khúc", "Nguyễn Gia Thiều"], ["Tiếng đàn mưa", "Bích Khê"],
-        ["Đặng Trần Côn", "Chinh phụ ngâm"],
-        ["Nguyễn Gia Thiều", "Cung oán ngâm khúc"],
-        ["Bích Khê", "Tiếng đàn mưa"]], "Nối tác phẩm với tác giả nhé!"),
+  ], [["Chinh phụ ngâm (nguyên tác)", "Đặng Trần Côn"], ["Chinh phụ ngâm (bản dịch Nôm)", "Đoàn Thị Điểm"], ["Cung oán ngâm khúc", "Nguyễn Gia Thiều"], ["Tiếng đàn mưa", "Bích Khê"]], "Nối tác phẩm với tác giả nhé!"),
   topic("nv9-b3", "🌸", "Bài 3: Hồn nước nằm trong tiếng mẹ cha", "Truyện Kiều • Lục Vân Tiên • Tự tình • Ca dao, ngôn ngữ dân tộc", [
     ["Đoạn trích “Kim – Kiều gặp gỡ” và “Kiều ở lầu Ngưng Bích” trích từ tác phẩm nào, của ai?", "“Truyện Kiều” của Nguyễn Du", "“Lục Vân Tiên” của Nguyễn Đình Chiểu", "“Chinh phụ ngâm” của Đặng Trần Côn", "“Truyện Kiều” (Đoạn trường tân thanh) là kiệt tác thơ Nôm Việt Nam."],
     ["Nguyễn Du được UNESCO vinh danh với danh hiệu gì?", "Danh nhân văn hoá thế giới", "Anh hùng dân tộc", "Nhà thơ cách mạng", "Lễ kỉ niệm 250 năm ngày sinh Nguyễn Du (2015) được UNESCO cùng tổ chức."],
@@ -516,10 +512,7 @@ var NV9_TOPICS = [
     ["Nguyễn Đình Chiểu còn được gọi thân thương là gì?", "Đồ Chiểu", "Ông già Ba Tri", "Cụ Tiên Điền", "Dân gian gọi Nguyễn Đình Chiểu là Đồ Chiểu."],
     ["Trong “Kim – Kiều gặp gỡ”, Kim Trọng được miêu tả là người như thế nào?", "Phong tư tài mạo, văn chương xuất chúng", "Giàu có nhưng thô lỗ", "Võ tướng dũng mãnh", "Kim Trọng là chàng thư sinh tài hoa, phong nhã."],
     ["Giá trị nổi bật của “Truyện Kiều” về mặt ngôn ngữ là gì?", "Đỉnh cao của tiếng Việt và thơ lục bát", "Dùng nhiều từ Hán khó hiểu", "Ngôn ngữ hoàn toàn bình dân", "Truyện Kiều đưa tiếng Việt và thể lục bát lên đỉnh cao nghệ thuật."]
-  ], [["Truyện Kiều", "Nguyễn Du"], ["Lục Vân Tiên", "Nguyễn Đình Chiểu"], ["Tự tình (bài 2)", "Hồ Xuân Hương"], ["Kim – Kiều gặp gỡ; Kiều ở lầu Ngưng Bích", "Truyện Kiều — Nguyễn Du"],
-        ["Nguyễn Du", "Truyện Kiều"],
-        ["Nguyễn Đình Chiểu", "Lục Vân Tiên"],
-        ["Hồ Xuân Hương", "Tự tình"]], "Nối tác phẩm với tác giả nhé!"),
+  ], [["Truyện Kiều", "Nguyễn Du"], ["Lục Vân Tiên", "Nguyễn Đình Chiểu"], ["Tự tình (bài 2)", "Hồ Xuân Hương"], ["Kim – Kiều gặp gỡ; Kiều ở lầu Ngưng Bích", "Truyện Kiều — Nguyễn Du"]], "Nối tác phẩm với tác giả nhé!"),
   topic("nv9-b4", "🔍", "Bài 4: Khám phá vẻ đẹp văn chương", "Văn bản nghị luận văn học • Đọc hiểu thơ Đường • Hoàng Hạc lâu tống Mạnh Hạo Nhiên chi Quảng Lăng", [
     ["Văn bản nghị luận văn học có nhiệm vụ chính là gì?", "Phân tích, đánh giá, làm sáng rõ giá trị nội dung và nghệ thuật của tác phẩm văn học bằng lí lẽ và dẫn chứng", "Kể lại toàn bộ cốt truyện của tác phẩm", "Sáng tác một tác phẩm mới", "Nghị luận văn học kết hợp cảm nhận với phân tích lí trí."],
     ["Khi đọc văn bản nghị luận về một tác phẩm, cần chú ý những yếu tố nào?", "Luận điểm của người viết, các lí lẽ và dẫn chứng được dẫn ra, cách sắp xếp lập luận", "Chỉ cần nhớ tên tác giả văn bản nghị luận", "Chỉ đọc phần kết luận", "Nắm luận điểm giúp hiểu quan điểm đánh giá của người viết."],
@@ -592,10 +585,7 @@ var NV9_TOPICS = [
     ["Truyện “Bí ẩn của làn nước” gợi suy ngẫm về điều gì?", "Nỗi đau và bí ẩn trong tâm hồn người sau chiến tranh", "Kĩ thuật bơi lội", "Cách đánh bắt cá trên sông", "Truyện của Bảo Ninh thấm đẫm nỗi đau chiến tranh và thân phận con người."],
     ["Thành phố diễn ra câu chuyện Rô-mê-ô và Giu-li-ét là thành nào?", "Vê-rô-na (Verona)", "Luân Đôn", "Pa-ri", "Câu chuyện tình diễn ra ở thành Verona của I-ta-li-a."],
     ["Mâu thuẫn trung tâm của vở “Rô-mê-ô và Giu-li-ét” là gì?", "Tình yêu của đôi trẻ với thù hận của hai gia đình", "Tranh giành ngôi vua", "Mâu thuẫn giàu nghèo trong buôn bán", "Tình yêu chân thành xung đột với mối thù truyền kiếp của hai dòng họ."]
-  ], [["Rô-mê-ô và Giu-li-ét", "Sếch-xpia"], ["Lơ Xít", "Coóc-nây"], ["Bí ẩn của làn nước", "Bảo Ninh"], ["Hamlet, Ô-ten-lô", "Sếch-xpia"],
-        ["Shakespeare", "Rô-mê-ô và Giu-li-ét"],
-        ["Corneille", "Lơ Xít"],
-        ["Bảo Ninh", "Bí ẩn của làn nước"]], "Nối tác phẩm với tác giả nhé!"),
+  ], [["Rô-mê-ô và Giu-li-ét", "Sếch-xpia"], ["Lơ Xít", "Coóc-nây"], ["Bí ẩn của làn nước", "Bảo Ninh"], ["Hamlet, Ô-ten-lô", "Sếch-xpia"]], "Nối tác phẩm với tác giả nhé!"),
   topic("nv9-b6", "🕵️", "Bài 6: Giải mã những bí mật", "Truyện trinh thám • Cô-nan Đoi-lơ • A-ga-thơ Crít-xti • Phạm Cao Củng", [
     ["Nhân vật thám tử nổi tiếng nhất của Cô-nan Đoi-lơ (Conan Doyle) là ai?", "Thám tử Sơ-lốc Hôm (Sherlock Holmes)", "Thám tử Pô-a-rô (Poirot)", "Thanh tra Lê Phong", "Holmes nổi tiếng với phương pháp suy luận khoa học, quan sát tinh tường."],
     ["“Bài hát đồng sáu xu” là truyện trinh thám của nhà văn nào?", "A-ga-thơ Crít-xti (Agatha Christie) — “nữ hoàng truyện trinh thám” người Anh", "Cô-nan Đoi-lơ", "Phạm Cao Củng", "Christie là tác giả tiểu thuyết bán chạy hàng đầu thế giới."],
@@ -628,8 +618,7 @@ var NV9_TOPICS = [
     ["Phạm Xuân Ẩn hoạt động tình báo trong thời kì nào?", "Kháng chiến chống Mỹ", "Kháng chiến chống Pháp lần đầu", "Thời Pháp thuộc trước 1930", "Phạm Xuân Ẩn là nhà tình báo chiến lược thời kháng chiến chống Mỹ."]
   ], [["Sơ-lốc Hôm", "Cô-nan Đoi-lơ"], ["Éc-kiu Pô-a-rô", "A-ga-thơ Crít-xti"], ["Thám tử Kỳ Phát", "Phạm Cao Củng"], ["Bài hát đồng sáu xu", "A-ga-thơ Crít-xti"],
         ["Conan Doyle", "Sherlock Holmes"],
-        ["Agatha Christie", "Nữ hoàng truyện trinh thám"],
-        ["Phạm Cao Củng", "Thám tử Kỳ Phát"]], "Nối nhân vật/tác phẩm với tác giả nhé!"),
+        ["Agatha Christie", "Nữ hoàng truyện trinh thám"]], "Nối nhân vật/tác phẩm với tác giả nhé!"),
   topic("nv9-b7", "🌧️", "Bài 7: Hồn thơ muôn điệu", "Thơ hiện đại • Tiếng Việt (Lưu Quang Vũ) • Mưa xuân (Nguyễn Bính) • Miền quê (Nguyễn Khoa Điềm)", [
     ["Bài thơ “Tiếng Việt” là của nhà thơ nào?", "Lưu Quang Vũ", "Nguyễn Bính", "Nguyễn Khoa Điềm", "Lưu Quang Vũ là nhà thơ, nhà viết kịch tài hoa (1948–1988)."],
     ["Bài thơ “Tiếng Việt” của Lưu Quang Vũ ca ngợi điều gì?", "Vẻ đẹp, sức sống mãnh liệt của tiếng Việt — tiếng mẹ đẻ gắn với lịch sử, văn hoá và tâm hồn dân tộc", "Vẻ đẹp của một thứ tiếng nước ngoài", "Sự phong phú của từ Hán Việt", "“Tiếng Việt gọi: hồn ở đâu đây” — tiếng nói là nơi trú ngụ của hồn dân tộc."],
@@ -664,9 +653,7 @@ var NV9_TOPICS = [
     ["Quan niệm sống của Xuân Diệu trong “Vội vàng” chịu ảnh hưởng của tư tưởng nào?", "Khát vọng tận hưởng và khẳng định cái tôi cá nhân", "Tư tưởng an phận thủ thường", "Tư tưởng xuất thế", "“Vội vàng” thể hiện cái tôi Thơ mới say mê cuộc sống trần thế."],
     ["Bài 7 rèn luyện kĩ năng đọc hiểu thể loại nào là chính?", "Thơ trữ tình", "Truyện trinh thám", "Kịch", "Trọng tâm Bài 7 là đọc hiểu các bài thơ trữ tình."]
   ], [["Tiếng Việt", "Lưu Quang Vũ"], ["Mưa xuân", "Nguyễn Bính"], ["Miền quê; Đất Nước", "Nguyễn Khoa Điềm"], ["Hồn Trương Ba, da hàng thịt (kịch)", "Lưu Quang Vũ"],
-        ["Lưu Quang Vũ", "Tiếng Việt"],
-        ["Nguyễn Bính", "Mưa xuân"],
-        ["Xuân Diệu", "Vội vàng"]], "Nối tác phẩm với tác giả nhé!"),
+        ["Vội vàng", "Xuân Diệu"]], "Nối tác phẩm với tác giả nhé!"),
   topic("nv9-b8", "🕊️", "Bài 8: Tiếng nói của lương tri", "Văn bản nghị luận xã hội • Đấu tranh cho một thế giới hoà bình • Biến đổi khí hậu • Bài ca chúc Tết thanh niên", [
     ["“Đấu tranh cho một thế giới hoà bình” là văn bản của nhà văn nào?", "Ga-bri-en Gác-xi-a Mác-két (Gabriel García Márquez) — nhà văn Cô-lôm-bi-a, giải Nobel Văn học 1982", "Gu-tê-rét — Tổng Thư kí Liên hợp quốc", "Phan Bội Châu", "Mác-két là đại biểu lớn của chủ nghĩa hiện thực huyền ảo Mỹ La-tinh."],
     ["Luận điểm chính của “Đấu tranh cho một thế giới hoà bình” là gì?", "Chạy đua vũ trang hạt nhân đe doạ huỷ diệt sự sống trên Trái Đất; cần đấu tranh vì hoà bình, dùng nguồn lực cho phát triển và hạnh phúc con người", "Các nước nên tăng chi tiêu quốc phòng", "Chiến tranh hạt nhân là không tránh khỏi", "Văn bản là “tiếng nói của lương tri” trước hiểm hoạ chiến tranh hạt nhân."],
@@ -702,8 +689,6 @@ var NV9_TOPICS = [
     ["Để thuyết phục người đọc, văn bản nghị luận xã hội thường dùng gì?", "Lí lẽ sắc bén và dẫn chứng thực tế thuyết phục", "Toàn hình ảnh thơ mộng", "Đối thoại nhân vật", "Nghị luận xã hội thuyết phục bằng lí lẽ và chứng cứ thực tế."],
     ["Bài học lớn nhất rút ra từ Bài 8 là gì?", "Có trách nhiệm với hoà bình và tương lai nhân loại", "Chỉ cần lo cho bản thân", "Chiến tranh là điều không tránh khỏi", "Bài 8 giáo dục ý thức trách nhiệm công dân toàn cầu cho học sinh."]
   ], [["Đấu tranh cho một thế giới hoà bình", "Gác-xi-a Mác-két"], ["Phát biểu về biến đổi khí hậu", "Gu-tê-rét (Tổng Thư kí LHQ)"], ["Bài ca chúc Tết thanh niên", "Phan Bội Châu"], ["Phong trào Đông du", "Phan Bội Châu"],
-        ["Márquez", "Đấu tranh cho một thế giới hoà bình"],
-        ["Phan Bội Châu", "Phong trào Đông du"],
         ["Guterres", "Tổng Thư kí Liên hợp quốc"]], "Nối cho đúng nhé!"),
   topic("nv9-b9", "🏔️", "Bài 9: Đi và suy ngẫm", "Văn bản thông tin, du kí • Yên Tử, núi thiêng • Văn hoá hoa – cây cảnh • Tình sông núi", [
     ["“Yên Tử, núi thiêng” là văn bản của tác giả nào?", "Thi Sảnh", "Trần Quốc Vượng", "Trần Mai Ninh", "Thi Sảnh là nhà văn quê Quảng Ninh, gắn bó với vùng đất Yên Tử."],
@@ -740,9 +725,7 @@ var NV9_TOPICS = [
     ["Hoàng thành Thăng Long nằm ở thành phố nào?", "Hà Nội", "Huế", "Hải Phòng", "Khu di tích nằm ở quận Ba Đình, thủ đô Hà Nội."],
     ["Trần Nhân Tông sau khi nhường ngôi đã đi tu ở đâu trước khi lên Yên Tử?", "Núi Yên Tử là nơi ông tu hành và hoá Phật", "Chùa Hương", "Núi Ngũ Hành Sơn", "Phật hoàng Trần Nhân Tông chọn Yên Tử làm nơi tu hành cuối đời."]
   ], [["Yên Tử, núi thiêng", "Thi Sảnh"], ["Văn hoá hoa – cây cảnh", "Trần Quốc Vượng"], ["Tình sông núi", "Trần Mai Ninh"], ["Thiền phái Trúc Lâm, Yên Tử", "Phật hoàng Trần Nhân Tông"],
-        ["Trần Nhân Tông", "Thiền phái Trúc Lâm Yên Tử"],
-        ["Lý Thái Tổ", "Dời đô về Thăng Long"],
-        ["Thi Sảnh", "Yên Tử, núi thiêng"]], "Nối tác phẩm với tác giả nhé!"),
+        ["Lý Thái Tổ", "Dời đô về Thăng Long"]], "Nối tác phẩm với tác giả nhé!"),
   topic("nv9-b10", "📖", "Bài 10: Văn học – lịch sử tâm hồn", "Tổng kết đọc sách • Sổ tay đọc sách • Mạch tiếng Việt: câu đơn và câu ghép (ôn tập)", [
     ["Vì sao nói văn học là “lịch sử tâm hồn” của mỗi dân tộc?", "Văn học lưu giữ, phản ánh đời sống tinh thần, tình cảm, khát vọng của con người qua các thời đại", "Vì văn học ghi chép chính xác mọi sự kiện lịch sử", "Vì mọi nhà văn đều là nhà sử học", "Đọc văn học là cách hiểu sâu sắc tâm hồn con người và thời đại."],
     ["Đọc sách có vai trò nào quan trọng nhất đối với học sinh?", "Mở rộng tri thức, bồi dưỡng tâm hồn, rèn ngôn ngữ và tư duy; sách là người thầy, người bạn đồng hành suốt đời", "Chỉ để qua môn kiểm tra", "Chỉ để giải trí giết thời gian", "Thói quen đọc sách quyết định lớn tới sự trưởng thành của mỗi người."],
@@ -948,8 +931,18 @@ var UNITS9 = [
 var ALL_WORDS9 = [];
 UNITS9.forEach(function (u) { u.words.forEach(function (w) { ALL_WORDS9.push(w); }); });
 (function () { var seen = {}; for (var i = ALL_WORDS9.length - 1; i >= 0; i--) { if (seen[ALL_WORDS9[i][0]]) ALL_WORDS9.splice(i, 1); else seen[ALL_WORDS9[i][0]] = 1; } })();
+/* B6-T9: khử nhiễm chữ cái cho Lớp 6–12 (xem eng10NoLetter ở lop10.js). */
+function eng9NoLetter(base) {
+  function has(f, name) { return String(f).indexOf(name) !== -1; }
+  return {
+    choose: base.choose.filter(function (f) { return !has(f, "qEngFirstLetter"); }),
+    blank: base.blank.filter(function (f) { return !has(f, "qEngBlankLetter"); }),
+    match: base.match.filter(function (f) { return f !== mEngLetterWord && !has(f, "mEngLetterWord"); }),
+    games: base.games.filter(function (f) { return f !== gSortLetters && !has(f, "gSortLetters"); })
+  };
+}
 function eng9Pools(u) {
-  var base = engPools(u.words);
+  var base = eng9NoLetter(engPools(u.words));
   var pats = u.patterns || [];
   function patGen() {
     var pat = pick(pats);
@@ -975,7 +968,7 @@ function eng9Pools(u) {
   if (formList) { choose.push(eng6FormGen(formList, false), eng6FormGen(formList, false)); }
   if (u.pron && u.pron.length) choose.push(eng6PronGen(u), eng6PronGen(u));
   if (u.stress && u.stress.length) choose.push(eng5StressGen(u), eng5StressGen(u));
-  var blank = [function () { return qEngBlankLetter(u.words); }];
+  var blank = base.blank.slice(); /* B6-T9: thay wrapper chữ cái riêng bằng blank của base đã lọc (điền từ trong câu) */
   if (pats.length) blank.push(patBlank);
   if (formList) blank.push(eng6FormGen(formList, true));
   return { choose: choose, blank: blank, match: base.match, games: base.games.concat([yesNoGen]) };
@@ -992,12 +985,12 @@ function kh9Lens() {
   if (Math.random() < 0.5) return numMCQ6("Thấu kính hội tụ có tiêu cự " + c[0] + " cm. Đặt vật cách thấu kính " + c[2] + " cm. Ảnh cách thấu kính bao nhiêu cm?", "1/f = 1/d + 1/d′", c[1], "1/d′ = 1/f − 1/d = 1/" + c[0] + " − 1/" + c[2] + " → d′ = " + c[1] + " cm.", 8);
   return numMCQ6("Vật đặt cách thấu kính hội tụ " + c[2] + " cm, ảnh thật cách thấu kính " + c[1] + " cm. Tiêu cự của thấu kính là bao nhiêu cm?", "1/f = 1/d + 1/d′", c[0], "1/f = 1/" + c[2] + " + 1/" + c[1] + " = 1/" + c[0] + " → f = " + c[0] + " cm.", 5);
 }
-function kh9Ohm() { var r = pick([2, 3, 4, 5, 6, 10, 12]), i = rand(1, 6); return numMCQ6("Đặt hiệu điện thế " + (r * i) + " V vào hai đầu điện trở " + r + " Ω. Cường độ dòng điện qua điện trở là bao nhiêu A?", "I = U/R", i, "Định luật Ohm: I = U : R = " + (r * i) + " : " + r + " = " + i + " A.", 2); }
+function kh9Ohm() { var r = pick([2, 3, 4, 5, 6, 10, 12]), i = rand(1, 6); var q = numMCQ6("Đặt hiệu điện thế " + (r * i) + " V vào hai đầu điện trở " + r + " Ω. Cường độ dòng điện qua điện trở là bao nhiêu A?", "I = U/R", i, "Định luật Ohm: I = U : R = " + (r * i) + " : " + r + " = " + i + " A.", 2); q.figure = figCircuit1SVG(r * i, r); return q; }
 function kh9SeriesPar() {
-  if (Math.random() < 0.5) { var a = rand(2, 20), b = rand(2, 20); return numMCQ6("Mắc nối tiếp hai điện trở " + a + " Ω và " + b + " Ω. Điện trở tương đương là bao nhiêu Ω?", "R = R₁ + R₂", a + b, "Đoạn mạch nối tiếp: R = R₁ + R₂ = " + a + " + " + b + " = " + (a + b) + " Ω.", 6); }
+  if (Math.random() < 0.5) { var a = rand(2, 20), b = rand(2, 20); var qs = numMCQ6("Mắc nối tiếp hai điện trở " + a + " Ω và " + b + " Ω. Điện trở tương đương là bao nhiêu Ω?", "R = R₁ + R₂", a + b, "Đoạn mạch nối tiếp: R = R₁ + R₂ = " + a + " + " + b + " = " + (a + b) + " Ω.", 6); qs.figure = figCircuitSeriesSVG(a, b); return qs; }
   var combos = [[6, 3, 2], [12, 6, 4], [10, 10, 5], [20, 5, 4], [30, 15, 10], [4, 4, 2], [15, 10, 6]];
   var c = pick(combos);
-  return numMCQ6("Mắc song song hai điện trở " + c[0] + " Ω và " + c[1] + " Ω. Điện trở tương đương là bao nhiêu Ω?", "1/R = 1/R₁ + 1/R₂", c[2], "Đoạn mạch song song: R = (R₁ × R₂) : (R₁ + R₂) = (" + c[0] + " × " + c[1] + ") : " + (c[0] + c[1]) + " = " + c[2] + " Ω (nhỏ hơn mỗi điện trở thành phần).", 3);
+  var qp = numMCQ6("Mắc song song hai điện trở " + c[0] + " Ω và " + c[1] + " Ω. Điện trở tương đương là bao nhiêu Ω?", "1/R = 1/R₁ + 1/R₂", c[2], "Đoạn mạch song song: R = (R₁ × R₂) : (R₁ + R₂) = (" + c[0] + " × " + c[1] + ") : " + (c[0] + c[1]) + " = " + c[2] + " Ω (nhỏ hơn mỗi điện trở thành phần).", 3); qp.figure = figCircuitParSVG(c[0], c[1]); return qp;
 }
 function kh9ElecPower() { var u = pick([6, 12, 24, 110, 220]), i = pick([1, 2, 3, 4, 5]); if (u >= 110 && i > 2) i = 2; return numMCQ6("Một thiết bị điện có hiệu điện thế " + u + " V và dòng điện " + i + " A chạy qua. Công suất điện của thiết bị là bao nhiêu W?", "P = UI", u * i, "P = U × I = " + u + " × " + i + " = " + (u * i) + " W.", 80); }
 function kh9ElecEnergy() { var p = pick([1, 2]), t = rand(2, 6); return numMCQ6("Một ấm điện có công suất " + (p * 1000) + " W = " + p + " kW, đun nước trong " + t + " giờ. Điện năng tiêu thụ là bao nhiêu kWh (số điện)?", "A = Pt", p * t, "A = P × t = " + p + " × " + t + " = " + (p * t) + " kWh. 1 kWh là một “số điện”.", 2); }
@@ -2803,7 +2796,7 @@ var CN9_TOPICS = [
     { id: "g9-nv", emoji: "📚", name: "Ngữ văn", desc: "Bài 1–10 • Tác phẩm – tác giả • Câu đơn và câu ghép", cls: "c-grape", topics: NV9_TOPICS },
     { id: "g9-eng", emoji: "🔤", name: "Tiếng Anh", desc: "Global Success • 12 Unit", cls: "c-teal", topics: UNITS9.map(function (u) {
         return { id: "g9-u" + u.n, emoji: "📗", name: "Unit " + u.n + " — " + u.title, sub: u.words.map(function (w) { return w[0]; }).join(" • "), pools: eng9Pools(u) };
-      }).concat([{ id: "g9-review", emoji: "🌈", name: "Ôn tập tất cả", sub: "Trộn từ của cả 12 Unit", pools: engPools(ALL_WORDS9) }]) },
+      }).concat([{ id: "g9-review", emoji: "🌈", name: "Ôn tập tất cả", sub: "Trộn từ của cả 12 Unit", pools: eng9NoLetter(engPools(ALL_WORDS9)) }]) },
     { id: "g9-khtn", emoji: "🔬", name: "Khoa học tự nhiên", desc: "Bài 1 + 14 chương • Vật lí – Hoá học – Sinh học", cls: "c-sky", topics: KHTN9_TOPICS },
     { id: "g9-lsdl", emoji: "🗺️", name: "Lịch sử & Địa lí", desc: "Lịch sử 7 chương • Địa lí 3 chương + 3 chủ đề chung", cls: "c-brown", topics: LSD9_TOPICS },
     { id: "g9-gdcd", emoji: "⚖️", name: "Giáo dục công dân", desc: "10 bài • Tình huống ứng xử • Pháp luật và thuế", cls: "c-slate", topics: GDCD9_TOPICS },

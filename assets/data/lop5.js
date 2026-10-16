@@ -63,6 +63,9 @@ function decBlank(prompt, expr, ansH, explain) {
 /* ---------- Phân số / hỗn số ---------- */
 function gcd5(a, b) { while (b) { var t = a % b; a = b; b = t; } return a || 1; }
 function fr5(n, d) { var g = gcd5(n, d); n = Math.floor(n / g); d = Math.floor(d / g); return d === 1 ? String(n) : n + "/" + d; }
+/* Toán hạng CÓ GIÁ TRỊ NGUYÊN thì viết số nguyên (n/n -> 1, 6/2 -> 3) trong câu tính
+   phân số (đợt sửa phân số 2026-10-15); toán hạng không nguyên giữ nguyên dạng. */
+function opFrac5(n, d) { return n % d === 0 ? String(n / d) : n + "/" + d; }
 function frWrongs5(n, d) {
   var g = gcd5(n, d); n = Math.floor(n / g); d = Math.floor(d / g);
   var ans = fr5(n, d), out = [], seen = {}; seen[ans] = 1;
@@ -96,8 +99,8 @@ function g5FracAddSubDiff() {
   var a = rand(1, d1), b = rand(1, d2);
   var sub = Math.random() < 0.45 && a * d2 > b * d1;
   var n = sub ? a * d2 - b * d1 : a * d2 + b * d1, d = d1 * d2;
-  return frMCQ5((sub ? "Tính: " : "Tính: ") + a + "/" + d1 + (sub ? " − " : " + ") + b + "/" + d2 + " = ?", n, d,
-    "Quy đồng mẫu số chung là " + d + ": " + a + "/" + d1 + " = " + (a * d2) + "/" + d + ", " + b + "/" + d2 + " = " + (b * d1) + "/" + d + ". Kết quả rút gọn: " + fr5(n, d) + ".");
+  return frMCQ5((sub ? "Tính: " : "Tính: ") + opFrac5(a, d1) + (sub ? " − " : " + ") + opFrac5(b, d2) + " = ?", n, d,
+    "Quy đồng mẫu số chung là " + d + ": " + opFrac5(a, d1) + " = " + (a * d2) + "/" + d + ", " + opFrac5(b, d2) + " = " + (b * d1) + "/" + d + ". Kết quả rút gọn: " + fr5(n, d) + ".");
 }
 function g5Mixed() {
   var v = rand(0, 2);
@@ -253,7 +256,7 @@ function g5TriArea() {
   var opts = [], seen = {}; seen[s] = 1;
   [a * h, (a + h) / 2 * 2, s + a, s + h, Math.abs(s - h), a * h / 4].forEach(function (x) { if (x > 0 && !seen[x] && opts.length < 3) { seen[x] = 1; opts.push(x); } });
   var all = shuffle([s].concat(opts));
-  return { prompt: "Tính diện tích hình tam giác", visual: '<div class="expr">Đáy ' + a + " cm, chiều cao " + h + " cm — S = ?</div>",
+  return { prompt: "Tính diện tích hình tam giác", figure: figTriSVG(a, h), visual: '<div class="expr">Đáy ' + a + " cm, chiều cao " + h + " cm — S = ?</div>",
     options: all.map(function (o) { return { html: '<span class="opt-num">' + numStr5(o) + " cm²</span>" }; }), answer: all.indexOf(s), cols: 2,
     explain: "S = (" + a + " × " + h + ") : 2 = " + numStr5(s) + " cm²." };
 }
@@ -262,15 +265,16 @@ function g5TrapArea() {
   var opts = [], seen = {}; seen[s] = 1;
   [(a + b) * h, a * b * h / 2, (a + b + h) / 2, s + h, Math.abs(a - b) * h / 2].forEach(function (x) { if (x > 0 && !seen[x] && opts.length < 3) { seen[x] = 1; opts.push(x); } });
   var all = shuffle([s].concat(opts));
-  return { prompt: "Tính diện tích hình thang", visual: '<div class="expr">Đáy lớn ' + a + " cm, đáy bé " + b + " cm, chiều cao " + h + " cm — S = ?</div>",
+  return { prompt: "Tính diện tích hình thang", figure: figTrapSVG(a, b, h), visual: '<div class="expr">Đáy lớn ' + a + " cm, đáy bé " + b + " cm, chiều cao " + h + " cm — S = ?</div>",
     options: all.map(function (o) { return { html: '<span class="opt-num">' + numStr5(o) + " cm²</span>" }; }), answer: all.indexOf(s), cols: 2,
     explain: "S = (" + a + " + " + b + ") × " + h + " : 2 = " + numStr5(s) + " cm²." };
 }
 function g5Circle() {
   var v = rand(0, 2), r = pick([2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]);
-  if (v === 0) return decMCQ("Tính chu vi hình tròn", "Bán kính r = " + numStr5(r) + " cm — C = ?", Math.round(r * 2 * 314), "C = r × 2 × 3,14 = " + numStr5(r) + " × 2 × 3,14 = " + decStr(Math.round(r * 2 * 314)) + " cm.");
-  if (v === 1) return decMCQ("Tính chu vi hình tròn", "Đường kính d = " + numStr5(r * 2) + " cm — C = ?", Math.round(r * 2 * 314), "C = d × 3,14 = " + numStr5(r * 2) + " × 3,14 = " + decStr(Math.round(r * 2 * 314)) + " cm.");
-  return decMCQ("Tính diện tích hình tròn", "Bán kính r = " + numStr5(r) + " cm — S = ?", Math.round(r * r * 314), "S = r × r × 3,14 = " + numStr5(r) + " × " + numStr5(r) + " × 3,14 = " + decStr(Math.round(r * r * 314)) + " cm².");
+  var q;
+  if (v === 0) { q = decMCQ("Tính chu vi hình tròn", "Bán kính r = " + numStr5(r) + " cm — C = ?", Math.round(r * 2 * 314), "C = r × 2 × 3,14 = " + numStr5(r) + " × 2 × 3,14 = " + decStr(Math.round(r * 2 * 314)) + " cm."); q.figure = figCircleSVG(r, "r"); return q; }
+  if (v === 1) { q = decMCQ("Tính chu vi hình tròn", "Đường kính d = " + numStr5(r * 2) + " cm — C = ?", Math.round(r * 2 * 314), "C = d × 3,14 = " + numStr5(r * 2) + " × 3,14 = " + decStr(Math.round(r * 2 * 314)) + " cm."); q.figure = figCircleSVG(r, "d"); return q; }
+  q = decMCQ("Tính diện tích hình tròn", "Bán kính r = " + numStr5(r) + " cm — S = ?", Math.round(r * r * 314), "S = r × r × 3,14 = " + numStr5(r) + " × " + numStr5(r) + " × 3,14 = " + decStr(Math.round(r * r * 314)) + " cm²."); q.figure = figCircleSVG(r, "r"); return q;
 }
 /* --- Tỉ số, tỉ số phần trăm --- */
 function g5Ratio() {
@@ -327,21 +331,23 @@ function g5VolConv() {
 }
 function g5Box() {
   var v = rand(0, 2), a = rand(3, 15), b = rand(3, 12), c = rand(2, 10);
-  if (v === 0) return calcMCQ("Tính thể tích hình hộp chữ nhật", "Dài " + a + " cm, rộng " + b + " cm, cao " + c + " cm — V = ?", a * b * c, 0, 2000, "V = " + a + " × " + b + " × " + c + " = " + (a * b * c) + " cm³.");
-  if (v === 1) { var sxq = (a + b) * 2 * c; return calcMCQ("Tính diện tích xung quanh hình hộp chữ nhật", "Dài " + a + " cm, rộng " + b + " cm, cao " + c + " cm — Sxq = ?", sxq, 0, 1000, "Sxq = (dài + rộng) × 2 × cao = (" + a + " + " + b + ") × 2 × " + c + " = " + sxq + " cm²."); }
+  var q;
+  if (v === 0) { q = calcMCQ("Tính thể tích hình hộp chữ nhật", "Dài " + a + " cm, rộng " + b + " cm, cao " + c + " cm — V = ?", a * b * c, 0, 2000, "V = " + a + " × " + b + " × " + c + " = " + (a * b * c) + " cm³."); q.figure = figBoxSVG(a, b, c); return q; }
+  if (v === 1) { var sxq = (a + b) * 2 * c; q = calcMCQ("Tính diện tích xung quanh hình hộp chữ nhật", "Dài " + a + " cm, rộng " + b + " cm, cao " + c + " cm — Sxq = ?", sxq, 0, 1000, "Sxq = (dài + rộng) × 2 × cao = (" + a + " + " + b + ") × 2 × " + c + " = " + sxq + " cm²."); q.figure = figBoxSVG(a, b, c); return q; }
   var stp = (a + b) * 2 * c + 2 * a * b;
-  return calcMCQ("Tính diện tích toàn phần hình hộp chữ nhật", "Dài " + a + " cm, rộng " + b + " cm, cao " + c + " cm — Stp = ?", stp, 0, 1500, "Stp = Sxq + diện tích 2 đáy = " + ((a + b) * 2 * c) + " + 2 × " + a + " × " + b + " = " + stp + " cm².");
+  q = calcMCQ("Tính diện tích toàn phần hình hộp chữ nhật", "Dài " + a + " cm, rộng " + b + " cm, cao " + c + " cm — Stp = ?", stp, 0, 1500, "Stp = Sxq + diện tích 2 đáy = " + ((a + b) * 2 * c) + " + 2 × " + a + " × " + b + " = " + stp + " cm²."); q.figure = figBoxSVG(a, b, c); return q;
 }
 function g5Cube() {
   var v = rand(0, 2), a = rand(2, 12);
-  if (v === 0) return calcMCQ("Tính thể tích hình lập phương", "Cạnh " + a + " cm — V = ?", a * a * a, 0, 2000, "V = cạnh × cạnh × cạnh = " + a + " × " + a + " × " + a + " = " + (a * a * a) + " cm³.");
-  if (v === 1) return calcMCQ("Tính diện tích toàn phần hình lập phương", "Cạnh " + a + " cm — Stp = ?", 6 * a * a, 0, 1000, "Hình lập phương có 6 mặt vuông bằng nhau: Stp = " + a + " × " + a + " × 6 = " + (6 * a * a) + " cm².");
-  return calcMCQ("Tính diện tích xung quanh hình lập phương", "Cạnh " + a + " cm — Sxq = ?", 4 * a * a, 0, 1000, "Sxq gồm 4 mặt bên: " + a + " × " + a + " × 4 = " + (4 * a * a) + " cm².");
+  var q;
+  if (v === 0) { q = calcMCQ("Tính thể tích hình lập phương", "Cạnh " + a + " cm — V = ?", a * a * a, 0, 2000, "V = cạnh × cạnh × cạnh = " + a + " × " + a + " × " + a + " = " + (a * a * a) + " cm³."); q.figure = figCubeSVG(a); return q; }
+  if (v === 1) { q = calcMCQ("Tính diện tích toàn phần hình lập phương", "Cạnh " + a + " cm — Stp = ?", 6 * a * a, 0, 1000, "Hình lập phương có 6 mặt vuông bằng nhau: Stp = " + a + " × " + a + " × 6 = " + (6 * a * a) + " cm²."); q.figure = figCubeSVG(a); return q; }
+  q = calcMCQ("Tính diện tích xung quanh hình lập phương", "Cạnh " + a + " cm — Sxq = ?", 4 * a * a, 0, 1000, "Sxq gồm 4 mặt bên: " + a + " × " + a + " × 4 = " + (4 * a * a) + " cm²."); q.figure = figCubeSVG(a); return q;
 }
 /* --- Số đo thời gian, chuyển động đều --- */
 function g5TimeMeasure() {
   var v = rand(0, 3);
-  if (v === 0) { var h1 = rand(1, 5), m1 = rand(10, 50), h2 = rand(1, 4), m2 = rand(5, 55 - 0); if (m1 + m2 >= 60) { m2 = 60 - m1 + rand(0, 20); }
+  if (v === 0) { var h1 = rand(1, 5), m1 = rand(10, 50), h2 = rand(1, 4), m2 = rand(5, 55 - 0); if (m1 + m2 >= 60) { m2 = rand(60 - m1, 59); } /* Sửa B1-P0 (2026-10-15): trước đây m2 = 60 - m1 + rand(0,20) có thể tới 70 → mốc "1 giờ 62 phút" không tồn tại; nay m2 luôn trong [60-m1, 59] để tổng phút nhớ đúng 1 giờ và mỗi mốc đều hợp lệ (phút 0–59). */
     var tm = m1 + m2, th = h1 + h2 + Math.floor(tm / 60); tm = tm % 60;
     var ans = th + " giờ " + tm + " phút";
     var wrongs = [(th - 1) + " giờ " + (tm + 60 > 59 ? tm : tm + 60) + " phút", th + " giờ " + ((tm + 10) % 60) + " phút", (th + 1) + " giờ " + tm + " phút"];
@@ -426,7 +432,7 @@ function g5EventRatio() {
 }
 /* ================= TOÁN 5 — chủ đề ================= */
 var MATH5_TOPICS = [
-  { id: "m5-ontap", emoji: "🔁", name: "Ôn tập: số tự nhiên, phân số, hỗn số", sub: "Bài 1–8 • Cộng trừ phân số khác mẫu, phân số thập phân, hỗn số", pools: { choose: [g5NatCalc, g5FracAddSubDiff, g5Mixed, g5DecFrac, g5FracAddSubDiff, g5NatCalc, g5Mixed], blank: [function () { var pr = pick([[2, 3], [3, 4], [2, 5], [4, 5], [3, 5]]); var a = rand(1, pr[0]), b = rand(1, pr[1]); return frBlank5("Điền kết quả của phép tính " + a + "/" + pr[0] + " + " + b + "/" + pr[1] + "!", a * pr[1] + b * pr[0], pr[0] * pr[1], "Quy đồng mẫu số chung là " + (pr[0] * pr[1]) + " rồi cộng hai tử số, sau đó rút gọn."); }, function () { var d = pick([10, 100]), n = rand(1, d - 1), ansH = Math.round(n * 100 / d), os = decOpts(ansH, 3); return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền số thập phân bằng phân số " + n + "/" + d + "!", blankText: decStr(ansH), visual: '<div class="sentence">Đáp án: ' + blankSlot() + "</div>", options: os.map(function (o) { return { html: '<span class="opt-num">' + decStr(o) + "</span>" }; }), answer: os.indexOf(ansH), cols: 3, explain: n + "/" + d + " = " + decStr(ansH) + "." }; }],
+  { id: "m5-ontap", emoji: "🔁", name: "Ôn tập: số tự nhiên, phân số, hỗn số", sub: "Bài 1–8 • Cộng trừ phân số khác mẫu, phân số thập phân, hỗn số", pools: { choose: [g5NatCalc, g5FracAddSubDiff, g5Mixed, g5DecFrac, g5FracAddSubDiff, g5NatCalc, g5Mixed], blank: [function () { var pr = pick([[2, 3], [3, 4], [2, 5], [4, 5], [3, 5]]); var a = rand(1, pr[0]), b = rand(1, pr[1]); return frBlank5("Điền kết quả của phép tính " + opFrac5(a, pr[0]) + " + " + opFrac5(b, pr[1]) + "!", a * pr[1] + b * pr[0], pr[0] * pr[1], "Quy đồng mẫu số chung là " + (pr[0] * pr[1]) + " rồi cộng hai tử số, sau đó rút gọn."); }, function () { var d = pick([10, 100]), n = rand(1, d - 1), ansH = Math.round(n * 100 / d), os = decOpts(ansH, 3); return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền số thập phân bằng phân số " + n + "/" + d + "!", blankText: decStr(ansH), visual: '<div class="sentence">Đáp án: ' + blankSlot() + "</div>", options: os.map(function (o) { return { html: '<span class="opt-num">' + decStr(o) + "</span>" }; }), answer: os.indexOf(ansH), cols: 3, explain: n + "/" + d + " = " + decStr(ansH) + "." }; }],
     match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 300) { var d = pick([3, 4, 5, 6, 8]); var a = rand(1, d - 1), b = rand(1, d - a); var key = a + "/" + d + "+" + b; if (used[key]) continue; used[key] = 1; prs.push([a + "/" + d + " + " + b + "/" + d, fr5(a + b, d)]); } return pairsMatch("Nối phép tính phân số với kết quả đúng nhé!", prs); }],
     games: [factsTF([["Cộng hai phân số khác mẫu số phải quy đồng mẫu số trước", "Đúng", "Sai", null], ["Hỗn số 2 1/3 bằng phân số 7/3", "Đúng", "Sai", null], ["Phân số thập phân là phân số có mẫu số là 10, 100, 1000...", "Đúng", "Sai", null], ["Khi cộng hai phân số, ta cộng cả tử số và mẫu số", "Sai", "Đúng", null]]), factsCatch([["Tính 1/2 + 1/4 = ?", "3/4", "2/6", "1/6", "Quy đồng: 1/2 = 2/4; 2/4 + 1/4 = 3/4."], ["Hỗn số 1 1/2 bằng phân số nào?", "3/2", "2/2", "1/2", "1 1/2 = (1 × 2 + 1)/2 = 3/2."]])] } },
   { id: "m5-thapphan", emoji: "🔢", name: "Số thập phân", sub: "Khái niệm, hàng của chữ số, so sánh, làm tròn, viết số đo dạng thập phân", pools: { choose: [g5DecRead, g5DecParts, g5DecCompare, g5DecRound, g5DecMeasure, g5DecParts, g5DecCompare], blank: [g5DecSign, function () { var h = rand(115, 9999); return decBlank("Điền số thập phân thích hợp!", "? = " + vnNum3(Math.floor(h / 100)) + " phẩy " + (h % 100), h, "Viết phần nguyên, dấu phẩy, rồi phần thập phân: " + decStr(h) + "."); }],
@@ -453,7 +459,7 @@ var MATH5_TOPICS = [
   { id: "m5-pheptinh", emoji: "➗", name: "Phép tính với số thập phân", sub: "Cộng, trừ, nhân, chia • Nhân chia với 10, 100, 1 000 và 0,1; 0,01", pools: { choose: [g5DecAddSub, g5DecMul, g5DecDiv, g5DecPow, g5DecAddSub, g5DecMul, g5DecDiv, g5DecPow], blank: [function () { var a = rand(115, 9999), k = pick([10, 100]); return decBlank("Điền kết quả của phép tính!", decStr(a) + " × " + k + " = ?", a * k, "Nhân với " + k + ": chuyển dấu phẩy sang phải."); }, function () { var a = rand(125, 9999), b = rand(115, a - 50); return decBlank("Điền kết quả của phép tính!", decStr(a) + " − " + decStr(b) + " = ?", a - b, "Trừ như số tự nhiên, đặt thẳng cột theo dấu phẩy."); }],
     match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 300) { var a = rand(12, 99), k = pick([10, 100, 1000]); var key = a + "x" + k; if (used[key]) continue; used[key] = 1; prs.push([decStr(a * 10) + " × " + fmtN(k), decStr(a * 10 * k)]); } return pairsMatch("Nối phép tính với kết quả đúng nhé!", prs); }],
     games: [factsTF([["Nhân một số thập phân với 10, dấu phẩy chuyển sang phải một chữ số", "Đúng", "Sai", null], ["Chia một số thập phân cho 100, dấu phẩy chuyển sang trái hai chữ số", "Đúng", "Sai", null], ["Nhân với 0,1 cũng giống như nhân với 10", "Sai", "Đúng", null], ["Khi cộng số thập phân, phải đặt các chữ số thẳng cột theo dấu phẩy", "Đúng", "Sai", null]]), factsCatch([["Tính 2,5 × 10 = ?", "25", "2,50", "0,25", "Chuyển dấu phẩy sang phải một chữ số: 25."], ["Tính 48,6 : 10 = ?", "4,86", "486", "48,06", "Chuyển dấu phẩy sang trái một chữ số: 4,86."]])] } },
-  { id: "m5-hinhphang", emoji: "📐", name: "Hình phẳng: tam giác, hình thang, hình tròn", sub: "Diện tích hình tam giác, hình thang • Chu vi, diện tích hình tròn (π ≈ 3,14)", pools: { choose: [g5TriArea, g5TrapArea, g5Circle, g5ShapeIdentify, g5TriArea, g5Circle, g5TrapArea], blank: [function () { var r = pick([2, 3, 4, 5, 6, 8, 10]); return decBlank("Điền chu vi của hình tròn có bán kính " + r + " cm!", "C = ?", Math.round(r * 2 * 314), "C = r × 2 × 3,14."); }, function () { var a = rand(4, 20), h = rand(3, 18); var s = a * h / 2; var opts = shuffle([s, a * h, s + a].filter(function (x, i, arr) { return arr.indexOf(x) === i; })); return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền diện tích hình tam giác có đáy " + a + " cm, chiều cao " + h + " cm!", blankText: numStr5(s) + " cm²", visual: '<div class="sentence">Đáp án: ' + blankSlot() + "</div>", options: opts.map(function (o) { return { html: '<span class="opt-num">' + numStr5(o) + " cm²</span>" }; }), answer: opts.indexOf(s), cols: 3, explain: "S = (" + a + " × " + h + ") : 2 = " + numStr5(s) + " cm²." }; }],
+  { id: "m5-hinhphang", emoji: "📐", name: "Hình phẳng: tam giác, hình thang, hình tròn", sub: "Diện tích hình tam giác, hình thang • Chu vi, diện tích hình tròn (π ≈ 3,14)", pools: { choose: [g5TriArea, g5TrapArea, g5Circle, g5ShapeIdentify, g5TriArea, g5Circle, g5TrapArea], blank: [function () { var r = pick([2, 3, 4, 5, 6, 8, 10]); var q = decBlank("Điền chu vi của hình tròn có bán kính " + r + " cm!", "C = ?", Math.round(r * 2 * 314), "C = r × 2 × 3,14."); q.figure = figCircleSVG(r, "r"); return q; }, function () { var a = rand(4, 20), h = rand(3, 18); var s = a * h / 2; var opts = shuffle([s, a * h, s + a].filter(function (x, i, arr) { return arr.indexOf(x) === i; })); return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền diện tích hình tam giác có đáy " + a + " cm, chiều cao " + h + " cm!", figure: figTriSVG(a, h), blankText: numStr5(s) + " cm²", visual: '<div class="sentence">Đáp án: ' + blankSlot() + "</div>", options: opts.map(function (o) { return { html: '<span class="opt-num">' + numStr5(o) + " cm²</span>" }; }), answer: opts.indexOf(s), cols: 3, explain: "S = (" + a + " × " + h + ") : 2 = " + numStr5(s) + " cm²." }; }],
     match: [function () { return pairsMatch("Nối hình với công thức đúng nhé!", [["Hình tam giác", "S = (a × h) : 2"], ["Hình thang", "S = (a + b) × h : 2"], ["Hình tròn (chu vi)", "C = d × 3,14"], ["Hình tròn (diện tích)", "S = r × r × 3,14"]]); }],
     games: [factsTF([["Đường kính dài gấp đôi bán kính", "Đúng", "Sai", null], ["Diện tích hình tam giác bằng đáy nhân chiều cao", "Sai", "Đúng", null], ["π (pi) lấy gần đúng bằng 3,14", "Đúng", "Sai", null], ["Hình thang có hai cặp cạnh đối diện song song", "Sai", "Đúng", null]]), factsCatch([["Hình tròn có bán kính 10 cm thì đường kính dài bao nhiêu?", "20 cm", "10 cm", "5 cm", "d = r × 2 = 20 cm."], ["Tính diện tích hình tam giác: đáy 6 cm, cao 4 cm?", "12 cm²", "24 cm²", "10 cm²", "(6 × 4) : 2 = 12 cm²."]])] } },
   { id: "m5-tiso", emoji: "⚖️", name: "Tỉ số và tỉ số phần trăm", sub: "Tỉ lệ bản đồ • Tổng – tỉ, hiệu – tỉ • Tỉ số phần trăm • Máy tính cầm tay", pools: (function () { var kp = knowledgePools([
