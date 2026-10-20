@@ -217,10 +217,18 @@
         return q;
       };
       var yesNoGen = function(){
-        var w = pick(u.words);
-        var truth = Math.random()<0.5;
-        var shown = truth? w : engDistractors(w, ALL_WORDS2.length>3?ALL_WORDS2:u.words, 1)[0] || w;
-        return { kind:"tf", badge:"🎮 Trò chơi!", prompt:"Đúng hay sai? Chạm nhanh nhé!", rounds:[{ visual:'<div class="big-pic">'+picHTML(w)+'</div><div class="big-word">'+shown[0]+"</div>", truth: truth, explain:"Từ đúng là “"+w[0]+"”" }] };
+        /* v16: vòng tranh chỉ dùng từ qua cổng tranh trong unit; thiếu từ thì lùi về TF khẳng định nghĩa (dạng chữ). */
+        var pw = engPicWords(u.words);
+        if (pw.length >= 2) {
+          var w = pick(pw);
+          var truth = Math.random() < 0.5;
+          var shown = truth ? w : (engDistractors(w, u.words, 1, { pic: true, gloss: true })[0] || w);
+          return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+        }
+        var w2 = pick(u.words);
+        var truth2 = Math.random() < 0.5;
+        var shown2 = truth2 ? w2 : (engDistractors(w2, u.words, 1, { gloss: true })[0] || w2);
+        return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-word">' + w2[0] + '</div><div class="sentence">Nghĩa là “' + shown2[2] + "”</div>", truth: truth2, explain: "“" + w2[0] + "” nghĩa là “" + w2[2] + "”" }] };
       };
       // engPools tf expects multiple rounds; our single-round tf still works via renderTF (needs rounds array)
       return { choose: base.choose.concat([patGen, patGen]), blank: base.blank, match: base.match, games: base.games };

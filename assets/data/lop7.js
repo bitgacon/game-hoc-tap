@@ -2707,3 +2707,27 @@ function kh7STGraph() {
     });
   } catch (e) {}
 })();
+
+/* ================= MỤC 9 (v18) — SVG KHOA HỌC: gắn hình K4 (gương phẳng) cho KHTN 7 =================
+   Kỷ luật K4: hình KHÔNG vẽ tia phản xạ, KHÔNG vẽ ảnh của vật, cung góc
+   không ghi số — đáp án không bao giờ có sẵn trên hình. */
+(function () {
+  function findT(id) { return findTopic127(7, id); }
+  function k4MirrorGen() {
+    var ang = pick([30, 40, 50, 60]);
+    var q;
+    if (Math.random() < 0.5) {
+      q = mcqQ("Một vật đặt trước gương phẳng như hình vẽ. Ảnh của vật qua gương phẳng có tính chất nào sau đây?",
+        ["Ảnh thật, lớn hơn vật", "Ảnh thật, nhỏ hơn vật"], "Ảnh ảo, bằng vật và đối xứng với vật qua gương",
+        "Gương phẳng cho ảnh ảo, có kích thước bằng vật và đối xứng với vật qua mặt gương; khoảng cách từ ảnh tới gương bằng khoảng cách từ vật tới gương.");
+    } else {
+      q = mcqQ("Một tia sáng chiếu tới gương phẳng như hình vẽ (cung góc không ghi số đo). Theo định luật phản xạ ánh sáng, góc phản xạ so với góc tới thế nào?",
+        ["Nhỏ hơn góc tới", "Lớn hơn góc tới"], "Bằng góc tới",
+        "Định luật phản xạ ánh sáng: tia phản xạ nằm trong mặt phẳng tới và góc phản xạ bằng góc tới.");
+    }
+    q.figure = figK4MirrorSVG(ang);
+    return q;
+  }
+  var t = findT("kh-anhsang");
+  if (t) { t.pools.choose.push(k4MirrorGen, k4MirrorGen, k4MirrorGen); }
+})();

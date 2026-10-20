@@ -957,10 +957,18 @@ function eng9Pools(u) {
       options: all.map(function (o) { return { html: '<span class="opt-text">' + o + "</span>" }; }), answer: all.indexOf(pat.a), cols: all.length, optStack: true };
   }
   function yesNoGen() {
-    var w = pick(u.words);
-    var truth = Math.random() < 0.5;
-    var shown = truth ? w : (engDistractors(w, ALL_WORDS9, 1)[0] || w);
-    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    /* v16: vòng tranh chỉ dùng từ qua cổng tranh trong unit; thiếu từ thì lùi về TF khẳng định nghĩa (dạng chữ). */
+    var pw = engPicWords(u.words);
+    if (pw.length >= 2) {
+      var w = pick(pw);
+      var truth = Math.random() < 0.5;
+      var shown = truth ? w : (engDistractors(w, u.words, 1, { pic: true, gloss: true })[0] || w);
+      return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    }
+    var w2 = pick(u.words);
+    var truth2 = Math.random() < 0.5;
+    var shown2 = truth2 ? w2 : (engDistractors(w2, u.words, 1, { gloss: true })[0] || w2);
+    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-word">' + w2[0] + '</div><div class="sentence">Nghĩa là “' + shown2[2] + "”</div>", truth: truth2, explain: "“" + w2[0] + "” nghĩa là “" + w2[2] + "”" }] };
   }
   var choose = base.choose.slice();
   if (pats.length) choose.push(patGen, patGen);
@@ -2898,3 +2906,49 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 "m9-c10": ["Trụ: V = πr²h, Sxq = 2πrh. Nón: V = πr²h/3, Sxq = πrl (l là đường sinh).","Cầu: S = 4πR², V = 4πR³/3. Đổi về cùng đơn vị trước khi thay số."]
 });
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(9);
+
+/* ================= MỤC 9 (v18) — SVG KHOA HỌC: gắn hình K4/K5 cho KHTN 9 =================
+   Kỷ luật K4: KHÔNG vẽ ảnh, KHÔNG vẽ tia phản xạ/khúc xạ, cung góc không số. */
+(function () {
+  function findT(id) { return findTopic127(9, id); }
+  function k4LensGen() {
+    var zone = rand(0, 2);
+    var answers = ["Ảnh thật, ngược chiều, nhỏ hơn vật", "Ảnh thật, ngược chiều, lớn hơn vật", "Ảnh ảo, cùng chiều, lớn hơn vật"];
+    var q = mcqQ("Một vật đặt trước thấu kính hội tụ như hình vẽ (F, 2F là dữ kiện cho sẵn). Ảnh của vật qua thấu kính có tính chất nào sau đây?",
+      answers.filter(function (x) { return x !== answers[zone]; }),
+      answers[zone],
+      "Vật ở ngoài 2F: ảnh thật, ngược chiều, nhỏ hơn vật. Vật ở giữa F và 2F: ảnh thật, ngược chiều, lớn hơn vật. Vật ở trong F: ảnh ảo, cùng chiều, lớn hơn vật.");
+    q.figure = figK4LensSVG(zone, pick([30, 38, 44]));
+    return q;
+  }
+  function k4MirrorGen() {
+    var ang = pick([30, 40, 50, 60]);
+    var q = mcqQ("Một tia sáng chiếu tới gương phẳng như hình vẽ (cung góc không ghi số đo). Theo định luật phản xạ ánh sáng, góc phản xạ so với góc tới thế nào?",
+      ["Nhỏ hơn góc tới", "Lớn hơn góc tới"], "Bằng góc tới",
+      "Định luật phản xạ ánh sáng: tia phản xạ nằm trong mặt phẳng tới và góc phản xạ bằng góc tới.");
+    q.figure = figK4MirrorSVG(ang);
+    return q;
+  }
+  function k5ThermGen() {
+    var value = 5 * rand(-2, 12);
+    var wrongs = [value - 10, value - 5, value + 5, value + 10].filter(function (x) { return x >= -10 && x <= 60 && x !== value; });
+    var q = mcqQ("Quan sát nhiệt kế trong hình. Nhiệt kế chỉ bao nhiêu độ C?",
+      shuffle(wrongs).slice(0, 2).map(function (x) { return x + "°C"; }),
+      value + "°C", "Đọc mức thuỷ ngân trên thang chia độ: mỗi vạch nhỏ là 5°C.");
+    q.figure = figK5ThermSVG(value, -10, 60, 5);
+    q.figureOnly = true;
+    return q;
+  }
+  function k5RulerGen() {
+    var len = rand(3, 13);
+    var q = mcqQ("Quan sát hình: một vật đặt khít vạch 0 của thước. Vật dài bao nhiêu xăng-ti-mét?",
+      [len - 1, len + 1, len + 2].map(function (x) { return x + " cm"; }),
+      len + " cm", "Đọc vạch cuối của vật trên thước: vật dài " + len + " cm.");
+    q.figure = figK5RulerSVG(len);
+    q.figureOnly = true;
+    return q;
+  }
+  var t;
+  t = findT("kh9-p2"); if (t) { t.pools.choose.push(k4LensGen, k4LensGen, k4MirrorGen); }
+  t = findT("kh9-mo"); if (t) { t.pools.choose.push(k5ThermGen, k5RulerGen); }
+})();

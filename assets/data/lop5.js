@@ -664,8 +664,8 @@ var UNITS5 = [
     patterns: [{ q: "Did they go to …? — Yes, they did.", a: "Bai Dinh Pagoda", w: ["Bai Dinh Pagoda", "Ba Na Hills", "Hoan Kiem Lake"] }, { q: "What did they do there? — They … a lot of photos.", a: "took", w: ["took", "take", "takes"] }, { q: "Did they go to Hoan Kiem Lake? — No, they …", a: "didn't", w: ["didn't", "don't", "isn't"] }],
     stress: [["pagoda", 2, "pa-GO-da"], ["theme park", 1, "THEME park"]], extra: "past" }
 ,
-  { n: 11, title: "Family time", words: [["buy souvenirs", "🎁", "mua quà lưu niệm"], ["collect seashells", "🐚", "nhặt vỏ sò"], ["eat seafood", "🦐", "ăn hải sản"], ["take a boat trip", "⛵", "đi thuyền"]],
-    patterns: [{ q: "Did you … on your trip? — Yes, I did.", a: "eat seafood", w: ["eat seafood", "buy souvenirs", "take a boat trip"] }, { q: "What did your family do in Ha Long Bay? — We …", a: "took a boat trip", w: ["took a boat trip", "takes a boat trip", "take a boat trip"] }, { q: "Did you collect seashells? — No, I …", a: "didn't", w: ["didn't", "don't", "wasn't"] }],
+  { n: 11, title: "Family time", words: [["buy souvenirs", "🎁", "mua quà lưu niệm"], ["collect seashells", "🐚", "nhặt vỏ sò"], ["eat seafood", "🦐", "ăn hải sản"], ["take a boat trip", "⛵", "đi thuyền"], ["swim", "🏊", "bơi"], ["take photos", "📸", "chụp ảnh"], ["walk on the beach", "🏖️", "đi dạo trên bãi biển"], ["see interesting places", "🏞️", "xem những nơi thú vị"], ["sunbathe", "🌞", "tắm nắng"]],
+    patterns: [{ q: "Did you … on your trip? — Yes, I did.", a: "eat seafood", w: ["eat seafood", "buy souvenirs", "take a boat trip"] }, { q: "What did your family do in Ha Long Bay? — We …", a: "took a boat trip", w: ["took a boat trip", "takes a boat trip", "take a boat trip"] }, { q: "Did you collect seashells? — No, I …", a: "didn't", w: ["didn't", "don't", "wasn't"] }, { q: "When did you go to Ha Long? — We went there …", a: "last summer", w: ["last summer", "last Sunday", "yesterday"] }, { q: "Did you swim? — Yes, I did. I … with my mother.", a: "swam", w: ["swam", "swim", "swims"] }, { q: "Where were you last summer? — We were in …", a: "Ha Long", w: ["Ha Long", "Nha Trang", "Sydney"] }, { q: "What did your family do in Nha Trang? — We …", a: "ate seafood", w: ["ate seafood", "eat seafood", "eats seafood"] }, { q: "What did your family do in Sydney? — We …", a: "saw interesting places", w: ["saw interesting places", "see interesting places", "sees interesting places"] }, { q: "What did you do in London? — We took photos and visited …", a: "Big Ben", w: ["Big Ben", "Ha Long Bay", "Fansipan Mountain"] }, { q: "Where did your family go last Sunday? — We went to the …", a: "beach", w: ["beach", "mountains", "river"] }, { q: "What did your family do in Singapore? — We …", a: "bought souvenirs", w: ["bought souvenirs", "buy souvenirs", "buys souvenirs"] }, { q: "When did you go to Nha Trang? — We went there …", a: "last weekend", w: ["last weekend", "last summer", "yesterday"] }, { q: "What did Linda's family do on Saturday? — They … on the beach.", a: "sunbathed", w: ["sunbathed", "sunbathe", "sunbathes"] }, { q: "What did Linda and her brother buy in Ha Long Bay? — They bought some …", a: "souvenirs", w: ["souvenirs", "postcards", "seafood"] }],
     stress: [["souvenir", 3, "sou-ve-NIR"], ["seafood", 1, "SEA-food"]], extra: "past" },
   { n: 12, title: "Our Tet holiday", words: [["buy a branch of peach blossoms", "🌸", "mua một cành hoa đào"], ["decorate the house", "🏮", "trang trí nhà cửa"], ["make banh chung", "🎋", "gói bánh chưng"], ["make spring rolls", "🌯", "làm nem rán, chả giò"], ["fireworks show", "🎆", "màn bắn pháo hoa"], ["flower festival", "💐", "lễ hội hoa"]],
     patterns: [{ q: "Will you … for Tet? — Yes, I will.", a: "make banh chung", w: ["make banh chung", "decorate the house", "buy a branch of peach blossoms"] }, { q: "Will you decorate the house for Tet? — No, I …", a: "won't", w: ["won't", "will", "don't"] }, { q: "What will you do for Tet? — I'll go to a …", a: "flower festival", w: ["flower festival", "fireworks show", "spring rolls"] }],
@@ -764,10 +764,18 @@ function eng5Pools(u) {
       options: all.map(function (o) { return { html: '<span class="opt-text">' + o + "</span>" }; }), answer: all.indexOf(pat.a), cols: all.length, optStack: true };
   }
   function yesNoGen() {
-    var w = pick(u.words);
-    var truth = Math.random() < 0.5;
-    var shown = truth ? w : (engDistractors(w, ALL_WORDS5, 1)[0] || w);
-    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    /* v16: vòng tranh chỉ dùng từ qua cổng tranh trong unit; thiếu từ thì lùi về TF khẳng định nghĩa (dạng chữ). */
+    var pw = engPicWords(u.words);
+    if (pw.length >= 2) {
+      var w = pick(pw);
+      var truth = Math.random() < 0.5;
+      var shown = truth ? w : (engDistractors(w, u.words, 1, { pic: true, gloss: true })[0] || w);
+      return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    }
+    var w2 = pick(u.words);
+    var truth2 = Math.random() < 0.5;
+    var shown2 = truth2 ? w2 : (engDistractors(w2, u.words, 1, { gloss: true })[0] || w2);
+    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-word">' + w2[0] + '</div><div class="sentence">Nghĩa là “' + shown2[2] + "”</div>", truth: truth2, explain: "“" + w2[0] + "” nghĩa là “" + w2[2] + "”" }] };
   }
   var choose = base.choose.slice();
   if (pats.length) choose.push(patGen, patGen);
@@ -1889,3 +1897,83 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 });
   if (typeof window.__phaseBProcessGrade === "function") window.__phaseBProcessGrade(5);
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(5);
+
+/* ================= MỤC 9 (v18) — SVG KHOA HỌC: gắn hình K1/K2/K4 cho Khoa học 5 ================= */
+(function () {
+  function findT(id) { return findTopic127(5, id); }
+  var STATE_NAMES = { ran: "thể rắn", long: "thể lỏng", khi: "thể khí" };
+  var STATE_EX = "Hạt xếp khít và có trật tự là thể rắn; hạt khít nhưng lộn xộn là thể lỏng; hạt ở rất xa nhau là thể khí.";
+  function k1PanelsGen() {
+    var order = shuffle(["ran", "long", "khi"].slice());
+    var q;
+    if (Math.random() < 0.5) {
+      var idx = rand(0, 2);
+      q = mcqQ("Quan sát hình ba ô hạt. Ô thứ " + (idx + 1) + " (từ trái sang) cho thấy chất ở thể nào?",
+        ["thể rắn", "thể lỏng", "thể khí"].filter(function (s) { return s !== STATE_NAMES[order[idx]]; }),
+        STATE_NAMES[order[idx]], STATE_EX);
+    } else {
+      var st = pick(["ran", "long", "khi"]), pos = order.indexOf(st) + 1;
+      q = mcqQ("Quan sát hình ba ô hạt. Ô nào cho thấy chất ở " + STATE_NAMES[st] + "?",
+        ["Ô 1", "Ô 2", "Ô 3"].filter(function (s) { return s !== "Ô " + pos; }),
+        "Ô " + pos, STATE_EX);
+    }
+    q.figure = figK1PanelsSVG(order);
+    return q;
+  }
+  var PROC_EX5 = { nc: "Nóng chảy là sự chuyển từ thể rắn sang thể lỏng.", dd: "Đông đặc là sự chuyển từ thể lỏng sang thể rắn.", bh: "Bay hơi là sự chuyển từ thể lỏng sang thể khí.", nt: "Ngưng tụ là sự chuyển từ thể khí sang thể lỏng." };
+  function k1TransGen() {
+    var procs = [["nc", "Nóng chảy"], ["dd", "Đông đặc"], ["bh", "Bay hơi"], ["nt", "Ngưng tụ"]];
+    var ask = pick(procs);
+    var labels = { nc: "Nóng chảy", dd: "Đông đặc", bh: "Bay hơi", nt: "Ngưng tụ" };
+    labels[ask[0]] = "";
+    var q = mcqQ("Quan sát sơ đồ chuyển thể của chất. Quá trình được đánh dấu ? là quá trình nào?",
+      procs.filter(function (p) { return p[0] !== ask[0]; }).map(function (p) { return p[1]; }),
+      ask[1], PROC_EX5[ask[0]]);
+    q.figure = figK1TransSVG(labels);
+    return q;
+  }
+  var CHAINS5 = [
+    ["Lúa", "Chuột đồng", "Rắn", "Diều hâu"],
+    ["Cỏ", "Dê", "Hổ"],
+    ["Tảo", "Tôm nhỏ", "Cá", "Mực"],
+    ["Lá cây", "Sâu", "Chim sâu", "Cú mèo"]
+  ];
+  var OUTS5 = ["Bướm", "Ong mật", "Kiến", "Nhện", "Bọ ngựa", "Chuồn chuồn"];
+  function k2ChainGen() {
+    var chain = pick(CHAINS5);
+    var q;
+    if (Math.random() < 0.6) {
+      var blank = rand(0, chain.length - 1);
+      q = mcqQ("Quan sát chuỗi thức ăn trong hình. Sinh vật ở vị trí ? là sinh vật nào?",
+        shuffle(OUTS5.slice()).slice(0, 2), chain[blank],
+        "Chuỗi thức ăn: " + chain.join(" → ") + ".");
+      q.figure = figK2ChainSVG(chain, blank, false);
+    } else {
+      var sh = shuffle(chain.slice());
+      q = mcqQ("Các sinh vật trong hình thuộc cùng một chuỗi thức ăn. Sinh vật nào là sinh vật SẢN XUẤT (đứng đầu chuỗi)?",
+        shuffle(chain.slice(1)).slice(0, 2), chain[0],
+        "Sinh vật sản xuất đứng đầu chuỗi thức ăn: " + chain.join(" → ") + ".");
+      q.figure = figK2ChainSVG(sh, -1, true);
+    }
+    return q;
+  }
+  function k4ShadowGen() {
+    var near = Math.random() < 0.5;
+    var q;
+    if (Math.random() < 0.5) {
+      q = mcqQ("Quan sát hình: nguồn sáng chiếu vào một vật cản, phía sau vật là màn. Vùng tối trên màn được gọi là gì?",
+        ["Vùng sáng", "Ảnh của vật"], "Bóng của vật",
+        "Phần màn không nhận được ánh sáng vì bị vật cản che khuất tạo thành bóng của vật.");
+    } else {
+      q = mcqQ("Quan sát hình: vì sao trên màn xuất hiện một vùng tối sau vật cản?",
+        ["Vì màn tự phát ra màu tối", "Vì nguồn sáng bị tắt"], "Vì vật cản che khuất ánh sáng, vùng đó không nhận được ánh sáng",
+        "Ánh sáng truyền theo đường thẳng; vật cản che mất ánh sáng nên phía sau vật có vùng tối là bóng của vật.");
+    }
+    q.figure = figK4ShadowSVG(near);
+    return q;
+  }
+  var t;
+  t = findT("kh5-chat"); if (t) { t.pools.choose.push(k1PanelsGen, k1PanelsGen, k1TransGen); }
+  t = findT("kh5-moi"); if (t) { t.pools.choose.push(k2ChainGen, k2ChainGen, k2ChainGen); }
+  t = findT("kh5-nangluong"); if (t) { t.pools.choose.push(k4ShadowGen, k4ShadowGen); }
+})();

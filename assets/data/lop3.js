@@ -172,10 +172,18 @@
           options: all.map(function (o) { return { html: '<span class="opt-text">' + o + "</span>" }; }), answer: all.indexOf(pat.a), cols: all.length, optStack: true };
       }
       function yesNoGen() {
-        var w = pick(u.words);
-        var truth = Math.random() < 0.5;
-        var shown = truth ? w : (engDistractors(w, ALL_WORDS3, 1)[0] || w);
-        return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+        /* v16: vòng tranh chỉ dùng từ qua cổng tranh trong unit; thiếu từ thì lùi về TF khẳng định nghĩa (dạng chữ). */
+        var pw = engPicWords(u.words);
+        if (pw.length >= 2) {
+          var w = pick(pw);
+          var truth = Math.random() < 0.5;
+          var shown = truth ? w : (engDistractors(w, u.words, 1, { pic: true, gloss: true })[0] || w);
+          return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+        }
+        var w2 = pick(u.words);
+        var truth2 = Math.random() < 0.5;
+        var shown2 = truth2 ? w2 : (engDistractors(w2, u.words, 1, { gloss: true })[0] || w2);
+        return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-word">' + w2[0] + '</div><div class="sentence">Nghĩa là “' + shown2[2] + "”</div>", truth: truth2, explain: "“" + w2[0] + "” nghĩa là “" + w2[2] + "”" }] };
       }
       var choose = base.choose.slice();
       if (pats.length) choose.push(patGen, patGen);
@@ -1364,8 +1372,8 @@ function eng3OddOne(u) {
   var mine = shuffle(u.words.slice()).slice(0, 3);
   var others = ALL_WORDS3.filter(function (w) { return u.words.indexOf(w) === -1; });
   var foreign = pick(others);
-  var opts = shuffle(mine.concat([foreign]).map(function (w) { return { html: '<span class="opt-emoji">' + w[2] + '</span> <span class="opt-word">' + w[0] + "</span>", text: w[0] }; }));
-  return { kind: "choose", big: true, prompt: "Từ nào KHÁC nhóm với ba từ còn lại?", options: opts, answer: opts.findIndex(function (o) { return o.text === foreign[0]; }), explain: foreign[0] + " nghĩa là '" + foreign[1] + "' — không thuộc nhóm từ của bài này.", speak: foreign[0] };
+  var opts = shuffle(mine.concat([foreign]).map(function (w) { return { html: '<span class="opt-emoji">' + w[1] + '</span> <span class="opt-word">' + w[0] + "</span>", text: w[0] }; }));
+  return { kind: "choose", big: true, prompt: "Từ nào KHÁC nhóm với ba từ còn lại?", options: opts, answer: opts.findIndex(function (o) { return o.text === foreign[0]; }), explain: foreign[0] + " nghĩa là '" + foreign[2] + "' — không thuộc nhóm từ của bài này.", speak: foreign[0] };
 }
 function eng3BlankTail(u) {
   var w = pick(u.words), lastUp = w[0].slice(-1).toUpperCase();
@@ -1379,12 +1387,14 @@ function eng3TFUnit(u) {
     var items = [], used = shuffle(u.words.slice());
     for (var i = 0; i < 3 && i < used.length; i++) {
       var w = used[i], truth = Math.random() < 0.5;
-      var shown = truth ? w[1] : pick(u.words.filter(function (x) { return x !== w; }))[1];
-      items.push({ w: w, truth: truth, shown: shown, correct: w[1] });
+      /* v16: ô "nghĩa là" phải là NGHĨA VIỆT (w[2]) — bản cũ lấy nhầm emoji
+         (w[1]) nên khẳng định thành vô nghĩa; nhiễu cũng phải khác đầu-nghĩa. */
+      var shown = truth ? w[2] : pick(u.words.filter(function (x) { return x !== w && engGlossHead(x[2]) !== engGlossHead(w[2]); }))[2];
+      items.push({ w: w, truth: truth, shown: shown, correct: w[2] });
     }
     /* B6: cân bằng phán quyết — trước đây 3 vòng độc lập, ~25% màn đồng phán quyết
        (họ lớn nhất còn lại ở Lớp 3: các màn «Unit» — Đúng hay sai?). */
-    tfBalanceItems(items, function (it) { var c = u.words.filter(function (x) { return x !== it.w && x[1] !== it.w[1]; }); return c.length ? pick(c)[1] : null; });
+    tfBalanceItems(items, function (it) { var c = u.words.filter(function (x) { return x !== it.w && engGlossHead(x[2]) !== engGlossHead(it.w[2]); }); return c.length ? pick(c)[2] : null; });
     var rounds = items.map(function (it) { return { visual: it.w[2] + " <b>" + it.w[0] + "</b> nghĩa là «" + it.shown + "»", truth: it.truth }; });
     return tfQ("«" + u.title + "» — Đúng hay sai?", rounds);
   };

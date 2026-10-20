@@ -19,11 +19,11 @@ window.__EN_BANDS = window.__EN_BANDS || [];
   window.__enStyleInstalled = true;
   var style = document.createElement("style");
   style.textContent =
-    ".en-passage{margin:0 0 6px;padding:12px 14px;border:3px dashed var(--line);border-radius:14px;background:#fffdf4;font-size:clamp(17px,4.4vw,20px);line-height:1.55;text-align:left}" +
+    ".en-passage{margin:0 0 6px;padding:12px 14px;border:3px dashed var(--line);border-radius:14px;background:#fffdf4;color:#33302a;font-size:clamp(17px,4.4vw,20px);line-height:1.55;text-align:left}" +
     ".en-passage b{color:#0e7a5f}" +
     ".en-listen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;margin:2px 0 4px}" +
-    ".en-show-text{padding:10px 16px;border:3px solid var(--line);border-radius:999px;background:#eef6ff;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;color:var(--ink)}" +
-    ".en-transcript{display:block;width:100%;margin-top:8px;padding:10px 14px;border-radius:12px;background:#eef6ff;font-size:clamp(17px,4.4vw,20px);line-height:1.55;text-align:left}" +
+    ".en-show-text{padding:10px 16px;border:3px solid var(--line);border-radius:999px;background:#eef6ff;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;color:#33302a}" +
+    ".en-transcript{display:block;width:100%;margin-top:8px;padding:10px 14px;border-radius:12px;background:#eef6ff;color:#33302a;font-size:clamp(17px,4.4vw,20px);line-height:1.55;text-align:left}" +
     ".en-transcript[hidden]{display:none!important}";
   document.head.appendChild(style);
 })();
@@ -2431,6 +2431,216 @@ function enTag(q, fam, v) { if (q) { q.__fam = fam; q.__var = v; } return q; }
       blanks: [
         { s: "Tiny pieces of plastic in the ocean are called ______.", ans: "microplastics", wrong: ["waste", "rivers", "tonnes"], ex: "Tên gọi của các mảnh nhựa nhỏ là microplastics." },
         { s: "Sea animals may become ______ in larger plastic items.", ans: "trapped", wrong: ["lost", "safe", "strong"], ex: "Động vật biển có thể bị mắc kẹt (become trapped) trong các vật nhựa lớn." }
+      ]
+    },
+{
+      title: "The School Garden",
+      passage: "Our school garden began in 2019 behind the science building. It is about 200 square metres and is divided into twelve small plots. Students in Grades 6 and 7 look after the garden every Tuesday and Friday afternoon. They grow tomatoes, beans and herbs such as mint and basil. Some of the vegetables are used in the school canteen, and the rest are sold at the school fair in December. A small sign at the gate reminds visitors not to pick anything without asking. Last year, the garden won second prize in a city competition for green schools.",
+      stmts: [
+        { stmt: "The school garden began in 2019.", verdict: "True", ev: "“Our school garden began in 2019”", ex: "True — đoạn văn nói rõ vườn trường bắt đầu từ năm 2019." },
+        { stmt: "Students grow mint and basil in the garden.", verdict: "True", ev: "“herbs such as mint and basil”", ex: "True — học sinh trồng các loại rau thơm như bạc hà (mint) và húng quế (basil)." },
+        { stmt: "The garden is in front of the science building.", verdict: "False", ev: "“behind the science building”", ex: "False — vườn ở phía sau tòa nhà khoa học, không phải phía trước." },
+        { stmt: "Students look after the garden every day.", verdict: "False", ev: "“every Tuesday and Friday afternoon”", ex: "False — học sinh chăm vườn vào chiều thứ Ba và thứ Sáu, không phải hằng ngày." },
+        { stmt: "The garden cost a lot of money to build.", verdict: "Not Given", ev: "Đoạn văn không nhắc chi phí làm vườn", ex: "Not Given — đoạn văn không nói gì về số tiền đã chi để làm vườn." },
+        { stmt: "Most students in the school enjoy gardening.", verdict: "Not Given", ev: "Đoạn văn không nói đa số học sinh có thích làm vườn hay không", ex: "Not Given — chỉ biết học sinh Lớp 6 và 7 chăm vườn; không có thông tin đa số học sinh thích làm vườn." }
+      ],
+      details: [
+        { q: "How many plots is the school garden divided into?", ans: "Twelve", wrong: ["Eight", "Ten", "Twenty"], ex: "Đoạn văn nói vườn được chia thành mười hai luống nhỏ (twelve small plots)." },
+        { q: "Where are the extra vegetables sold?", ans: "At the school fair in December", wrong: ["At the school fair in June", "At a local market", "In front of the school gate"], ex: "Rau thừa được bán ở hội chợ trường vào tháng 12 (sold at the school fair in December)." },
+        { q: "Which grades look after the school garden?", ans: "Grades 6 and 7", wrong: ["Grades 5 and 6", "Grades 8 and 9", "Grades 6 and 9"], ex: "Học sinh Lớp 6 và Lớp 7 chăm sóc vườn trường." }
+      ],
+      blanks: [
+        { s: "The school garden began in ______.", ans: "2019", wrong: ["2018", "2020", "2015"], ex: "Vườn trường bắt đầu từ năm 2019." },
+        { s: "Students look after the garden every Tuesday and ______ afternoon.", ans: "Friday", wrong: ["Monday", "Thursday", "Wednesday"], ex: "Học sinh chăm vườn chiều thứ Ba và thứ Sáu." }
+      ]
+    },
+    {
+      title: "A Young Chess Champion",
+      passage: "Minh Anh, a 13-year-old student from Da Nang, won the national under-14 chess championship last March. She learned to play chess at the age of six from her grandfather. She practises for two hours every day after school and studies famous games at weekends. During a game, she is famous for staying calm, even when she has very little time left on the clock. Her coach says her strongest point is planning several moves ahead. Next year, Minh Anh hopes to join the national youth team and play in her first international tournament in Singapore.",
+      stmts: [
+        { stmt: "Minh Anh learned to play chess from her grandfather.", verdict: "True", ev: "“She learned to play chess at the age of six from her grandfather”", ex: "True — cô bé học cờ vua từ ông của mình." },
+        { stmt: "Minh Anh practises chess every day after school.", verdict: "True", ev: "“She practises for two hours every day after school”", ex: "True — cô bé luyện cờ hai giờ mỗi ngày sau giờ học." },
+        { stmt: "Minh Anh is 14 years old.", verdict: "False", ev: "“a 13-year-old student”", ex: "False — Minh Anh 13 tuổi; cô bé vô địch giải dưới 14 tuổi (under-14)." },
+        { stmt: "Minh Anh won the championship in Singapore.", verdict: "False", ev: "“won the national under-14 chess championship last March” — Singapore là giải quốc tế cô bé hi vọng dự năm tới", ex: "False — chức vô địch là giải quốc gia; Singapore là nơi cô bé hi vọng được thi đấu năm sau." },
+        { stmt: "Minh Anh's grandfather was a professional chess player.", verdict: "Not Given", ev: "Đoạn văn chỉ nói cô bé học cờ từ ông, không nói ông có phải kì thủ chuyên nghiệp", ex: "Not Given — không có thông tin ông của Minh Anh có phải vận động viên cờ chuyên nghiệp hay không." },
+        { stmt: "Minh Anh is the best student in her class at school.", verdict: "Not Given", ev: "Đoạn văn không nhắc thành tích học tập trên lớp của Minh Anh", ex: "Not Given — đoạn văn nói về cờ vua, không nói cô bé có học giỏi nhất lớp hay không." }
+      ],
+      details: [
+        { q: "How old was Minh Anh when she learned to play chess?", ans: "Six years old", wrong: ["Five years old", "Seven years old", "Eight years old"], ex: "Cô bé học cờ năm 6 tuổi (at the age of six)." },
+        { q: "What is Minh Anh's strongest point, according to her coach?", ans: "Planning several moves ahead", wrong: ["Moving her pieces very quickly", "Staying calm in every game", "Remembering famous games"], ex: "Huấn luyện viên nói điểm mạnh nhất của cô bé là tính trước nhiều nước đi (planning several moves ahead). Việc giữ bình tĩnh là nét nổi tiếng chung, không phải câu trả lời của huấn luyện viên." },
+        { q: "Where does Minh Anh hope to play her first international tournament?", ans: "In Singapore", wrong: ["In Thailand", "In Da Nang", "In Ha Noi"], ex: "Cô bé hi vọng dự giải quốc tế đầu tiên tại Singapore." }
+      ],
+      blanks: [
+        { s: "Minh Anh practises chess for ______ hours every day after school.", ans: "two", wrong: ["three", "four", "five"], ex: "Cô bé luyện hai giờ mỗi ngày (two hours)." },
+        { s: "Minh Anh won the national under-14 championship last ______.", ans: "March", wrong: ["May", "June", "January"], ex: "Cô bé vô địch vào tháng Ba vừa qua (last March)." }
+      ]
+    },
+    {
+      title: "Breakfast Around the World",
+      passage: "Breakfast is the first meal of the day, but it looks very different around the world. In Vietnam, many people start the day with a hot bowl of pho or a banh mi from a street stall. In England, a traditional breakfast includes eggs, bacon, beans and toast, but on weekdays most people eat something quick, like cereal with milk. In Japan, breakfast often includes rice, grilled fish, miso soup and pickles. People in Mexico sometimes eat eggs with tomatoes and chili for breakfast. Doctors agree on one thing: eating something in the morning gives the body energy for the first hours of the day.",
+      stmts: [
+        { stmt: "A traditional English breakfast includes beans.", verdict: "True", ev: "“a traditional breakfast includes eggs, bacon, beans and toast”", ex: "True — bữa sáng truyền thống của Anh có đậu (beans)." },
+        { stmt: "Japanese breakfast often includes grilled fish.", verdict: "True", ev: "“breakfast often includes rice, grilled fish, miso soup and pickles”", ex: "True — bữa sáng ở Nhật thường có cá nướng (grilled fish)." },
+        { stmt: "Most people in England eat a traditional breakfast every day.", verdict: "False", ev: "“on weekdays most people eat something quick, like cereal with milk”", ex: "False — vào ngày thường, đa số người Anh ăn món nhanh như ngũ cốc với sữa, không phải bữa sáng truyền thống mỗi ngày." },
+        { stmt: "People in Mexico never eat eggs for breakfast.", verdict: "False", ev: "“sometimes eat eggs with tomatoes and chili”", ex: "False — người Mexico đôi khi ăn trứng với cà chua và ớt vào bữa sáng." },
+        { stmt: "Pho is more popular than banh mi in Vietnam.", verdict: "Not Given", ev: "Đoạn văn kể cả phở và bánh mì nhưng không so sánh độ phổ biến", ex: "Not Given — đoạn văn không nói món nào phổ biến hơn ở Việt Nam." },
+        { stmt: "Doctors say breakfast is the most important meal of the day.", verdict: "Not Given", ev: "Đoạn văn chỉ nói bác sĩ đồng ý bữa sáng cho năng lượng vào buổi sáng", ex: "Not Given — bác sĩ trong đoạn chỉ nói ăn sáng giúp cơ thể có năng lượng; không ai gọi bữa sáng là bữa quan trọng nhất." }
+      ],
+      details: [
+        { q: "What do most people in England eat on weekdays?", ans: "Something quick like cereal with milk", wrong: ["Eggs, bacon and toast", "Rice and grilled fish", "Pho or banh mi"], ex: "Ngày thường, đa số người Anh ăn món nhanh như ngũ cốc với sữa." },
+        { q: "Which dish is part of a Japanese breakfast?", ans: "Miso soup", wrong: ["Bacon and beans", "Cereal with milk", "Banh mi"], ex: "Súp miso nằm trong bữa sáng kiểu Nhật theo đoạn văn." },
+        { q: "Why is eating breakfast useful, according to doctors?", ans: "It gives the body energy", wrong: ["It helps people sleep better", "It makes people grow taller", "It saves a lot of money"], ex: "Bác sĩ đồng ý: ăn sáng giúp cơ thể có năng lượng cho những giờ đầu ngày." }
+      ],
+      blanks: [
+        { s: "In Vietnam, many people start the day with a hot bowl of ______.", ans: "pho", wrong: ["porridge", "cereal", "pasta"], ex: "Nhiều người Việt bắt đầu ngày mới bằng một bát phở nóng." },
+        { s: "People in Mexico sometimes eat eggs with tomatoes and ______.", ans: "chili", wrong: ["beans", "cheese", "bacon"], ex: "Ở Mexico, trứng ăn kèm cà chua và ớt (chili)." }
+      ]
+    },
+    {
+      title: "Weekend Volunteers",
+      passage: "Every Saturday morning, about thirty volunteers meet at the City Hospital to help patients and visitors. The group started in 2020 with only five members. The volunteers wear green jackets so that people can find them easily. Their jobs include guiding visitors to the right rooms, reading books to children in the children's ward, and helping old people in wheelchairs. They do not give medicine or do the work of nurses. Students who want to join must be at least 15 years old and join a one-day training course first.",
+      stmts: [
+        { stmt: "The volunteer group started in 2020.", verdict: "True", ev: "“The group started in 2020”", ex: "True — nhóm tình nguyện bắt đầu năm 2020." },
+        { stmt: "Volunteers wear green jackets.", verdict: "True", ev: "“The volunteers wear green jackets”", ex: "True — tình nguyện viên mặc áo xanh lá để mọi người dễ nhận ra." },
+        { stmt: "The group now has only five members.", verdict: "False", ev: "“about thirty volunteers” — năm thành viên là con số lúc mới thành lập", ex: "False — nhóm bắt đầu với 5 người, nay có khoảng 30 tình nguyện viên." },
+        { stmt: "Volunteers give medicine to patients.", verdict: "False", ev: "“They do not give medicine”", ex: "False — tình nguyện viên không phát thuốc và không làm việc của y tá." },
+        { stmt: "The volunteers are paid for their work.", verdict: "Not Given", ev: "Đoạn văn không nhắc chuyện trả tiền hay lương", ex: "Not Given — đoạn văn không nói tình nguyện viên có được trả tiền hay không." },
+        { stmt: "Most volunteers are university students.", verdict: "Not Given", ev: "Đoạn văn chỉ nêu điều kiện học sinh muốn tham gia, không nói đa số thành viên là sinh viên", ex: "Not Given — không có thông tin đa số tình nguyện viên là sinh viên đại học." }
+      ],
+      details: [
+        { q: "How many volunteers meet at the City Hospital every Saturday?", ans: "About thirty", wrong: ["About five", "About twenty", "About fifty"], ex: "Khoảng 30 tình nguyện viên gặp nhau mỗi sáng thứ Bảy." },
+        { q: "What must students do before joining the volunteer group?", ans: "Join a one-day training course", wrong: ["Pass a medical exam", "Be at least 18 years old", "Work at the hospital for a month"], ex: "Học sinh phải tham gia khóa tập huấn một ngày trước khi vào nhóm." },
+        { q: "Where do volunteers read books to children?", ans: "In the children's ward", wrong: ["In the hospital library", "At the main entrance", "In the waiting room"], ex: "Tình nguyện viên đọc sách cho trẻ ở khoa nhi (the children's ward)." }
+      ],
+      blanks: [
+        { s: "Volunteers help old people in ______.", ans: "wheelchairs", wrong: ["gardens", "classrooms", "ambulances"], ex: "Tình nguyện viên giúp người già ngồi xe lăn (wheelchairs)." },
+        { s: "Students must be at least ______ years old to join the group.", ans: "15", wrong: ["14", "16", "18"], ex: "Học sinh phải từ 15 tuổi trở lên mới được tham gia." }
+      ]
+    },
+    {
+      title: "Dogs as Helpers",
+      passage: "Dogs are not only pets. For many years, specially trained dogs have helped people who cannot see. A guide dog learns to stop at the edge of the road, walk around objects in the street, and find doors and stairs for its owner. Training a guide dog takes about two years and begins when the dog is a puppy. Not every dog can become a guide dog: the dog must be healthy, calm and friendly. In many countries, guide dogs are allowed to enter shops, buses and restaurants with their owners, although pet dogs are not.",
+      stmts: [
+        { stmt: "Training a guide dog takes about two years.", verdict: "True", ev: "“Training a guide dog takes about two years”", ex: "True — việc huấn luyện một chú chó dẫn đường mất khoảng hai năm." },
+        { stmt: "A guide dog starts its training as a puppy.", verdict: "True", ev: "“begins when the dog is a puppy”", ex: "True — huấn luyện bắt đầu từ khi chó còn nhỏ (a puppy)." },
+        { stmt: "Every healthy dog can become a guide dog.", verdict: "False", ev: "“Not every dog can become a guide dog: the dog must be healthy, calm and friendly”", ex: "False — không phải chó khỏe nào cũng làm được; chó còn phải điềm tĩnh và thân thiện." },
+        { stmt: "Guide dogs are not allowed on buses in many countries.", verdict: "False", ev: "“guide dogs are allowed to enter shops, buses and restaurants”", ex: "False — ở nhiều nước, chó dẫn đường được vào cửa hàng, xe buýt và nhà hàng cùng chủ." },
+        { stmt: "Guide dogs are usually black.", verdict: "Not Given", ev: "Đoạn văn không nhắc màu lông của chó dẫn đường", ex: "Not Given — đoạn văn không nói chó dẫn đường thường có màu gì." },
+        { stmt: "It costs a lot of money to train a guide dog.", verdict: "Not Given", ev: "Đoạn văn không nhắc chi phí huấn luyện", ex: "Not Given — chỉ biết huấn luyện mất khoảng hai năm; chi phí không được nhắc tới." }
+      ],
+      details: [
+        { q: "What must a guide dog be like?", ans: "Healthy, calm and friendly", wrong: ["Big, strong and fast", "Young, small and quiet", "Brave, loud and active"], ex: "Chó dẫn đường phải khỏe mạnh, điềm tĩnh và thân thiện." },
+        { q: "Where are guide dogs allowed to go with their owners?", ans: "Shops, buses and restaurants", wrong: ["Only parks and gardens", "Only their owners' homes", "Only special dog schools"], ex: "Ở nhiều nước, chó dẫn đường được vào cửa hàng, lên xe buýt và vào nhà hàng cùng chủ." },
+        { q: "When does a guide dog start its training?", ans: "When it is a puppy", wrong: ["When it is one year old", "When it is fully grown", "When it joins its first owner"], ex: "Huấn luyện bắt đầu khi chó còn là chó con (a puppy)." }
+      ],
+      blanks: [
+        { s: "A guide dog learns to stop at the edge of the ______.", ans: "road", wrong: ["river", "stairs", "door"], ex: "Chó dẫn đường học cách dừng lại ở mép đường (the edge of the road)." },
+        { s: "A guide dog must be healthy, calm and ______.", ans: "friendly", wrong: ["strong", "clever", "hungry"], ex: "Chó phải khỏe mạnh, điềm tĩnh và thân thiện (friendly)." }
+      ]
+    },
+    {
+      title: "The Four Seasons in Sa Pa",
+      passage: "Sa Pa is a small town in the mountains of northern Vietnam, famous for its cool weather. Spring there is from March to May, with light rain and flowers on the hills. Summer, from June to August, is the warmest season, but the temperature rarely goes above 25 degrees. Autumn, from September to November, is the best time to see the golden rice terraces. Winter is cold and foggy; in some years, snow falls on the highest mountains in December or January. Because of this special weather, Sa Pa welcomes visitors all year round.",
+      stmts: [
+        { stmt: "Sa Pa is in the mountains of northern Vietnam.", verdict: "True", ev: "“a small town in the mountains of northern Vietnam”", ex: "True — Sa Pa là thị trấn vùng núi ở miền Bắc Việt Nam." },
+        { stmt: "Autumn is the best time to see the golden rice terraces.", verdict: "True", ev: "“Autumn ... is the best time to see the golden rice terraces”", ex: "True — mùa thu là lúc đẹp nhất để ngắm ruộng bậc thang vàng." },
+        { stmt: "The temperature in Sa Pa often goes above 30 degrees in summer.", verdict: "False", ev: "“the temperature rarely goes above 25 degrees”", ex: "False — mùa hè ở Sa Pa hiếm khi vượt 25 độ, không phải thường trên 30 độ." },
+        { stmt: "Snow falls on the highest mountains in Sa Pa every winter.", verdict: "False", ev: "“in some years, snow falls”", ex: "False — tuyết chỉ rơi vào một số năm, không phải mùa đông nào cũng có." },
+        { stmt: "Sa Pa is more beautiful in spring than in autumn.", verdict: "Not Given", ev: "Đoạn văn không so sánh vẻ đẹp giữa mùa xuân và mùa thu", ex: "Not Given — đoạn văn tả cả hai mùa nhưng không nói mùa nào đẹp hơn." },
+        { stmt: "Most visitors to Sa Pa come from other countries.", verdict: "Not Given", ev: "Đoạn văn không nói khách đến Sa Pa chủ yếu từ đâu", ex: "Not Given — chỉ biết Sa Pa đón khách quanh năm; nguồn khách chính không được nhắc." }
+      ],
+      details: [
+        { q: "When is the best time to see the golden rice terraces?", ans: "From September to November", wrong: ["From March to May", "From June to August", "In December and January"], ex: "Mùa thu, từ tháng 9 đến tháng 11, là thời điểm đẹp nhất ngắm ruộng bậc thang." },
+        { q: "How warm does Sa Pa get in summer?", ans: "Rarely above 25 degrees", wrong: ["Often above 30 degrees", "About 35 degrees every day", "Rarely above 20 degrees"], ex: "Nhiệt độ mùa hè ở Sa Pa hiếm khi vượt 25 độ." },
+        { q: "Why does Sa Pa welcome visitors all year round?", ans: "Because of its special weather", wrong: ["Because it is a very big town", "Because hotels there are cheap", "Because it is near the sea"], ex: "Nhờ thời tiết đặc biệt, Sa Pa đón khách quanh năm." }
+      ],
+      blanks: [
+        { s: "Winter in Sa Pa is cold and ______.", ans: "foggy", wrong: ["rainy", "windy", "sunny"], ex: "Mùa đông ở Sa Pa lạnh và nhiều sương mù (foggy)." },
+        { s: "Spring in Sa Pa is from March to ______.", ans: "May", wrong: ["April", "June", "August"], ex: "Mùa xuân ở Sa Pa kéo dài từ tháng 3 đến tháng 5." }
+      ]
+    },
+    {
+      title: "Learning the Piano",
+      passage: "Learning to play the piano takes time and patience. Teachers usually advise beginners to practise for 20 or 30 minutes every day instead of two hours once a week. Short daily practice helps the fingers remember the keys. Students should sit up straight, keep their wrists relaxed, and start each lesson with simple finger exercises. Most teachers also tell students to listen to good pianists, because listening helps them understand how a piece of music should sound. With regular practice, many students can play simple songs after three or four months.",
+      stmts: [
+        { stmt: "Teachers advise beginners to practise a short time every day.", verdict: "True", ev: "“practise for 20 or 30 minutes every day”", ex: "True — giáo viên khuyên người mới học luyện 20–30 phút mỗi ngày." },
+        { stmt: "Listening to good pianists helps students understand music.", verdict: "True", ev: "“listening helps them understand how a piece of music should sound”", ex: "True — nghe nghệ sĩ giỏi giúp học sinh hiểu bản nhạc nên ngân lên như thế nào." },
+        { stmt: "Practising two hours once a week is better than daily practice.", verdict: "False", ev: "“instead of two hours once a week” — giáo viên khuyên luyện hằng ngày", ex: "False — giáo viên khuyên luyện ngắn mỗi ngày thay vì hai giờ một lần mỗi tuần." },
+        { stmt: "Students should start each lesson with difficult songs.", verdict: "False", ev: "“start each lesson with simple finger exercises”", ex: "False — mỗi buổi học nên bắt đầu bằng bài tập ngón đơn giản, không phải bài khó." },
+        { stmt: "The piano is the most difficult instrument to learn.", verdict: "Not Given", ev: "Đoạn văn không so sánh độ khó của piano với nhạc cụ khác", ex: "Not Given — đoạn văn không nói piano có phải nhạc cụ khó học nhất hay không." },
+        { stmt: "Most piano students take lessons at home.", verdict: "Not Given", ev: "Đoạn văn không nói học sinh thường học đàn ở đâu", ex: "Not Given — không có thông tin đa số học sinh học piano tại nhà." }
+      ],
+      details: [
+        { q: "How long should beginners practise the piano each day?", ans: "20 or 30 minutes", wrong: ["Two hours", "One hour", "Five minutes"], ex: "Người mới học nên luyện 20 hoặc 30 phút mỗi ngày." },
+        { q: "What should students do at the start of each lesson?", ans: "Simple finger exercises", wrong: ["Difficult songs", "Listening tests", "Music theory exams"], ex: "Mỗi buổi học nên bắt đầu bằng bài tập ngón đơn giản (simple finger exercises)." },
+        { q: "When can many students play simple songs?", ans: "After three or four months", wrong: ["After two weeks", "After one year", "After a few days"], ex: "Với luyện tập đều, nhiều học sinh chơi được bài đơn giản sau ba, bốn tháng." }
+      ],
+      blanks: [
+        { s: "Students should sit up straight and keep their ______ relaxed.", ans: "wrists", wrong: ["fingers", "shoulders", "knees"], ex: "Học sinh cần ngồi thẳng và giữ cổ tay (wrists) thả lỏng." },
+        { s: "Short daily practice helps the fingers remember the ______.", ans: "keys", wrong: ["songs", "notes", "lessons"], ex: "Luyện ngắn hằng ngày giúp ngón tay nhớ phím đàn (the keys)." }
+      ]
+    },
+    {
+      title: "The City Museum",
+      passage: "The City Museum stands in an old building which was built in 1910 as a post office. The museum opened to the public in 1985. It has three floors of exhibits about the history of the city, from old maps and photographs to clothes and tools from 200 years ago. The museum is open from Tuesday to Sunday and closes on Mondays. Entry is free for children under 12, and on the first Sunday of every month, entry is free for everyone. The museum shop sells books and postcards near the exit.",
+      stmts: [
+        { stmt: "The museum building was built in 1910.", verdict: "True", ev: "“built in 1910 as a post office”", ex: "True — tòa nhà bảo tàng được xây năm 1910." },
+        { stmt: "The museum is closed on Mondays.", verdict: "True", ev: "“open from Tuesday to Sunday and closes on Mondays”", ex: "True — bảo tàng mở từ thứ Ba đến Chủ nhật và đóng cửa thứ Hai." },
+        { stmt: "The museum has four floors of exhibits.", verdict: "False", ev: "“three floors of exhibits”", ex: "False — bảo tàng có ba tầng trưng bày, không phải bốn." },
+        { stmt: "Entry to the museum is free for everyone every Sunday.", verdict: "False", ev: "“on the first Sunday of every month, entry is free for everyone”", ex: "False — vé chỉ miễn phí cho mọi người vào Chủ nhật đầu tiên của tháng, không phải mọi Chủ nhật." },
+        { stmt: "The museum is the oldest building in the city.", verdict: "Not Given", ev: "Đoạn văn không so sánh tuổi của tòa nhà với các tòa nhà khác", ex: "Not Given — tòa nhà xây năm 1910 nhưng đoạn văn không nói đây là tòa nhà cổ nhất thành phố." },
+        { stmt: "Most exhibits in the museum are about 200 years old.", verdict: "Not Given", ev: "Đoạn văn chỉ nhắc quần áo và công cụ từ 200 năm trước, không nói đa số hiện vật", ex: "Not Given — chỉ một số hiện vật (quần áo, công cụ) có từ 200 năm trước; tỉ lệ đa số không được nhắc." }
+      ],
+      details: [
+        { q: "What was the museum building in 1910?", ans: "A post office", wrong: ["A school", "A library", "A hotel"], ex: "Tòa nhà được xây năm 1910 làm bưu điện (a post office)." },
+        { q: "When is entry free for everyone?", ans: "On the first Sunday of every month", wrong: ["Every Sunday", "On Mondays", "On the last Sunday of every month"], ex: "Vé miễn phí cho mọi người vào Chủ nhật đầu tiên hằng tháng." },
+        { q: "What does the museum shop sell?", ans: "Books and postcards", wrong: ["Old maps and tools", "Clothes and hats", "Tickets and food"], ex: "Cửa hàng bảo tàng bán sách và bưu thiếp (books and postcards)." }
+      ],
+      blanks: [
+        { s: "The museum opened to the public in ______.", ans: "1985", wrong: ["1910", "1980", "1995"], ex: "Bảo tàng mở cửa đón khách năm 1985 (tòa nhà xây năm 1910)." },
+        { s: "Children under ______ do not have to pay for entry.", ans: "12", wrong: ["10", "8", "15"], ex: "Trẻ dưới 12 tuổi được vào miễn phí." }
+      ]
+    },
+    {
+      title: "From Letters to Emails",
+      passage: "Fifty years ago, people who wanted to send news to another town wrote letters by hand and took them to the post office. A letter could take a week to travel across the country, and even longer to reach another continent. The telephone helped people talk over long distances, but calls were expensive. Everything changed with email in the 1990s. An email arrives in a few seconds and costs almost nothing. Today, billions of emails are sent every day. However, some people still write paper letters for special occasions, because a handwritten letter feels more personal.",
+      stmts: [
+        { stmt: "Fifty years ago, people wrote letters by hand.", verdict: "True", ev: "“wrote letters by hand”", ex: "True — năm mươi năm trước, người ta viết thư bằng tay." },
+        { stmt: "An email arrives in a few seconds.", verdict: "True", ev: "“An email arrives in a few seconds”", ex: "True — một email đến nơi chỉ trong vài giây." },
+        { stmt: "A letter took one day to travel across the country.", verdict: "False", ev: "“could take a week to travel across the country”", ex: "False — thư đi khắp đất nước có thể mất một tuần, không phải một ngày." },
+        { stmt: "Telephone calls were cheap fifty years ago.", verdict: "False", ev: "“calls were expensive”", ex: "False — ngày xưa gọi điện đường dài rất tốn kém (expensive)." },
+        { stmt: "The first email was sent in 1990.", verdict: "Not Given", ev: "Đoạn văn chỉ nói email làm thay đổi mọi thứ vào những năm 1990, không nêu năm gửi email đầu tiên", ex: "Not Given — đoạn văn nói email xuất hiện trong thập niên 1990, không khẳng định email đầu tiên gửi năm 1990." },
+        { stmt: "Young people never write paper letters today.", verdict: "Not Given", ev: "Đoạn văn nói “some people” vẫn viết thư giấy, không nói riêng về người trẻ", ex: "Not Given — đoạn văn chỉ nói một số người vẫn viết thư giấy; không khẳng định người trẻ không bao giờ viết." }
+      ],
+      details: [
+        { q: "How long could a letter take to travel across the country?", ans: "A week", wrong: ["One day", "One month", "A few hours"], ex: "Một lá thư có thể mất một tuần để đi khắp đất nước." },
+        { q: "Why do some people still write paper letters?", ans: "Because they feel more personal", wrong: ["Because they are faster", "Because they are cheaper", "Because email is difficult to use"], ex: "Thư viết tay cho cảm giác riêng tư, gần gũi hơn (more personal)." },
+        { q: "When did email change the way people send news?", ans: "In the 1990s", wrong: ["In the 1980s", "In the 2000s", "In the 1970s"], ex: "Mọi thứ thay đổi với email vào những năm 1990." }
+      ],
+      blanks: [
+        { s: "Today, ______ of emails are sent every day.", ans: "billions", wrong: ["millions", "thousands", "hundreds"], ex: "Ngày nay, hàng tỉ (billions) email được gửi mỗi ngày." },
+        { s: "People took their letters to the ______ office.", ans: "post", wrong: ["school", "police", "travel"], ex: "Người ta mang thư ra bưu điện (the post office)." }
+      ]
+    },
+    {
+      title: "A Farm Stay Weekend",
+      passage: "Last month, our class spent a weekend at Green Valley Farm, about 40 kilometres from the city. We arrived on Saturday morning and slept in tents near the river. In the afternoon, the farmer taught us how to milk cows and collect eggs from the chicken house. On Sunday, we picked vegetables and helped cook lunch for the whole group. The farm grows its vegetables without chemicals. Before we left, the farmer gave each student a small bag of seeds to plant at home. Everyone agreed it was the best school trip of the year.",
+      stmts: [
+        { stmt: "The students slept in tents near the river.", verdict: "True", ev: "“slept in tents near the river”", ex: "True — cả lớp ngủ trong lều gần con sông." },
+        { stmt: "The farm grows its vegetables without chemicals.", verdict: "True", ev: "“grows its vegetables without chemicals”", ex: "True — trang trại trồng rau không dùng hóa chất." },
+        { stmt: "The class arrived at the farm on Friday.", verdict: "False", ev: "“We arrived on Saturday morning”", ex: "False — lớp đến trang trại vào sáng thứ Bảy, không phải thứ Sáu." },
+        { stmt: "The farmer taught the students to milk cows on Sunday.", verdict: "False", ev: "“In the afternoon, the farmer taught us how to milk cows” — chiều thứ Bảy", ex: "False — buổi dạy vắt sữa bò diễn ra chiều thứ Bảy; Chủ nhật lớp hái rau và nấu ăn." },
+        { stmt: "Green Valley Farm is the biggest farm in the area.", verdict: "Not Given", ev: "Đoạn văn không so sánh quy mô trang trại với nơi khác", ex: "Not Given — đoạn văn không nói đây có phải trang trại lớn nhất vùng hay không." },
+        { stmt: "Most students had visited a farm before this trip.", verdict: "Not Given", ev: "Đoạn văn không nói học sinh đã từng đến trang trại trước đây hay chưa", ex: "Not Given — không có thông tin về việc học sinh từng đi trang trại trước chuyến này." }
+      ],
+      details: [
+        { q: "How far is Green Valley Farm from the city?", ans: "About 40 kilometres", wrong: ["About 14 kilometres", "About 60 kilometres", "About 4 kilometres"], ex: "Trang trại cách thành phố khoảng 40 ki-lô-mét." },
+        { q: "What did the farmer give each student before they left?", ans: "A small bag of seeds", wrong: ["A bag of vegetables", "Some fresh eggs", "A bottle of milk"], ex: "Trước khi về, bác nông dân tặng mỗi bạn một túi hạt giống nhỏ." },
+        { q: "What did the students do on Sunday?", ans: "Picked vegetables and helped cook lunch", wrong: ["Milked cows and collected eggs", "Arrived at the farm by bus", "Slept in tents near the river"], ex: "Chủ nhật, lớp hái rau và phụ nấu bữa trưa cho cả đoàn." }
+      ],
+      blanks: [
+        { s: "Green Valley Farm is about ______ kilometres from the city.", ans: "40", wrong: ["14", "60", "80"], ex: "Trang trại cách thành phố khoảng 40 ki-lô-mét." },
+        { s: "The farmer taught us how to collect ______ from the chicken house.", ans: "eggs", wrong: ["milk", "wool", "honey"], ex: "Bác nông dân dạy lớp cách nhặt trứng (eggs) trong chuồng gà." }
       ]
     }
   ];

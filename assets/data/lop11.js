@@ -1847,7 +1847,7 @@
     ["Trương Định nổi tiếng với hành động nào chống Pháp?", "Không tuân lệnh bãi binh, ở lại đánh Pháp", "Đầu hàng Pháp ngay từ trận đầu", "Sang Pháp đàm phán xin hoà", "Trương Định được nhân dân tôn là Bình Tây Đại nguyên soái."],
     ["Phong trào Cần Vương bùng nổ sau sự kiện nào?", "Vua Hàm Nghi ra chiếu Cần Vương năm 1885", "Pháp đánh Đà Nẵng năm 1858", "Triều đình kí Hiệp ước Nhâm Tuất 1862", "Phong trào quy tụ nhiều sĩ phu yêu nước như Phan Đình Phùng, Nguyễn Thiện Thuật."],
     ["Khởi nghĩa Hương Khê do ai lãnh đạo?", "Phan Đình Phùng", "Hoàng Hoa Thám", "Nguyễn Thiện Thuật", "Đây là khởi nghĩa tiêu biểu và kéo dài nhất trong phong trào Cần Vương."],
-    ["Khởi nghĩa Yên Thế do ai lãnh đạo?", "Hoàng Hoa Thám (Đề Thám)", "Phan Đình Phùng", "Đinh Công Tráng", "Khởi nghĩa Yên Thế ở Bắc Giang kéo dài gần 30 năm cuối thế kỉ XIX – đầu XX."],
+    ["Khởi nghĩa Yên Thế do ai lãnh đạo?", "Hoàng Hoa Thám (Đề Thám)", "Phan Đình Phùng", "Đinh Công Tráng", "Khởi nghĩa nông dân Yên Thế (1884–1913, nay thuộc tỉnh Bắc Ninh): Lương Văn Nắm (Đề Nắm) lãnh đạo thời kì đầu, Hoàng Hoa Thám (Đề Thám) lãnh đạo từ năm 1892."],
     ["Truyền thống nổi bật trong các cuộc chiến tranh bảo vệ Tổ quốc của Việt Nam là gì?", "Toàn dân đánh giặc, lấy ít địch nhiều", "Chỉ dựa vào quân đội nước ngoài", "Chỉ phòng thủ bị động trong thành luỹ", "Tư tưởng “lấy đại nghĩa thắng hung tàn, lấy chí nhân thay cường bạo” của Nguyễn Trãi."],
     ["Hội nghị Diên Hồng thời Trần thể hiện truyền thống gì?", "Đoàn kết toàn dân, quyết tâm đánh giặc", "Chia rẽ trong nội bộ triều đình", "Chủ trương đầu hàng quân Nguyên", "Các bô lão cả nước đồng thanh hô “Đánh!” khi vua Trần hỏi nên hoà hay chiến."]
   ];

@@ -890,10 +890,18 @@ function eng6Pools(u) {
       options: all.map(function (o) { return { html: '<span class="opt-text">' + o + "</span>" }; }), answer: all.indexOf(pat.a), cols: all.length, optStack: true };
   }
   function yesNoGen() {
-    var w = pick(u.words);
-    var truth = Math.random() < 0.5;
-    var shown = truth ? w : (engDistractors(w, ALL_WORDS6, 1)[0] || w);
-    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    /* v16: vòng tranh chỉ dùng từ qua cổng tranh trong unit; thiếu từ thì lùi về TF khẳng định nghĩa (dạng chữ). */
+    var pw = engPicWords(u.words);
+    if (pw.length >= 2) {
+      var w = pick(pw);
+      var truth = Math.random() < 0.5;
+      var shown = truth ? w : (engDistractors(w, u.words, 1, { pic: true, gloss: true })[0] || w);
+      return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    }
+    var w2 = pick(u.words);
+    var truth2 = Math.random() < 0.5;
+    var shown2 = truth2 ? w2 : (engDistractors(w2, u.words, 1, { gloss: true })[0] || w2);
+    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-word">' + w2[0] + '</div><div class="sentence">Nghĩa là “' + shown2[2] + "”</div>", truth: truth2, explain: "“" + w2[0] + "” nghĩa là “" + w2[2] + "”" }] };
   }
   var choose = base.choose.slice();
   if (pats.length) choose.push(patGen, patGen);
@@ -2241,3 +2249,109 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 });
   if (typeof window.__phaseBProcessGrade === "function") window.__phaseBProcessGrade(6);
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(6);
+
+/* ================= MỤC 9 (v18) — SVG KHOA HỌC: gắn hình K1/K3/K5 cho KHTN 6 =================
+   Bộ sinh câu CÓ HÌNH: tham số hình lấy từ cùng biến tính đáp án; hình
+   không chứa đáp án (xem THIET-KE-MUC-9 B.3). Gắn vào pools sau Phase B/C
+   như các khối tĩnh Lớp 1 — không đổi nội dung câu hỏi sẵn có. */
+(function () {
+  function findT(id) { return findTopic127(6, id); }
+  var STATE_NAMES = { ran: "thể rắn", long: "thể lỏng", khi: "thể khí" };
+  var STATE_EX = "Hạt xếp khít và có trật tự là thể rắn; hạt khít nhưng lộn xộn là thể lỏng; hạt ở rất xa nhau, chuyển động tự do là thể khí.";
+  function k1PanelsGen() {
+    var order = shuffle(["ran", "long", "khi"].slice());
+    var q;
+    if (Math.random() < 0.5) {
+      var idx = rand(0, 2);
+      q = mcqQ("Quan sát hình ba ô hạt. Ô thứ " + (idx + 1) + " (từ trái sang) cho thấy chất ở thể nào?",
+        ["thể rắn", "thể lỏng", "thể khí"].filter(function (s) { return s !== STATE_NAMES[order[idx]]; }),
+        STATE_NAMES[order[idx]], STATE_EX);
+    } else {
+      var st = pick(["ran", "long", "khi"]), pos = order.indexOf(st) + 1;
+      q = mcqQ("Quan sát hình ba ô hạt. Ô nào cho thấy chất ở " + STATE_NAMES[st] + "?",
+        ["Ô 1", "Ô 2", "Ô 3"].filter(function (s) { return s !== "Ô " + pos; }),
+        "Ô " + pos, STATE_EX);
+    }
+    q.figure = figK1PanelsSVG(order);
+    return q;
+  }
+  var PROC_EX = { nc: "Nóng chảy là sự chuyển từ thể rắn sang thể lỏng.", dd: "Đông đặc là sự chuyển từ thể lỏng sang thể rắn.", bh: "Bay hơi là sự chuyển từ thể lỏng sang thể khí.", nt: "Ngưng tụ là sự chuyển từ thể khí sang thể lỏng." };
+  function k1TransGen() {
+    var procs = [["nc", "Nóng chảy"], ["dd", "Đông đặc"], ["bh", "Bay hơi"], ["nt", "Ngưng tụ"]];
+    var ask = pick(procs);
+    var labels = { nc: "Nóng chảy", dd: "Đông đặc", bh: "Bay hơi", nt: "Ngưng tụ" };
+    labels[ask[0]] = "";
+    var q = mcqQ("Quan sát sơ đồ chuyển thể. Quá trình được đánh dấu ? là quá trình nào?",
+      procs.filter(function (p) { return p[0] !== ask[0]; }).map(function (p) { return p[1]; }),
+      ask[1], PROC_EX[ask[0]]);
+    q.figure = figK1TransSVG(labels);
+    return q;
+  }
+  function k3CycleGen() {
+    var stages = [["bochoi", "Bốc hơi", "Nước ở biển, sông, hồ bị Mặt Trời đốt nóng, bốc hơi lên thành hơi nước."], ["ngungtu", "Ngưng tụ", "Hơi nước lên cao gặp lạnh, ngưng tụ thành giọt nước nhỏ tạo thành mây."], ["mua", "Mưa", "Giọt nước trong mây lớn dần, rơi xuống thành mưa."], ["chay", "Chảy về biển", "Nước mưa chảy thành suối, sông rồi đổ về biển, khép kín vòng tuần hoàn."]];
+    var ask = pick(stages);
+    var q = mcqQ("Quan sát vòng tuần hoàn của nước. Giai đoạn được đánh dấu ? là giai đoạn nào?",
+      stages.filter(function (s) { return s[0] !== ask[0]; }).map(function (s) { return s[1]; }),
+      ask[1], ask[2]);
+    q.figure = figK3CycleSVG(ask[0]);
+    return q;
+  }
+  var PLANETS = ["Sao Thuỷ", "Sao Kim", "Trái Đất", "Sao Hoả", "Sao Mộc", "Sao Thổ", "Sao Thiên Vương", "Sao Hải Vương"];
+  function k3OrbitGen() {
+    var idx = rand(0, 7);
+    var q = mcqQ("Hình vẽ quỹ đạo của các hành tinh quanh Mặt Trời. Hành tinh ở quỹ đạo được tô đậm (quỹ đạo thứ " + (idx + 1) + " kể từ Mặt Trời) là hành tinh nào?",
+      PLANETS.filter(function (p) { return p !== PLANETS[idx]; }),
+      PLANETS[idx],
+      "Thứ tự các hành tinh từ Mặt Trời ra xa: Sao Thuỷ, Sao Kim, Trái Đất, Sao Hoả, Sao Mộc, Sao Thổ, Sao Thiên Vương, Sao Hải Vương.");
+    q.figure = figK3OrbitSVG(idx, rand(1, 999));
+    return q;
+  }
+  function k5ThermGen() {
+    var value = 5 * rand(0, 10);
+    var wrongs = [value - 10, value - 5, value + 5, value + 10].filter(function (x) { return x >= 0 && x <= 50 && x !== value; });
+    var q = mcqQ("Quan sát nhiệt kế trong hình. Nhiệt kế chỉ bao nhiêu độ C?",
+      shuffle(wrongs).slice(0, 2).map(function (x) { return x + "°C"; }),
+      value + "°C", "Đọc mức thuỷ ngân trên thang chia độ: mỗi vạch nhỏ là 5°C.");
+    q.figure = figK5ThermSVG(value, 0, 50, 5);
+    q.figureOnly = true;
+    return q;
+  }
+  function k5CylGen() {
+    var value = 5 * rand(2, 18);
+    var wrongs = [value - 10, value - 5, value + 5, value + 10].filter(function (x) { return x > 0 && x < 100 && x !== value; });
+    var q = mcqQ("Quan sát ống đong trong hình. Thể tích chất lỏng trong ống là bao nhiêu mi-li-lít?",
+      shuffle(wrongs).slice(0, 2).map(function (x) { return x + " ml"; }),
+      value + " ml", "Đọc ở mức thấp nhất của mặt cong chất lỏng (mặt khum), mắt nhìn ngang mức chất lỏng.");
+    q.figure = figK5CylSVG(value, 100, 10);
+    q.figureOnly = true;
+    return q;
+  }
+  function k5RulerGen() {
+    var len = rand(3, 13);
+    var q = mcqQ("Quan sát hình: một vật đặt khít vạch 0 của thước. Vật dài bao nhiêu xăng-ti-mét?",
+      [len - 1, len + 1, len + 2].map(function (x) { return x + " cm"; }),
+      len + " cm", "Đọc vạch cuối của vật trên thước: vật dài " + len + " cm.");
+    q.figure = figK5RulerSVG(len);
+    q.figureOnly = true;
+    return q;
+  }
+  function k5LeverGen() {
+    var a = rand(1, 4), b = rand(1, 4);
+    if (a === b) b = a === 4 ? 3 : a + 1;
+    var side = Math.random() < 0.5 ? "L" : "R";
+    var armLoad = side === "L" ? a : b, armOther = side === "L" ? b : a;
+    var ans = armOther > armLoad ? "Đầu còn lại hạ xuống" : "Đầu treo vật hạ xuống";
+    var q = mcqQ("Quan sát đòn bẩy trong hình (mỗi vạch là một đoạn bằng nhau, vật nặng treo ở một đầu). Nếu treo thêm một vật nặng y hệt vào đầu còn lại thì đòn bẩy sẽ thế nào?",
+      ["Đòn bẩy vẫn cân bằng", ans === "Đầu còn lại hạ xuống" ? "Đầu treo vật hạ xuống" : "Đầu còn lại hạ xuống"],
+      ans,
+      "Phía có cánh tay đòn dài hơn sẽ có tác dụng làm quay lớn hơn nên hạ xuống. Vật treo cách điểm tựa " + armLoad + " đoạn, đầu còn lại cách " + armOther + " đoạn.");
+    q.figure = figK5LeverSVG(a, b, side);
+    return q;
+  }
+  var t;
+  t = findT("kh6-chat"); if (t) { t.pools.choose.push(k1PanelsGen, k1PanelsGen, k1TransGen, k1TransGen); }
+  t = findT("kh6-honhop"); if (t) { t.pools.choose.push(k1TransGen, k1TransGen); }
+  t = findT("kh6-traidat"); if (t) { t.pools.choose.push(k3CycleGen, k3CycleGen, k3OrbitGen, k3OrbitGen); }
+  t = findT("kh6-modau"); if (t) { t.pools.choose.push(k5ThermGen, k5CylGen, k5RulerGen); }
+  t = findT("kh6-luc"); if (t) { t.pools.choose.push(k5LeverGen, k5LeverGen); }
+})();

@@ -786,10 +786,18 @@ function eng4Pools(u) {
       options: all.map(function (o) { return { html: '<span class="opt-text">' + o + "</span>" }; }), answer: all.indexOf(pat.a), cols: all.length, optStack: true };
   }
   function yesNoGen() {
-    var w = pick(u.words);
-    var truth = Math.random() < 0.5;
-    var shown = truth ? w : (engDistractors(w, ALL_WORDS4, 1)[0] || w);
-    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    /* v16: vòng tranh chỉ dùng từ qua cổng tranh trong unit; thiếu từ thì lùi về TF khẳng định nghĩa (dạng chữ). */
+    var pw = engPicWords(u.words);
+    if (pw.length >= 2) {
+      var w = pick(pw);
+      var truth = Math.random() < 0.5;
+      var shown = truth ? w : (engDistractors(w, u.words, 1, { pic: true, gloss: true })[0] || w);
+      return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-pic">' + picHTML(w) + '</div><div class="big-word">' + shown[0] + "</div>", truth: truth, explain: "Từ đúng là “" + w[0] + "”" }] };
+    }
+    var w2 = pick(u.words);
+    var truth2 = Math.random() < 0.5;
+    var shown2 = truth2 ? w2 : (engDistractors(w2, u.words, 1, { gloss: true })[0] || w2);
+    return { kind: "tf", badge: "🎮 Trò chơi!", prompt: "Đúng hay sai? Chạm nhanh nhé!", rounds: [{ visual: '<div class="big-word">' + w2[0] + '</div><div class="sentence">Nghĩa là “' + shown2[2] + "”</div>", truth: truth2, explain: "“" + w2[0] + "” nghĩa là “" + w2[2] + "”" }] };
   }
   var choose = base.choose.slice();
   if (pats.length) choose.push(patGen, patGen);
@@ -1332,3 +1340,80 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
 });
   if (typeof window.__phaseBProcessGrade === "function") window.__phaseBProcessGrade(4);
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(4);
+
+/* ================= MỤC 9 (v18) — SVG KHOA HỌC: gắn hình K1/K2/K3/K4 cho Khoa học 4 ================= */
+(function () {
+  function findT(id) { return findTopic127(4, id); }
+  var STATE_NAMES = { ran: "thể rắn", long: "thể lỏng", khi: "thể khí" };
+  var STATE_EX = "Hạt xếp khít và có trật tự là thể rắn; hạt khít nhưng lộn xộn là thể lỏng; hạt ở rất xa nhau là thể khí.";
+  function k1PanelsGen() {
+    var order = shuffle(["ran", "long", "khi"].slice());
+    var q;
+    if (Math.random() < 0.5) {
+      var idx = rand(0, 2);
+      q = mcqQ("Quan sát hình ba ô hạt. Ô thứ " + (idx + 1) + " (từ trái sang) cho thấy chất ở thể nào?",
+        ["thể rắn", "thể lỏng", "thể khí"].filter(function (s) { return s !== STATE_NAMES[order[idx]]; }),
+        STATE_NAMES[order[idx]], STATE_EX);
+    } else {
+      var st = pick(["ran", "long", "khi"]), pos = order.indexOf(st) + 1;
+      q = mcqQ("Quan sát hình ba ô hạt. Ô nào cho thấy chất ở " + STATE_NAMES[st] + "?",
+        ["Ô 1", "Ô 2", "Ô 3"].filter(function (s) { return s !== "Ô " + pos; }),
+        "Ô " + pos, STATE_EX);
+    }
+    q.figure = figK1PanelsSVG(order);
+    return q;
+  }
+  function k3CycleGen() {
+    var stages = [["bochoi", "Bốc hơi", "Nước trong ao, hồ, sông bị nắng chiếu nóng, bốc hơi thành hơi nước bay lên."], ["ngungtu", "Ngưng tụ", "Hơi nước lên cao gặp lạnh, ngưng tụ thành giọt nước nhỏ tạo thành mây."], ["mua", "Mưa", "Giọt nước trong mây lớn dần rồi rơi xuống thành mưa."], ["chay", "Chảy về biển", "Nước mưa chảy theo suối, sông rồi về biển."]];
+    var ask = pick(stages);
+    var q = mcqQ("Quan sát vòng tuần hoàn của nước trong hình. Giai đoạn được đánh dấu ? là giai đoạn nào?",
+      stages.filter(function (s) { return s[0] !== ask[0]; }).map(function (s) { return s[1]; }),
+      ask[1], ask[2]);
+    q.figure = figK3CycleSVG(ask[0]);
+    return q;
+  }
+  var CHAINS4 = [
+    ["Cỏ", "Châu chấu", "Ếch", "Rắn"],
+    ["Lúa", "Sâu ăn lá", "Chim", "Mèo"],
+    ["Rong trong ao", "Cá nhỏ", "Cá lớn", "Chim bói cá"],
+    ["Ngô", "Chuột", "Rắn", "Diều hâu"]
+  ];
+  var OUTS4 = ["Bướm", "Ong mật", "Kiến", "Giun đất", "Nhện", "Bọ rùa"];
+  function k2ChainGen() {
+    var chain = pick(CHAINS4);
+    var q;
+    if (Math.random() < 0.6) {
+      var blank = rand(0, chain.length - 1);
+      q = mcqQ("Quan sát chuỗi thức ăn trong hình. Sinh vật ở vị trí ? là sinh vật nào?",
+        shuffle(OUTS4.slice()).slice(0, 2), chain[blank],
+        "Chuỗi thức ăn: " + chain.join(" → ") + ". Mũi tên chỉ chiều năng lượng truyền từ sinh vật bị ăn sang sinh vật ăn nó.");
+      q.figure = figK2ChainSVG(chain, blank, false);
+    } else {
+      var sh = shuffle(chain.slice());
+      q = mcqQ("Các sinh vật trong hình thuộc cùng một chuỗi thức ăn. Sinh vật nào là sinh vật SẢN XUẤT (đứng đầu chuỗi)?",
+        shuffle(chain.slice(1)).slice(0, 2), chain[0],
+        "Sinh vật sản xuất (cây xanh) đứng đầu chuỗi thức ăn: " + chain.join(" → ") + ".");
+      q.figure = figK2ChainSVG(sh, -1, true);
+    }
+    return q;
+  }
+  function k4ShadowGen() {
+    var near = Math.random() < 0.5;
+    var q;
+    if (Math.random() < 0.5) {
+      q = mcqQ("Quan sát hình: nguồn sáng chiếu vào một vật cản, phía sau vật là màn. Vùng tối trên màn được gọi là gì?",
+        ["Vùng sáng", "Ảnh của vật"], "Bóng của vật",
+        "Phần màn không nhận được ánh sáng vì bị vật cản che khuất tạo thành bóng của vật.");
+    } else {
+      q = mcqQ("Quan sát hình: vì sao trên màn xuất hiện một vùng tối sau vật cản?",
+        ["Vì màn tự phát ra màu tối", "Vì nguồn sáng bị tắt"], "Vì vật cản che khuất ánh sáng, vùng đó không nhận được ánh sáng",
+        "Ánh sáng truyền theo đường thẳng; vật cản che mất ánh sáng nên phía sau vật có vùng tối là bóng của vật.");
+    }
+    q.figure = figK4ShadowSVG(near);
+    return q;
+  }
+  var t;
+  t = findT("kh4-chat"); if (t) { t.pools.choose.push(k1PanelsGen, k1PanelsGen, k3CycleGen); }
+  t = findT("kh4-chuoithucan"); if (t) { t.pools.choose.push(k2ChainGen, k2ChainGen, k2ChainGen); }
+  t = findT("kh4-nangluong"); if (t) { t.pools.choose.push(k4ShadowGen, k4ShadowGen); }
+})();

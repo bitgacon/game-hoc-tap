@@ -650,6 +650,7 @@ function gtBindTopicCards() {
 }
 function gtRenderDovui() {
   window.__gtView = "item";
+  window.__gtCardQuiz = null;
   var html = '<div class="topbar"><div><h2>🌾 Đố vui dân gian</h2><p>Câu đố truyền thống của ông cha — đoán được đáp án là một niềm vui, biết thêm cách giải mã hình ảnh ẩn dụ còn vui hơn!</p></div></div>';
   window.__GT_TOPICS.forEach(function (t) { if (t.id === "gt-dovui") html += gtTopicCardHtml(t); });
   document.getElementById("gt-body").innerHTML = html;
@@ -658,15 +659,22 @@ function gtRenderDovui() {
 function gtRenderLichSu() {
   window.__gtView = "item";
   window.__gtDetail = null;
+  window.__gtCardQuiz = null;
+  var cState = (typeof cardsLoad === "function") ? cardsLoad() : { viewed: {}, unlocked: {} };
+  var nUnlocked = Object.keys(cState.unlocked || {}).length;
   var html = '<div class="topbar"><div><h2>🏯 Tìm hiểu lịch sử</h2><p>Đọc các câu chuyện theo dòng thời gian rồi thử sức với ngân hàng câu hỏi từ bảng sự kiện đã kiểm chứng.</p></div></div>';
   window.__GT_TOPICS.forEach(function (t) { if (t.id === "gt-lichsu") html += gtTopicCardHtml(t); });
+  html += '<div class="btn-row" style="margin:10px 0"><button class="btn ghost" id="gt-open-album">📖 Album thẻ anh hùng — Đã sưu tập ' + nUnlocked + '/12</button></div>';
   html += '<h3 class="gt-cards-title">🗺️ Hành trình lịch sử qua 12 thẻ khám phá</h3><div class="gt-card-grid">';
   GT_CARDS.forEach(function (c, i) {
-    html += '<button class="gt-explore-card" data-gt-card="' + gtEsc(c.id) + '"><span class="gt-explore-ic">' + c.icon + '</span><span class="gt-explore-tx"><b>' + (i + 1) + ". " + gtEsc(c.title) + '</b><small>' + gtEsc(c.nam) + " · " + gtEsc(c.noi) + "</small></span></button>";
+    var mark = cState.unlocked[c.id] ? ' <span class="gt-card-mark">🃏 Đã sưu tập</span>' : (cState.viewed[c.id] ? ' <span class="gt-card-mark">👁 Đã mở</span>' : "");
+    html += '<button class="gt-explore-card" data-gt-card="' + gtEsc(c.id) + '"><span class="gt-explore-ic">' + c.icon + '</span><span class="gt-explore-tx"><b>' + (i + 1) + ". " + gtEsc(c.title) + '</b><small>' + gtEsc(c.nam) + " · " + gtEsc(c.noi) + "</small>" + mark + "</span></button>";
   });
   html += "</div>";
   document.getElementById("gt-body").innerHTML = html;
   gtBindTopicCards();
+  var ab = document.getElementById("gt-open-album");
+  if (ab) ab.addEventListener("click", function () { gtRenderAlbum(); });
   document.querySelectorAll("[data-gt-card]").forEach(function (b) {
     b.addEventListener("click", function () { gtOpenCard(b.getAttribute("data-gt-card")); });
   });
@@ -675,6 +683,8 @@ function gtOpenCard(cardId) {
   var c = null; GT_CARDS.forEach(function (x) { if (x.id === cardId) c = x; });
   if (!c) return;
   window.__gtDetail = c;
+  window.__gtCardQuiz = null;
+  if (typeof cardsMarkViewed === "function") cardsMarkViewed(c.id);
   var html = '<div class="topbar"><div><h2>' + c.icon + " " + gtEsc(c.title) + "</h2></div></div>";
   html += '<button class="btn ghost" id="gt-card-back">← Về danh sách thẻ</button>';
   html += '<div class="gt-story">' + gtEsc(c.story) + "</div>";
@@ -684,6 +694,9 @@ function gtOpenCard(cardId) {
   document.getElementById("gt-card-back").addEventListener("click", function () { window.__gtDetail = null; gtRenderLichSu(); });
   document.getElementById("gt-card-quiz").addEventListener("click", function () {
     var base = window.__gtFindTopic("gt-lichsu"); if (!base) return;
+    /* V14 — Bộ sưu tập: ghi nhận lượt quiz của thẻ này; khi vòng kết thúc,
+       móc saveRoundResult đối chiếu sao ≥3/4 để mở khoá thẻ. */
+    window.__gtCardQuiz = { cardId: c.id, total: c.qs.length, title: "🏯 " + c.title };
     var gens = c.qs.map(function (f) { return gtStaticGen(f, "🏯 Thẻ: " + c.title); });
     var temp = { id: "gt-lichsu", name: "🏯 " + c.title, tag: base.tag, advanced: false, hideNameInGame: false,
       pools: { choose: gens, blank: [], match: [], games: [] }, knowledge: base.knowledge };
@@ -694,8 +707,1290 @@ window.__GT = {
   subj: GT_SUBJ, topics: GT_SUBJ.topics, cards: GT_CARDS, events: GT_EVENTS, riddles: GT_RIDDLES,
   findTopic: window.__gtFindTopic,
   renderDovui: gtRenderDovui, renderLichSu: gtRenderLichSu, openCard: gtOpenCard,
+  renderRungChuong: rcvRenderIntro, renderAlbum: gtRenderAlbum,
+  rcv: RCV_API, cardsApi: { load: cardsLoad, markViewed: cardsMarkViewed, tryUnlock: cardsTryUnlock },
   handleBack: function () {
+    if (typeof RCV !== "undefined" && RCV && RCV.phase === "play") { rcvAbortRun(); rcvRenderIntro(); return true; }
+    if (typeof RCV !== "undefined" && RCV && (RCV.phase === "intro" || RCV.phase === "end")) { RCV.phase = "idle"; return false; }
     if (window.__gtDetail) { window.__gtDetail = null; gtRenderLichSu(); return true; }
     return false;
   }
 };
+
+
+/* ================================================================
+   V14 — RUNG CHUÔNG VÀNG (chơi đơn) + BỘ SƯU TẬP THẺ ANH HÙNG
+   Đặc tả: DAC-TA-RUNG-CHUONG-VANG.md (anh vu chốt 2026-10-16).
+   Toàn bộ logic nằm trong tệp lười này; vỏ chỉ thêm: thẻ thư mục +
+   điều hướng, 4 định nghĩa huy hiệu, 2 dòng Nhật ký (đọc key mới).
+   ================================================================ */
+var RCV_LS = "gameHocTap_rcv_v1";
+var CARDS_LS = "gameHocTap_cards_v1";
+function v14Load(key, def) { try { var v = JSON.parse(localStorage.getItem(key) || "null"); return v == null ? def : v; } catch (e) { return def; } }
+function v14Save(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+function rcvLoadRec() {
+  var r = v14Load(RCV_LS, null);
+  if (!r || typeof r !== "object") r = {};
+  if (typeof r.best !== "number") r.best = 0;
+  if (typeof r.runs !== "number") r.runs = 0;
+  if (typeof r.bells !== "number") r.bells = 0;
+  if (typeof r.badge !== "number") r.badge = 0;
+  if (!Array.isArray(r.recent)) r.recent = [];
+  return r;
+}
+function cardsLoad() {
+  var c = v14Load(CARDS_LS, null);
+  if (!c || typeof c !== "object") c = {};
+  if (!c.viewed || typeof c.viewed !== "object") c.viewed = {};
+  if (!c.unlocked || typeof c.unlocked !== "object") c.unlocked = {};
+  return c;
+}
+function cardsMarkViewed(id) {
+  var c = cardsLoad();
+  if (!c.viewed[id]) { c.viewed[id] = Date.now(); v14Save(CARDS_LS, c); }
+}
+function gtCardTitle(id) { var t = ""; GT_CARDS.forEach(function (x) { if (x.id === id) t = x.title; }); return t; }
+/* Mở khoá 1 thẻ: đã MỞ thẻ + quiz 4 câu đạt ≥3 sao (đúng ngay lần đầu) trong
+   đúng một vòng 4 câu. Trả true nếu vừa mở khoá mới. */
+function cardsTryUnlock(id, stars, total) {
+  var c = cardsLoad();
+  if (c.unlocked[id]) return false;
+  if (!c.viewed[id]) return false;
+  if (total !== 4 || stars < 3) return false;
+  c.unlocked[id] = Date.now();
+  v14Save(CARDS_LS, c);
+  if (window.__a1 && window.__a1.checkBadges) { try { window.__a1.checkBadges(); } catch (e) {} }
+  return true;
+}
+/* Thông báo nổi tự chứa (không đụng vỏ). */
+function gtToast(msg) {
+  var box = document.getElementById("gt-toasts");
+  if (!box) {
+    box = document.createElement("div"); box.id = "gt-toasts";
+    box.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,480px)";
+    document.body.appendChild(box);
+  }
+  var t = document.createElement("div");
+  t.style.cssText = "background:#fffdf6;border:3px solid #ffb703;color:#33302a;border-radius:16px;padding:10px 18px;font-weight:800;font-size:17px;box-shadow:0 10px 26px rgba(90,70,20,.25);text-align:center;transition:opacity .35s";
+  t.textContent = msg;
+  box.appendChild(t);
+  setTimeout(function () { t.style.opacity = "0"; setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 420); }, 4300);
+}
+/* Móc cuối vòng quiz thẻ: bọc saveRoundResult của vỏ (vỏ vẫn tính sao +
+   best như cũ); chỉ khi đang có lượt quiz thẻ chờ và vòng kết thúc đúng
+   4 câu của đúng thẻ đó mới đối chiếu mở khoá. */
+(function installGtQuizHook() {
+  if (window.__gtQuizHookInstalled) return;
+  window.__gtQuizHookInstalled = true;
+  var orig = window.saveRoundResult;
+  if (typeof orig !== "function") return;
+  window.saveRoundResult = function (stars) {
+    var r = orig.apply(this, arguments);
+    try {
+      var pend = window.__gtCardQuiz;
+      if (pend) {
+        var key = (typeof currentTopicKey !== "undefined" && currentTopicKey) ? String(currentTopicKey) : "";
+        var g = (typeof game !== "undefined") ? game : null;
+        if (key.indexOf("|giaitri|gt-lichsu") !== -1 && g) {
+          if (g.noMoreQuestions && g.idx === pend.total && g.title === pend.title) {
+            if (cardsTryUnlock(pend.cardId, stars, g.idx)) gtToast("🃏 Đã sưu tập thẻ: " + gtCardTitle(pend.cardId) + "!");
+          } else if (!g.noMoreQuestions || g.idx !== pend.total) {
+            window.__gtCardQuiz = null; /* vòng khác/không trọn 4 câu: huỷ chờ */
+          }
+        } else if (key.indexOf("giaitri") === -1) window.__gtCardQuiz = null;
+      }
+    } catch (e) {}
+    return r;
+  };
+})();
+/* ---------- CSS riêng V14 (tiền tố rcv- / album) ---------- */
+(function v14Style() {
+  if (document.getElementById("v14-style")) return;
+  var st = document.createElement("style"); st.id = "v14-style";
+  st.textContent = [
+    ".gt-card-mark{font-size:12px;font-weight:800;color:#b45309}",
+    ".rcv-ladder{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0 14px}",
+    ".rcv-rung{min-width:40px;padding:5px 0;text-align:center;border-radius:10px;border:2px solid var(--line,#f0dfba);background:#fffdf6;font-weight:800;font-size:14px;color:#6f675a}",
+    ".rcv-rung.done{background:#d9f2d9;border-color:#58a05c;color:#256b2e}",
+    ".rcv-rung.cur{background:#ffb703;border-color:#e07b39;color:#4a2c00;box-shadow:0 3px 0 #e07b39}",
+    ".rcv-rung.fail{background:#f8d7d7;border-color:#d64545;color:#8c1f1f}",
+    ".rcv-topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px}",
+    ".rcv-timer{position:relative;width:64px;height:64px;flex:0 0 auto}",
+    ".rcv-timer svg{transform:rotate(-90deg)}",
+    ".rcv-timer .rcv-tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px}",
+    ".rcv-timer.low .rcv-tnum{color:#c22525}",
+    ".rcv-life{display:flex;gap:8px;flex-wrap:wrap}",
+    ".rcv-life button{font-family:inherit;font-weight:800;font-size:15px;border:3px solid var(--line,#f0dfba);background:#fffdf6;border-radius:14px;padding:9px 13px;cursor:pointer;color:#33302a}",
+    ".rcv-life button:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through}",
+    ".rcv-meta{font-weight:700;color:var(--ink-soft,#6f675a);font-size:15px}",
+    ".rcv-qcard{background:var(--card,#fff);border:3px solid var(--line,#f0dfba);border-radius:22px;padding:20px;box-shadow:0 8px 24px rgba(90,70,20,.10)}",
+    ".rcv-prompt{font-size:clamp(19px,4.6vw,25px);font-weight:800;line-height:1.4;margin:6px 0 10px}",
+    ".rcv-visual{font-size:18px;margin:6px 0 12px;background:#ffffff;border:3px solid var(--line,#f0dfba);border-radius:18px;padding:10px 12px;color:#33302a}",
+    ".rcv-visual .q-figure{background:transparent;border:none;padding:0;margin:0}",
+    ".rcv-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}",
+    "@media (max-width:560px){.rcv-opts{grid-template-columns:1fr}}",
+    ".rcv-opt{font-family:inherit;text-align:left;font-size:17px;font-weight:700;border:3px solid var(--line,#f0dfba);background:#fffdf6;border-radius:16px;padding:13px 15px;cursor:pointer;color:#33302a;line-height:1.35}",
+    ".rcv-opt:hover{border-color:#ffb703}",
+    ".rcv-opt.right{background:#d9f2d9;border-color:#58a05c}",
+    ".rcv-opt.wrong{background:#f8d7d7;border-color:#d64545}",
+    ".rcv-opt.fifty-off{visibility:hidden}",
+    ".rcv-opt:disabled{cursor:default;opacity:.92}",
+    ".rcv-feedback{font-size:18px;font-weight:800;margin-top:12px;min-height:24px}",
+    ".rcv-review{margin-top:14px;display:flex;flex-direction:column;gap:12px}",
+    ".rcv-ritem{background:#fffdf6;border:3px solid var(--line,#f0dfba);border-radius:16px;padding:13px 15px}",
+    ".rcv-ritem.fell{border-color:#d64545;background:#fff5f1}",
+    ".rcv-ritem .rq{font-weight:800;font-size:18px;line-height:1.45;color:#33302a}",
+    ".rcv-ritem .ro{font-size:17px;font-weight:600;margin:3px 0;color:#33302a}",
+    ".rcv-ritem .ro.ok{color:#256b2e}",
+    ".rcv-ritem .ro.bad{color:#a33307}",
+    ".rcv-ritem .re{font-size:16px;font-weight:600;color:#4c463c;margin-top:5px;line-height:1.45}",
+    ".rcv-speak-btn{font-family:inherit;font-size:14px;font-weight:800;padding:7px 12px;border-radius:11px;border:2px solid var(--line,#f0dfba);background:#fffdf6;color:#33302a;cursor:pointer;margin-top:8px}",
+    ".rcv-ritem .rcv-meta{color:#5a5344}",
+    ".rcv-end-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:stretch}",
+    "#rcv-again,#rcv-to-dir{font-family:inherit;font-size:19px;font-weight:800;padding:15px 24px;min-height:56px;border-radius:18px;cursor:pointer;line-height:1.25}",
+    "#rcv-again{background:#58a05c;color:#fff;border:3px solid #3c7240;box-shadow:0 5px 0 #3c7240}",
+    "#rcv-to-dir{background:#fffdf6;color:#33302a;border:3px solid #e07b39;box-shadow:0 5px 0 #e07b39}",
+    "#rcv-again:active,#rcv-to-dir:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}",
+    ".rcv-next{display:block;width:100%;margin-top:14px;font-family:inherit;font-size:20px;font-weight:900;padding:16px 24px;min-height:58px;border-radius:18px;background:#ffb703;color:#4a2c00;border:3px solid #e07b39;box-shadow:0 5px 0 #e07b39;cursor:pointer}",
+    ".rcv-next:active{transform:translateY(3px);box-shadow:0 2px 0 #e07b39}",
+    ".album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px}",
+    ".album-cell{border:3px solid var(--line,#f0dfba);border-radius:18px;padding:14px 12px;text-align:center;background:#fffdf6;font-family:inherit}",
+    "button.album-cell{cursor:pointer;width:100%}",
+    "button.album-cell:hover{border-color:#e8871e}",
+    ".album-cell.locked{opacity:.62;filter:grayscale(.7)}",
+    ".album-ic{font-size:38px;line-height:1.1;display:block}",
+    ".album-name{font-weight:800;font-size:15px;display:block;margin-top:5px;line-height:1.3}",
+    ".album-sub{font-size:12.5px;font-weight:600;color:var(--ink-soft,#6f675a);display:block;margin-top:3px;line-height:1.35}"
+  ].join("\n");
+  (document.head || document.body).appendChild(st);
+})();
+
+/* ---------- V15 bổ sung — phóng to MENU Đố vui dân gian + Tìm hiểu lịch sử ----------
+   Anh vu: "các menu của mục đố vui dân gian và lịch sử cũng nhỏ cần sửa".
+   Cơ chế trước: thẻ chủ đề của hai màn menu dùng các lớp .cd-topic-* /
+   .btn / .btn-row KHÔNG có quy tắc CSS ở bất cứ đâu trong cây (đợt sửa
+   trước chỉ định nghĩa riêng nút kết thúc RCV theo ID) → tên mục, nút
+   "Chơi ngay/Kiến thức", nút mở Album, nút của màn thẻ rơi về mặc định
+   trình duyệt (~13px, vùng bấm thấp). Khối này CHỈ thêm một style mới
+   ngay trong tệp lười này (không sửa khối v14-style, không sửa
+   index.html), đồng bộ chuẩn RCV mới (chữ ≥17px, vùng bấm ≥50px):
+   - Mọi quy tắc khoanh trong #gt-body → chỉ chạm các màn Góc giải trí.
+   - Nút kết thúc RCV đã QA độc lập (#rcv-again / #rcv-to-dir) và hàng
+     nút của chúng (.rcv-end-btns) bị loại trừ tường minh bằng :not()
+     để giữ nguyên từng giá trị đã kiểm chứng ở đợt trước. */
+(function v15GtMenuStyle() {
+  if (document.getElementById("v15-gtmenu-style")) return;
+  var st = document.createElement("style"); st.id = "v15-gtmenu-style";
+  st.textContent = [
+    "#gt-body .btn-row:not(.rcv-end-btns){display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}",
+    "#gt-body .btn:not(#rcv-again):not(#rcv-to-dir){font-family:inherit;font-size:18px;font-weight:800;padding:14px 22px;min-height:54px;border-radius:16px;cursor:pointer;line-height:1.3;display:inline-flex;align-items:center;justify-content:center;gap:8px}",
+    "#gt-body .btn.success:not(#rcv-again):not(#rcv-to-dir){background:#58a05c;color:#fff;border:3px solid #3c7240;box-shadow:0 4px 0 #3c7240}",
+    "#gt-body .btn.ghost:not(#rcv-again):not(#rcv-to-dir){background:#fffdf6;color:#33302a;border:3px solid #e07b39;box-shadow:0 4px 0 #e07b39}",
+    "#gt-body .btn:not(#rcv-again):not(#rcv-to-dir):active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.25)}",
+    "#gt-body .cd-topic{background:var(--card,#fff);border:3px solid var(--line,#f0dfba);border-radius:18px;padding:16px 18px;margin:0 0 14px;box-shadow:0 6px 18px rgba(90,70,20,.08)}",
+    "#gt-body .cd-topic-name{font-size:20px;font-weight:800;line-height:1.3}",
+    "#gt-body .cd-topic-tag{font-size:16px;font-weight:600;color:var(--ink-soft,#6f675a);margin-top:4px;line-height:1.45}",
+    "#gt-body .cd-topic-best{font-size:16px;font-weight:700;margin:8px 0 12px}",
+    "#gt-body .gt-explore-card{padding:15px 16px;min-height:72px}",
+    "#gt-body .gt-explore-ic{font-size:34px}",
+    "#gt-body .gt-explore-tx b{font-size:18px}",
+    "#gt-body .gt-explore-tx small{font-size:15px}",
+    "#gt-body .gt-card-mark{font-size:14px}",
+    "#gt-body .gt-factbox{font-size:17px}",
+    "#gt-body .album-name{font-size:17px}",
+    "#gt-body .album-sub{font-size:14px}"
+  ].join("\n");
+  (document.head || document.body).appendChild(st);
+})();
+
+
+/* ================================================================
+   PHẦN 2A — ALBUM THẺ ANH HÙNG
+   ================================================================ */
+function gtRenderAlbum() {
+  window.__gtView = "item";
+  window.__gtDetail = null;
+  window.__gtCardQuiz = null;
+  var c = cardsLoad();
+  var n = Object.keys(c.unlocked).length;
+  var html = '<div class="topbar"><div><h2>📖 Album thẻ anh hùng</h2><p>Mở một thẻ khám phá trong mục Tìm hiểu lịch sử và đạt bài quiz kèm theo (ít nhất 3/4 câu đúng ngay lần đầu) để sưu tập thẻ vào album.</p></div></div>';
+  html += '<p class="gt-cards-title" style="margin-top:4px">Đã sưu tập ' + n + '/12 thẻ' + (n === 12 ? " — đủ bộ rồi, giỏi quá! 🃏" : "") + "</p>";
+  html += '<div class="album-grid">';
+  GT_CARDS.forEach(function (cd, i) {
+    if (c.unlocked[cd.id]) {
+      html += '<button class="album-cell" data-album-open="' + gtEsc(cd.id) + '"><span class="album-ic">' + cd.icon + '</span><span class="album-name">' + (i + 1) + ". " + gtEsc(cd.title) + '</span><span class="album-sub">' + gtEsc(cd.nam) + " · " + gtEsc(cd.noi) + "<br>👤 " + gtEsc(cd.nhanvat) + "</span></button>";
+    } else {
+      html += '<div class="album-cell locked"><span class="album-ic">🂠</span><span class="album-name">Thẻ chưa mở</span><span class="album-sub">Mở thẻ «' + gtEsc(cd.title) + '» và đạt quiz để sưu tập</span></div>';
+    }
+  });
+  html += "</div>";
+  html += '<div class="btn-row" style="margin-top:14px"><button class="btn ghost" id="album-to-ls">🏯 Đến Tìm hiểu lịch sử</button></div>';
+  document.getElementById("gt-body").innerHTML = html;
+  document.querySelectorAll("[data-album-open]").forEach(function (b) {
+    b.addEventListener("click", function () { gtOpenCard(b.getAttribute("data-album-open")); });
+  });
+  var bl = document.getElementById("album-to-ls");
+  if (bl) bl.addEventListener("click", function () { gtRenderLichSu(); });
+}
+
+/* ================================================================
+   PHẦN 1 — RUNG CHUÔNG VÀNG (RCV)
+   Bộ máy tự chứa: thang 15 câu choose rút từ ngân hàng lớp của hồ sơ,
+   đồng hồ đếm ngược, 3 trợ giúp, xem lại cuối lượt. KHÔNG cộng sao;
+   câu sai vào Ôn câu sai qua window.__a1.captureWrong (đúng pipeline).
+   ================================================================ */
+var RCV = {
+  phase: "idle", grade: 0, items: [], rung: 0, passed: 0, cur: null,
+  lifelines: { fifty: false, swap: false, hint: false },
+  locked: false, waiting: false, timerId: null, deadline: 0, remainMs: 0,
+  history: [], usedKeys: {}, usedFacts: {}, fiftyRemoved: [], runId: 0, badgeBefore: 0
+};
+var RCV_TRANSITION = { correct: 900, wrong: 1500 };
+function rcvTextOf(html) {
+  var d = document.createElement("div");
+  d.innerHTML = String(html == null ? "" : html);
+  return (d.textContent || "").replace(/\s+/g, " ").trim();
+}
+function rcvIsListening(q) {
+  if (!q) return true;
+  if (q.speak || q.autoSpeak) return true;
+  var p = rcvTextOf(q.prompt || "");
+  if (/^nghe\b/i.test(p) || /vừa nghe/i.test(p)) return true;
+  return false;
+}
+/* Chuyển 1 câu của engine thành câu RCV: chỉ choose, qua cổng
+   prepareRoundQuestion, đúng 4 lựa chọn, đáp án đúng ≤60 ký tự. */
+function rcvConvert(q, meta) {
+  if (!q || q.pairs || q.items || q.rounds) return null;
+  if (q.kind === "blank" || q.blankText) return null;
+  if (!q.options || typeof q.answer !== "number" || !q.options[q.answer]) return null;
+  if (rcvIsListening(q)) return null;
+  if (typeof prepareRoundQuestion !== "function" || !prepareRoundQuestion(q)) return null;
+  if (!q.options || q.options.length < 4 || typeof q.answer !== "number" || !q.options[q.answer]) return null;
+  var optsHtml = q.options.map(function (o) { return o && o.html != null ? String(o.html) : String(o == null ? "" : o); });
+  var disp = rcvTextOf(q.prompt || "") + " " + rcvTextOf(q.visual || "") + " " + optsHtml.map(rcvTextOf).join(" ");
+  if (/undefined|NaN|\[object/.test(disp)) return null;
+  var correctText = rcvTextOf(optsHtml[q.answer]);
+  if (!correctText || correctText.length > 60) return null;
+  var key = null;
+  try { key = roundQuestionKey(q); } catch (e) {}
+  if (!key) return null;
+  var factKey = null;
+  if (q.roundIdentity && q.roundIdentity.facts && q.roundIdentity.facts.length) {
+    try { factKey = q.roundIdentity.facts.map(function (f) { return roundFact(f); }).sort().join("§"); } catch (e) {}
+  }
+  var ai = q.answer;
+  var others = optsHtml.filter(function (_, i) { return i !== ai; });
+  gtShuffle(others);
+  if (others.length < 3) return null;
+  var picked = [{ h: optsHtml[ai], ok: true }].concat(others.slice(0, 3).map(function (h) { return { h: h, ok: false }; }));
+  var all = gtShuffle(picked);
+  return {
+    prompt: q.prompt || "", visual: q.visual || "", figure: q.figure || "",
+    options: all.map(function (o) { return o.h; }),
+    answer: all.findIndex(function (o) { return o.ok; }),
+    explain: q.explain || "",
+    grade: meta.grade, subjId: meta.subj.id, subjName: meta.subj.name,
+    topicId: meta.topic.id, topicName: meta.topic.name,
+    topicRef: meta.topic, subjRef: meta.subj, tier: meta.tier,
+    key: key, factKey: factKey, rung: 0
+  };
+}
+function rcvPoolsFor(grade) {
+  var G = (typeof GRADES !== "undefined") ? GRADES[grade] : null;
+  if (!G) return null;
+  var std = [], adv = [];
+  G.subjects.forEach(function (s) {
+    (s.topics || []).forEach(function (t) {
+      if (t.pools && (t.pools.choose || []).length) std.push({ subj: s, topic: t });
+      if (t.advPools && (t.advPools.choose || []).length) adv.push({ subj: s, topic: t });
+    });
+  });
+  return { std: std, adv: adv };
+}
+/* MỤC 9 (v16): nhật ký các lần phải dùng câu dự phòng LỘ LOẠI khi dựng
+   lượt RCV (chỉ xảy ra khi cả chặng không còn câu sạch cùng tiêu chí). */
+var rcvLeakLog = [];
+function rcvDrawFrom(entry, tier, usedKeys, usedFacts, avoidSet, ctr) {
+  var pools = tier === "adv" ? entry.topic.advPools : entry.topic.pools;
+  var gens = (pools && pools.choose) || [];
+  if (!gens.length) return null;
+  var order = gtShuffle(gens.slice());
+  for (var i = 0; i < order.length; i++) {
+    for (var a = 0; a < 2; a++) {
+      if (ctr) { ctr.n++; if (ctr.n > 600) return null; }
+      var q = null;
+      try { q = order[i](); } catch (e) { continue; }
+      var it = rcvConvert(q, { grade: RCV.grade, subj: entry.subj, topic: entry.topic, tier: tier });
+      if (!it) continue;
+      if (usedKeys[it.key]) continue;
+      if (it.factKey && usedFacts[it.factKey]) continue;
+      if (avoidSet && avoidSet[it.key]) continue;
+      var lk = null;
+      try { if (typeof __typeLeak !== "undefined" && __typeLeak) lk = __typeLeak.leakInfo(it.options.map(rcvTextOf), it.answer); } catch (e) {}
+      if (lk && lk.eligible && lk.leak) {
+        if (ctr && (!ctr.leakCand || (!ctr.leakCandSoft && !lk.leakMerged))) { ctr.leakCand = it; ctr.leakCandSoft = !lk.leakMerged; }
+        continue;
+      }
+      return it;
+    }
+  }
+  return null;
+}
+function rcvDrawSlot(pools, tier, usedKeys, usedFacts, recentSet) {
+  var list = tier === "adv" ? pools.adv : pools.std;
+  if (!list.length) return null;
+  var ctr = { n: 0 };
+  for (var pass = 0; pass < 2; pass++) {
+    var order = gtShuffle(list.slice());
+    for (var i = 0; i < order.length; i++) {
+      var it = rcvDrawFrom(order[i], tier, usedKeys, usedFacts, pass === 0 ? recentSet : null, ctr);
+      if (it) return it;
+      if (ctr.n > 600) break;
+    }
+  }
+  /* Hết câu sạch trong cả khe: dùng câu lộ loại nhẹ nhất đã gặp trong
+     lần rút này (ghi nhật ký) thay vì để lượt dựng thất bại. */
+  if (ctr.leakCand) {
+    rcvLeakLog.push({ grade: RCV.grade, tier: tier, topicId: ctr.leakCand.topicId });
+    return ctr.leakCand;
+  }
+  return null;
+}
+/* Dựng trọn thang 15 câu cho một lượt. Trả {items, usedKeys, usedFacts,
+   fallbacks} hoặc {error:"het-cau", at:nấc}. */
+function rcvBuildRun(grade) {
+  RCV.grade = grade;
+  var pools = rcvPoolsFor(grade);
+  if (!pools || (!pools.std.length && !pools.adv.length)) return { error: "no-bank" };
+  var rec = rcvLoadRec();
+  var recentSet = {};
+  rec.recent.forEach(function (k) { recentSet[k] = 1; });
+  var usedKeys = {}, usedFacts = {}, items = [], fallbacks = 0;
+  var leakLogBefore = rcvLeakLog.length;
+  var prevKey = null, oldFlag = false;
+  try { prevKey = currentTopicKey; } catch (e) {}
+  try { oldFlag = roundSelectionActive; } catch (e) {}
+  try {
+    try { roundSelectionActive = true; } catch (e) {}
+    for (var rung = 1; rung <= 15; rung++) {
+      var want = rung <= 5 ? "std" : (rung <= 10 ? (Math.random() < 0.4 ? "adv" : "std") : "adv");
+      var it = rcvDrawSlot(pools, want, usedKeys, usedFacts, recentSet);
+      if (!it && want !== "std") { it = rcvDrawSlot(pools, "std", usedKeys, usedFacts, recentSet); if (it) fallbacks++; }
+      if (!it && want !== "adv") { it = rcvDrawSlot(pools, "adv", usedKeys, usedFacts, recentSet); if (it) fallbacks++; }
+      if (!it) return { error: "het-cau", at: rung, fallbacks: fallbacks };
+      it.rung = rung;
+      usedKeys[it.key] = 1;
+      if (it.factKey) usedFacts[it.factKey] = 1;
+      items.push(it);
+    }
+  } finally {
+    try { roundSelectionActive = oldFlag; } catch (e) {}
+    try { currentTopicKey = prevKey; } catch (e) {}
+  }
+  return { items: items, usedKeys: usedKeys, usedFacts: usedFacts, fallbacks: fallbacks, leakFallbacks: rcvLeakLog.length - leakLogBefore };
+}
+function rcvTimeFor(rung, grade) {
+  var base = rung <= 5 ? 20 : (rung <= 10 ? 25 : 30);
+  if (grade >= 3 && grade <= 5) base += 10;
+  return base;
+}
+function rcvBadgeName(ms) { return ms >= 15 ? "🥇 Chuông vàng" : ms >= 10 ? "🥈 Chuông bạc" : ms >= 5 ? "🥉 Chuông đồng" : ""; }
+/* ---------------- màn giới thiệu ---------------- */
+function rcvRenderIntro() {
+  window.__gtView = "item";
+  window.__gtDetail = null;
+  window.__gtCardQuiz = null;
+  RCV.phase = "intro";
+  var g = (typeof profile !== "undefined" && profile) ? (profile.grade || 1) : 1;
+  var rec = rcvLoadRec();
+  var earned = (window.__a1 && window.__a1.loadBadges) ? (window.__a1.loadBadges().earned || {}) : {};
+  function bdg(id, label) {
+    return earned[id] ? "✅ " + label : "⬜ " + label;
+  }
+  var html = '<div class="topbar"><div><h2>🔔 Rung chuông vàng</h2><p>Thử thách 15 câu hỏi từ ngân hàng của lớp em. Sai một câu (hoặc hết giờ) là dừng lại ở nấc đó — qua nấc 5 nhận Chuông đồng, nấc 10 Chuông bạc, hết nấc 15 là rung được Chuông vàng!</p></div></div>';
+  html += '<div class="rcv-qcard">' +
+    '<p class="rcv-meta">📏 Mỗi câu có đồng hồ đếm ngược (20–30 giây, lớp 3–5 được cộng thêm 10 giây). Trong lúc thử thách sẽ không dừng giải thích — cuối lượt em xem lại toàn bộ câu và giải thích.</p>' +
+    '<p class="rcv-meta">🆘 Ba quyền trợ giúp, mỗi quyền dùng 1 lần trong lượt: <b>50:50</b> xoá 2 đáp án sai • <b>Đổi câu</b> lấy câu khác cùng chặng • <b>Gợi ý</b> mở lại hộp kiến thức của chủ đề.</p>' +
+    '<p class="rcv-meta">📚 Câu nào sai sẽ được đưa vào Ôn câu sai để em ôn lại sau. Chế độ này không cộng sao — phần thưởng là huy hiệu và kỷ lục thử thách!</p>' +
+    '<div class="a2-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0">' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🏔️ Nấc cao nhất<br><b style="font-size:20px">' + rec.best + '/15</b></div>' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🎮 Lượt đã chơi<br><b style="font-size:20px">' + rec.runs + "</b></div>" +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🔔 Lần rung chuông<br><b style="font-size:20px">' + rec.bells + "</b></div>" +
+    "</div>" +
+    '<p class="rcv-meta">' + bdg("rcv-bronze", "🥉 Chuông đồng (qua nấc 5)") + " &nbsp; " + bdg("rcv-silver", "🥈 Chuông bạc (qua nấc 10)") + " &nbsp; " + bdg("rcv-gold", "🥇 Chuông vàng (hết 15 nấc)") + "</p>";
+  if (g < 3) {
+    html += '<p class="rcv-feedback" style="color:#a33307">🌱 Chế độ này dành cho anh chị lớp 3 trở lên. Em luyện thêm ở các mục khác rồi quay lại khi lên lớp 3 nhé!</p>';
+  } else {
+    html += '<div class="btn-row" style="margin-top:12px"><button class="btn success" id="rcv-start">🔔 Bắt đầu thử thách (Lớp ' + g + ")</button></div>";
+  }
+  html += "</div>";
+  document.getElementById("gt-body").innerHTML = html;
+  var sb = document.getElementById("rcv-start");
+  if (sb) sb.addEventListener("click", function () { rcvStart(); });
+}
+/* ---------------- vòng chơi ---------------- */
+function rcvStart() {
+  var g = (typeof profile !== "undefined" && profile) ? (profile.grade || 1) : 1;
+  if (g < 3) { rcvRenderIntro(); return; }
+  var begin = function () {
+    /* v18 P2/P3: lượt RCV phải dựng trên ngân hàng đầy đủ (cả nấc nâng
+       cao 11–15) — hoàn tất đồng bộ Phase C + nửa nâng cao Phase B. */
+    if (typeof window.__ensureCompleteGrade === "function") { try { window.__ensureCompleteGrade(g); } catch (e) {} }
+    if (typeof window.__ensureAdvGrade === "function") { try { window.__ensureAdvGrade(g); } catch (e) {} }
+    var built = rcvBuildRun(g);
+    if (!built || built.error) {
+      gtToast("Chưa dựng được lượt chơi — em thử lại nhé!");
+      return;
+    }
+    RCV.items = built.items; RCV.usedKeys = built.usedKeys; RCV.usedFacts = built.usedFacts;
+    RCV.rung = 1; RCV.passed = 0; RCV.cur = null;
+    RCV.lifelines = { fifty: false, swap: false, hint: false };
+    RCV.history = []; RCV.fiftyRemoved = []; RCV.locked = false; RCV.waiting = false;
+    RCV.badgeBefore = rcvLoadRec().badge;
+    RCV.runId++;
+    RCV.phase = "play";
+    rcvShowQuestion();
+  };
+  if (typeof GRADES !== "undefined" && GRADES[g]) begin();
+  else if (typeof window.__ensureGrade === "function") window.__ensureGrade(g, function (ok) { if (ok) begin(); else gtToast("Chưa tải được ngân hàng lớp — em thử lại nhé!"); });
+  else begin();
+}
+function rcvLadderHtml(failAt) {
+  var s = '<div class="rcv-ladder">';
+  for (var i = 1; i <= 15; i++) {
+    var cls = "rcv-rung";
+    if (failAt && i === failAt) cls += " fail";
+    else if (i <= RCV.passed || i < RCV.rung) cls += " done";
+    else if (i === RCV.rung && RCV.phase === "play") cls += " cur";
+    if (i === 5 || i === 10 || i === 15) cls += "";
+    s += '<span class="' + cls + '">' + (i === 5 ? "🥉5" : i === 10 ? "🥈10" : i === 15 ? "🥇15" : i) + "</span>";
+  }
+  return s + "</div>";
+}
+function rcvShowQuestion() {
+  var it = RCV.items[RCV.rung - 1];
+  RCV.cur = it;
+  RCV.locked = false;
+  RCV.waiting = false;
+  RCV.fiftyRemoved = [];
+  RCV.remainMs = rcvTimeFor(RCV.rung, RCV.grade) * 1000;
+  var body = document.getElementById("gt-body");
+  var fig = "";
+  try { if (typeof figHTML === "function") fig = figHTML(it.figure); } catch (e) {}
+  var html = '<div class="topbar"><div><h2>🔔 Rung chuông vàng — Nấc ' + RCV.rung + '/15</h2></div></div>' +
+    '<div id="rcv-ladder-box">' + rcvLadderHtml(0) + "</div>" +
+    '<div class="rcv-qcard">' +
+    '<div class="rcv-topbar">' +
+    '<div class="rcv-timer" id="rcv-timer"><svg width="64" height="64"><circle cx="32" cy="32" r="26" fill="none" stroke="#f0dfba" stroke-width="7"/><circle id="rcv-ring" cx="32" cy="32" r="26" fill="none" stroke="#e07b39" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="0"/></svg><span class="rcv-tnum" id="rcv-tnum">' + Math.ceil(RCV.remainMs / 1000) + "</span></div>" +
+    '<div class="rcv-life">' +
+    '<button type="button" id="rcv-life-fifty"' + (RCV.lifelines.fifty ? " disabled" : "") + ">🌓 50:50</button>" +
+    '<button type="button" id="rcv-life-swap"' + (RCV.lifelines.swap ? " disabled" : "") + ">🔄 Đổi câu</button>" +
+    '<button type="button" id="rcv-life-hint"' + (RCV.lifelines.hint ? " disabled" : "") + ">💡 Gợi ý</button>" +
+    "</div>" +
+    '<span class="rcv-meta">' + gtEsc(it.subjName) + " • " + gtEsc(it.topicName) + "</span>" +
+    "</div>" +
+    '<div class="rcv-prompt">' + gtEsc(it.prompt) + "</div>" +
+    (fig || it.visual ? '<div class="rcv-visual">' + fig + (it.visual || "") + "</div>" : "") +
+    '<div class="rcv-opts" id="rcv-opts">' +
+    it.options.map(function (o, i) { return '<button type="button" class="rcv-opt" data-rcv-opt="' + i + '"><b>' + "ABCD".charAt(i) + ".</b> " + o + "</button>"; }).join("") +
+    "</div>" +
+    '<div class="rcv-feedback" id="rcv-fb"></div>' +
+    "</div>";
+  body.innerHTML = html;
+  body.querySelectorAll("[data-rcv-opt]").forEach(function (b) {
+    b.addEventListener("click", function () { rcvAnswer(parseInt(b.getAttribute("data-rcv-opt"), 10)); });
+  });
+  var bf = document.getElementById("rcv-life-fifty"); if (bf) bf.addEventListener("click", rcvUseFifty);
+  var bs = document.getElementById("rcv-life-swap"); if (bs) bs.addEventListener("click", rcvUseSwap);
+  var bh = document.getElementById("rcv-life-hint"); if (bh) bh.addEventListener("click", rcvUseHint);
+  body.querySelectorAll("[data-speak]").forEach(function (btn) {
+    btn.addEventListener("click", function (ev) { ev.stopPropagation(); if (typeof speakStimulus === "function") speakStimulus(btn.getAttribute("data-speak"), btn); });
+  });
+  rcvStartTimer();
+}
+function rcvPaintTimer(leftMs) {
+  var num = document.getElementById("rcv-tnum");
+  var ring = document.getElementById("rcv-ring");
+  var box = document.getElementById("rcv-timer");
+  var total = rcvTimeFor(RCV.rung, RCV.grade) * 1000;
+  var sec = Math.max(0, Math.ceil(leftMs / 1000));
+  if (num) num.textContent = sec;
+  if (ring) ring.style.strokeDashoffset = String(163.4 * (1 - Math.max(0, Math.min(1, leftMs / total))));
+  if (box) box.classList.toggle("low", sec <= 5);
+}
+function rcvStartTimer() {
+  rcvStopTimer();
+  RCV.deadline = Date.now() + RCV.remainMs;
+  rcvPaintTimer(RCV.remainMs);
+  RCV.timerId = setInterval(rcvTick, 200);
+}
+function rcvStopTimer() { if (RCV.timerId) { clearInterval(RCV.timerId); RCV.timerId = null; } }
+function rcvTick() {
+  if (RCV.phase !== "play" || RCV.locked || !RCV.cur) return;
+  if (window.__knowledgeOpen || document.hidden) { RCV.deadline += 200; return; }
+  var left = RCV.deadline - Date.now();
+  if (left <= 0) { rcvPaintTimer(0); rcvTimeout(); return; }
+  rcvPaintTimer(left);
+}
+function rcvCaptureWrong(it) {
+  try {
+    if (window.__a1 && window.__a1.captureWrong) {
+      window.__a1.captureWrong({
+        grade: it.grade, subjectId: it.subjId, subjectName: it.subjName,
+        topicId: it.topicId, topicName: it.topicName,
+        q: {
+          type: "choose", prompt: it.prompt || "", visual: it.visual || "", figure: it.figure || "",
+          options: it.options.slice(), answer: it.answer, explain: it.explain || "", blankText: ""
+        }
+      });
+    }
+  } catch (e) {}
+}
+function rcvMarkOptions(chosenIdx) {
+  document.querySelectorAll("[data-rcv-opt]").forEach(function (b) {
+    var i = parseInt(b.getAttribute("data-rcv-opt"), 10);
+    b.disabled = true;
+    if (i === RCV.cur.answer) b.classList.add("right");
+    else if (i === chosenIdx) b.classList.add("wrong");
+  });
+}
+function rcvAnswer(idx) {
+  if (RCV.phase !== "play" || RCV.locked || !RCV.cur) return;
+  if (RCV.fiftyRemoved.indexOf(idx) !== -1) return;
+  RCV.locked = true;
+  rcvStopTimer();
+  var it = RCV.cur, runId = RCV.runId;
+  rcvMarkOptions(idx);
+  var fb = document.getElementById("rcv-fb");
+  if (idx === it.answer) {
+    RCV.passed = RCV.rung;
+    RCV.history.push({ item: it, outcome: "correct", chosen: idx });
+    /* V15 — lỗi 4 (anh vu chơi thật): trả lời đúng KHÔNG tự nhảy câu nữa.
+       Đồng hồ đã dừng ở đầu hàm (rcvStopTimer + RCV.locked); thang cập
+       nhật ngay nấc vừa qua; hiện nút "Chơi tiếp ▶" lớn — chỉ khi bấm
+       mới sang câu sau (đồng hồ câu mới chạy từ lúc câu mới hiện). */
+    RCV.waiting = true;
+    var lb = document.getElementById("rcv-ladder-box");
+    if (lb) lb.innerHTML = rcvLadderHtml(0);
+    if (fb) { fb.textContent = "✅ Đúng rồi!"; fb.style.color = "#256b2e"; }
+    try { if (typeof soundGood === "function") soundGood(); } catch (e) {}
+    try { if (typeof speakPraise === "function") speakPraise((window.PRAISES ? gtPick(window.PRAISES) : "Giỏi lắm! 🎉")); } catch (e) {}
+    if (fb && fb.parentNode && !document.getElementById("rcv-next")) {
+      var nb = document.createElement("button");
+      nb.type = "button"; nb.id = "rcv-next"; nb.className = "rcv-next";
+      nb.textContent = "Chơi tiếp ▶";
+      nb.addEventListener("click", function () { rcvNext(); });
+      fb.parentNode.appendChild(nb);
+      try { nb.scrollIntoView({ block: "nearest" }); } catch (e) {}
+    }
+  } else {
+    RCV.history.push({ item: it, outcome: "wrong", chosen: idx });
+    rcvCaptureWrong(it);
+    if (fb) { fb.textContent = "❌ Chưa đúng rồi — đáp án đúng đã được tô xanh. Lượt chơi dừng ở nấc " + RCV.rung + "."; fb.style.color = "#a33307"; }
+    try { if (typeof soundRetry === "function") soundRetry(); } catch (e) {}
+    try { if (typeof speakEncourage === "function") speakEncourage(); } catch (e) {}
+    setTimeout(function () {
+      if (RCV.runId !== runId || RCV.phase !== "play") return;
+      rcvEndRun(false, "wrong");
+    }, RCV_TRANSITION.wrong);
+  }
+}
+/* V15: nút "Chơi tiếp ▶" sau câu đúng — sang câu kế (hoặc kết thúc
+   thắng ở nấc 15). Chặn khi không ở trạng thái chờ / bấm đúp. */
+function rcvNext() {
+  if (RCV.phase !== "play" || !RCV.waiting || !RCV.cur) return;
+  RCV.waiting = false;
+  var nb = document.getElementById("rcv-next");
+  if (nb && nb.parentNode) nb.parentNode.removeChild(nb);
+  if (RCV.rung >= 15) rcvEndRun(true, "win");
+  else { RCV.rung++; rcvShowQuestion(); }
+}
+function rcvTimeout() {
+  if (RCV.phase !== "play" || RCV.locked || !RCV.cur) return;
+  RCV.locked = true;
+  rcvStopTimer();
+  var it = RCV.cur, runId = RCV.runId;
+  RCV.history.push({ item: it, outcome: "timeout", chosen: null });
+  rcvCaptureWrong(it);
+  rcvMarkOptions(-1);
+  var fb = document.getElementById("rcv-fb");
+  if (fb) { fb.textContent = "⏰ Hết giờ rồi! Đáp án đúng đã được tô xanh. Lượt chơi dừng ở nấc " + RCV.rung + "."; fb.style.color = "#a33307"; }
+  try { if (typeof soundRetry === "function") soundRetry(); } catch (e) {}
+  try { if (typeof speakEncourage === "function") speakEncourage(); } catch (e) {}
+  setTimeout(function () {
+    if (RCV.runId !== runId || RCV.phase !== "play") return;
+    rcvEndRun(false, "timeout");
+  }, RCV_TRANSITION.wrong);
+}
+/* 50:50 — hàm thuần (kiểm chứng được): chọn 2 chỉ số SAI để ẩn, không bao
+   giờ chạm đáp án đúng. */
+function rcvFiftyPick(item) {
+  var wrongs = [];
+  item.options.forEach(function (_, i) { if (i !== item.answer) wrongs.push(i); });
+  return gtShuffle(wrongs).slice(0, 2);
+}
+function rcvUseFifty() {
+  if (RCV.phase !== "play" || RCV.locked || !RCV.cur || RCV.lifelines.fifty) return;
+  RCV.lifelines.fifty = true;
+  RCV.fiftyRemoved = rcvFiftyPick(RCV.cur);
+  RCV.fiftyRemoved.forEach(function (i) {
+    var b = document.querySelector('[data-rcv-opt="' + i + '"]');
+    if (b) { b.classList.add("fifty-off"); b.disabled = true; }
+  });
+  var btn = document.getElementById("rcv-life-fifty"); if (btn) btn.disabled = true;
+}
+function rcvUseSwap() {
+  if (RCV.phase !== "play" || RCV.locked || !RCV.cur || RCV.lifelines.swap) return;
+  RCV.lifelines.swap = true;
+  var pools = rcvPoolsFor(RCV.grade);
+  if (!pools) return;
+  var rung = RCV.rung;
+  var tiers = rung <= 5 ? ["std"] : (rung <= 10 ? [RCV.cur.tier, RCV.cur.tier === "adv" ? "std" : "adv"] : ["adv"]);
+  var recentSet = {};
+  rcvLoadRec().recent.forEach(function (k) { recentSet[k] = 1; });
+  var repl = null;
+  var prevKey = null, oldFlag = false;
+  try { prevKey = currentTopicKey; } catch (e) {}
+  try { oldFlag = roundSelectionActive; } catch (e) {}
+  try {
+    try { roundSelectionActive = true; } catch (e) {}
+    for (var ti = 0; ti < tiers.length && !repl; ti++) repl = rcvDrawSlot(pools, tiers[ti], RCV.usedKeys, RCV.usedFacts, recentSet);
+  } finally {
+    try { roundSelectionActive = oldFlag; } catch (e) {}
+    try { currentTopicKey = prevKey; } catch (e) {}
+  }
+  var btn = document.getElementById("rcv-life-swap"); if (btn) btn.disabled = true;
+  if (!repl) { gtToast("Không còn câu thay thế cùng chặng — em trả lời câu này nhé!"); RCV.lifelines.swap = true; return; }
+  RCV.history.push({ item: RCV.cur, outcome: "swapped", chosen: null });
+  repl.rung = rung;
+  RCV.usedKeys[repl.key] = 1;
+  if (repl.factKey) RCV.usedFacts[repl.factKey] = 1;
+  RCV.items[rung - 1] = repl;
+  rcvStopTimer();
+  rcvShowQuestion();
+}
+function rcvUseHint() {
+  if (RCV.phase !== "play" || RCV.locked || !RCV.cur || RCV.lifelines.hint) return;
+  RCV.lifelines.hint = true;
+  var btn = document.getElementById("rcv-life-hint"); if (btn) btn.disabled = true;
+  var t = RCV.cur.topicRef;
+  if (t && typeof window.__showKnowledge === "function") {
+    try { if (t.knowledge) t.knowledge.grade = RCV.grade; } catch (e) {}
+    window.__showKnowledge(t);
+  } else gtToast("Chủ đề này chưa có hộp kiến thức.");
+}
+function rcvBell() {
+  try {
+    if (typeof beep === "function") {
+      beep(1568, 0, 0.5); beep(1175, 0.15, 0.5); beep(1568, 0.3, 0.6); beep(2093, 0.48, 0.9);
+    }
+    if (typeof soundCelebrate === "function") soundCelebrate();
+  } catch (e) {}
+}
+function rcvAbortRun() {
+  rcvStopTimer();
+  RCV.runId++;
+  RCV.phase = "idle";
+  RCV.cur = null;
+  RCV.locked = false;
+  RCV.waiting = false;
+}
+function rcvEndRun(won, reason) {
+  rcvStopTimer();
+  RCV.phase = "end";
+  var rec = rcvLoadRec();
+  rec.runs += 1;
+  if (RCV.passed > rec.best) rec.best = RCV.passed;
+  if (won) rec.bells += 1;
+  var ms = rec.best >= 15 ? 15 : rec.best >= 10 ? 10 : rec.best >= 5 ? 5 : 0;
+  if (ms > rec.badge) rec.badge = ms;
+  var seenKeys = [];
+  RCV.history.forEach(function (h) { seenKeys.push(h.item.key); });
+  seenKeys.forEach(function (k) {
+    var i = rec.recent.indexOf(k);
+    if (i !== -1) rec.recent.splice(i, 1);
+    rec.recent.push(k);
+  });
+  while (rec.recent.length > 60) rec.recent.shift();
+  v14Save(RCV_LS, rec);
+  try { if (typeof window.__a1RecordActivity === "function") window.__a1RecordActivity(); } catch (e) {}
+  if (window.__a1 && window.__a1.checkBadges) { try { window.__a1.checkBadges(); } catch (e) {} }
+  if (won) rcvBell();
+  try {
+    if (typeof speakVi === "function") {
+      speakVi(won ? "Tuyệt vời! Em đã rung được chuông vàng!" : ("Em đã leo tới nấc " + RCV.passed + ". Cố lên nhé!"));
+    }
+  } catch (e) {}
+  rcvRenderEnd(won, reason, RCV.badgeBefore, rec.badge);
+}
+function rcvRenderEnd(won, reason, badgeBefore, badgeAfter) {
+  var rec = rcvLoadRec();
+  var failRung = won ? 0 : RCV.rung;
+  var title = won ? "🔔 RUNG ĐƯỢC CHUÔNG VÀNG!" : ("Dừng lại ở nấc " + RCV.rung);
+  var sub = won
+    ? "Em đã leo hết 15 nấc — xuất sắc! Đây là lần rung chuông thứ " + rec.bells + " của em."
+    : (reason === "timeout" ? "Hết giờ ở nấc " + RCV.rung + ". Em đã qua được " + RCV.passed + " nấc." : "Câu ở nấc " + RCV.rung + " chưa đúng. Em đã qua được " + RCV.passed + " nấc.");
+  var newBadge = badgeAfter > badgeBefore ? '<p class="rcv-feedback" style="color:#256b2e">🎉 Huy hiệu mới: ' + rcvBadgeName(badgeAfter) + "!</p>" : "";
+  var html = '<div class="topbar"><div><h2>🔔 Rung chuông vàng — Kết quả</h2></div></div>' +
+    rcvLadderHtml(failRung) +
+    '<div class="rcv-qcard"><div class="rcv-prompt" style="text-align:center">' + title + "</div>" +
+    '<p class="rcv-meta" style="text-align:center">' + sub + "</p>" + newBadge +
+    '<p class="rcv-meta" style="text-align:center">Kỷ lục của em: nấc cao nhất ' + rec.best + "/15 • " + rec.runs + " lượt đã chơi" + (rec.bells ? " • rung chuông " + rec.bells + " lần" : "") + "</p>" +
+    '<div class="btn-row rcv-end-btns" style="justify-content:center;margin-top:10px"><button class="btn success" id="rcv-again">🔁 Chơi lại</button><button class="btn ghost" id="rcv-to-dir">🎉 Về thư mục giải trí</button></div></div>';
+  html += '<h3 class="gt-cards-title">📖 Xem lại các câu đã gặp</h3><div class="rcv-review">';
+  RCV.history.forEach(function (h, hi) {
+    var it = h.item;
+    var cls = h.outcome === "wrong" || h.outcome === "timeout" ? "rcv-ritem fell" : "rcv-ritem";
+    var mark = h.outcome === "correct" ? "✅ Đúng" : h.outcome === "wrong" ? "❌ Câu làm em dừng lại" : h.outcome === "timeout" ? "⏰ Hết giờ — câu làm em dừng lại" : "🔄 Đã đổi câu";
+    html += '<div class="' + cls + '"><div class="rq">Nấc ' + it.rung + " — " + mark + "<br>" + gtEsc(it.prompt) + "</div>";
+    /* v16 mục 8: mục xem lại phải hiện lại HÌNH của câu (trước đây bị bỏ mất —
+       item vẫn giữ visual/figure từ rcvConvert, chỉ thiếu ở khâu dựng này).
+       Dùng đúng cơ chế như lúc chơi: figHTML cho hình SVG + visual gốc (emoji
+       chữ lớn) trong khung .rcv-visual nền trắng. Câu không có hình: giữ nguyên. */
+    var figR = "";
+    try { if (typeof figHTML === "function") figR = figHTML(it.figure); } catch (e) {}
+    if (figR || it.visual) html += '<div class="rcv-visual">' + figR + (it.visual || "") + "</div>";
+    it.options.forEach(function (o, i) {
+      var oc = i === it.answer ? "ro ok" : (i === h.chosen ? "ro bad" : "ro");
+      var tag = i === it.answer ? " ✔ đáp án đúng" : (i === h.chosen ? " (em chọn)" : "");
+      html += '<div class="' + oc + '">' + "ABCD".charAt(i) + ". " + o + tag + "</div>";
+    });
+    html += '<div class="rcv-meta">' + gtEsc(it.subjName) + " • " + gtEsc(it.topicName) + "</div>";
+    if (it.explain) html += '<div class="re"><b>Giải thích:</b> ' + it.explain + "</div>";
+    /* v18: nút nghe lại ở màn XEM LẠI sau lượt (trong lượt chạy không có
+       nút nghe — đua với đồng hồ; giữ nguyên đặc tả RCV). */
+    html += '<button type="button" class="rcv-speak-btn" data-rspk="' + hi + '">🔊 Nghe lại câu này</button>';
+    html += "</div>";
+  });
+  html += "</div>";
+  document.getElementById("gt-body").innerHTML = html;
+  document.querySelectorAll("#gt-body .rcv-speak-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var h = RCV.history[parseInt(b.getAttribute("data-rspk"), 10)];
+      if (h && typeof window.__readQuestionVi === "function") {
+        window.__readQuestionVi({ prompt: h.item.prompt, options: h.item.options, explain: h.item.explain });
+      }
+    });
+  });
+  var ag = document.getElementById("rcv-again");
+  if (ag) ag.addEventListener("click", function () { rcvStart(); });
+  var td = document.getElementById("rcv-to-dir");
+  if (td) td.addEventListener("click", function () { RCV.phase = "idle"; if (typeof window.__openGiaiTri === "function") window.__openGiaiTri(); });
+}
+/* API phục vụ kiểm chứng (cùng khuôn window.__a1 / window.__assess). */
+var RCV_API = {
+  buildRun: rcvBuildRun, start: rcvStart, renderIntro: rcvRenderIntro,
+  answer: rcvAnswer, next: rcvNext, useFifty: rcvUseFifty, useSwap: rcvUseSwap, useHint: rcvUseHint,
+  fiftyPick: rcvFiftyPick, timeoutNow: function () { RCV.deadline = Date.now() - 1; rcvTick(); },
+  state: function () { return RCV; }, records: rcvLoadRec,
+  transitions: RCV_TRANSITION, timeFor: rcvTimeFor,
+  isListening: rcvIsListening, convert: rcvConvert,
+  leakLog: function () { return rcvLeakLog.slice(); }
+};
+
+/* Gắn API V14 vào __GT (object __GT được tạo ở phần trên của tệp, trước khi
+   khối V14 chạy — gán bổ sung tại đây để tránh tham chiếu var chưa khởi tạo). */
+if (window.__GT) {
+  window.__GT.rcv = RCV_API;
+  window.__GT.cardsApi = { load: cardsLoad, markViewed: cardsMarkViewed, tryUnlock: cardsTryUnlock };
+  window.__GT.renderRungChuong = rcvRenderIntro;
+  window.__GT.renderAlbum = gtRenderAlbum;
+}
+
+
+/* ================================================================
+   PHẦN 3 — TIA CHỚP ⚡ (v20 — Giai đoạn 2, mục 2)
+   Đặc tả: THIET-KE-TIA-CHOP.md (anh vu duyệt 2026-10-18, gồm 3 chốt
+   riêng của anh: (1) thẻ nằm giữa Rung chuông vàng và Album thẻ anh
+   hùng; (2) sai KHÔNG trừ giây, KHÔNG trừ điểm — điểm chỉ cộng theo
+   tốc độ; (3) BỎ HẲN tiếng khen nói và đọc câu hỏi trong toàn chế
+   độ). KHÔNG cộng sao; câu sai vào Ôn câu sai qua
+   window.__a1.captureWrong (đúng khuôn rcvCaptureWrong); không dừng
+   giải thích giữa vòng; xem lại đầy đủ cuối vòng (bằng chữ).
+   ================================================================ */
+var TC_LS = "gameHocTap_tiachop_v1";
+var TC_ROUND_MS = 60000;
+var TC_QUEUE_FIRST = 40;
+var TC_QUEUE_REFILL_AT = 10;
+var TC_QUEUE_REFILL_N = 20;
+/* Mốc huy hiệu Tia chớp — ĐÃ KHÓA theo LUẬT GHÉP anh vu chốt
+   2026-10-19 06:29 (sau hai vòng mô phỏng: mốc điểm thuần và mốc
+   chuỗi thuần đều không đặt được mốc Đồng công bằng — xem
+   BAO-CAO-TIA-CHOP-V20.md và BAO-CAO-GAN-HUY-HIEU-TIA-CHOP.md):
+   cuối một vòng, nếu tỉ lệ đúng của vòng (correct/answered) đạt
+   minAcc (50%) VÀ chuỗi đúng dài nhất của vòng đạt mốc thì trao mọi
+   huy hiệu của các mốc đạt được mà người chơi chưa có — Đồng =
+   chuỗi 5, Bạc = chuỗi 8, Vàng = chuỗi 14 (đạt mốc cao thì nhận
+   luôn các mốc thấp hơn). Điều kiện của 3 huy hiệu tc-* trong
+   feat-a1.js đọc trường bestStreakQ của bản ghi
+   gameHocTap_tiachop_v1 (chuỗi dài nhất trong các vòng đạt điều
+   kiện ≥50%, do tcEndRun ghi), đúng mẫu rcv-* đọc rcv_v1.best.
+   Mô phỏng xác nhận luật ghép 20.000 vòng/hồ sơ (kiem-chung-v20/
+   out/tc-hybrid.json): bấm bừa đạt 0% ở cả ba mốc; nghiêm túc-chậm
+   đạt Đồng 35,13%; trung bình đạt Bạc 19,98%; nhanh-giỏi đạt Vàng
+   49,17%. */
+var TC_MILESTONES = { bronze: 5, silver: 8, gold: 14, minAcc: 0.5 };
+var TC_BADGE_LABEL = { "tc-bronze": "⚡🥉 Tia chớp Đồng", "tc-silver": "⚡🥈 Tia chớp Bạc", "tc-gold": "⚡🥇 Tia chớp Vàng" };
+var TC = {
+  phase: "idle", grade: 0, drawState: null, queue: [], qPos: 0, cur: null, qShownAt: 0,
+  score: 0, correct: 0, answered: 0, streak: 0, bestStreak: 0,
+  locked: false, timerId: null, deadline: 0, remainMs: TC_ROUND_MS,
+  history: [], runId: 0, lastTickSec: -1
+};
+var tcLeakLog = [];
+function tcLoadRec() {
+  var r = v14Load(TC_LS, null);
+  if (!r || typeof r !== "object") r = {};
+  if (typeof r.best !== "number") r.best = 0;
+  if (typeof r.bestCount !== "number") r.bestCount = 0;
+  if (typeof r.runs !== "number") r.runs = 0;
+  if (!Array.isArray(r.recent)) r.recent = [];
+  if (typeof r.last !== "number") r.last = 0;
+  /* Trường huy hiệu luật ghép (v20): bản ghi cũ trên máy người chơi
+     chưa có các trường này — đọc thiếu thì coi như 0, không phá. */
+  if (typeof r.bestStreak !== "number") r.bestStreak = 0;
+  if (typeof r.bestStreakQ !== "number") r.bestStreakQ = 0;
+  if (typeof r.lastStreak !== "number") r.lastStreak = 0;
+  if (typeof r.lastAcc !== "number") r.lastAcc = 0;
+  return r;
+}
+/* Chuyển dạng: fork của rcvConvert — cùng các cổng (chỉ choose, qua
+   prepareRoundQuestion, đúng 4 lựa chọn, đáp án đúng ≤60 ký tự, loại
+   câu nghe tiếng Anh). */
+function tcConvert(q, meta) { return rcvConvert(q, meta); }
+/* Công thức điểm (hàm thuần — dùng cho cả mô phỏng chốt mốc):
+   câu đúng = 100 gốc + thưởng tốc độ; streakAfter là chuỗi đúng
+   liên tiếp SAU câu này, mỗi bội 5 của chuỗi cộng thêm 50. */
+function tcSpeedBonus(dtSec) {
+  if (dtSec <= 2) return 50;
+  if (dtSec >= 8) return 0;
+  return Math.round(50 * (8 - dtSec) / 6);
+}
+function tcScoreFor(dtSec, streakAfter) {
+  var p = 100 + tcSpeedBonus(dtSec);
+  if (streakAfter > 0 && streakAfter % 5 === 0) p += 50;
+  return p;
+}
+/* Rút 1 câu từ một chủ đề (fork rcvDrawFrom, chỉ hồ thường): cổng lộ
+   loại Phương án A y hệt RCV (__typeLeak.leakInfo); khi cả lần rút
+   không còn câu sạch mới dùng câu lộ nhẹ nhất và ghi tcLeakLog. */
+function tcDrawFrom(entry, usedKeys, usedFacts, avoidSet, ctr) {
+  var pools = entry.topic.pools;
+  var gens = (pools && pools.choose) || [];
+  if (!gens.length) return null;
+  var order = gtShuffle(gens.slice());
+  for (var i = 0; i < order.length; i++) {
+    for (var a = 0; a < 2; a++) {
+      if (ctr) { ctr.n++; if (ctr.n > 600) return null; }
+      var q = null;
+      try { q = order[i](); } catch (e) { continue; }
+      var it = tcConvert(q, { grade: TC.grade, subj: entry.subj, topic: entry.topic, tier: "std" });
+      if (!it) continue;
+      if (usedKeys[it.key]) continue;
+      if (it.factKey && usedFacts[it.factKey]) continue;
+      if (avoidSet && avoidSet[it.key]) continue;
+      var lk = null;
+      try { if (typeof __typeLeak !== "undefined" && __typeLeak) lk = __typeLeak.leakInfo(it.options.map(rcvTextOf), it.answer); } catch (e) {}
+      if (lk && lk.eligible && lk.leak) {
+        if (ctr && (!ctr.leakCand || (!ctr.leakCandSoft && !lk.leakMerged))) { ctr.leakCand = it; ctr.leakCandSoft = !lk.leakMerged; }
+        continue;
+      }
+      return it;
+    }
+  }
+  return null;
+}
+function tcDrawSlot(pools, usedKeys, usedFacts, recentSet) {
+  var list = pools.std;
+  if (!list.length) return null;
+  var ctr = { n: 0 };
+  for (var pass = 0; pass < 2; pass++) {
+    var order = gtShuffle(list.slice());
+    for (var i = 0; i < order.length; i++) {
+      var it = tcDrawFrom(order[i], usedKeys, usedFacts, pass === 0 ? recentSet : null, ctr);
+      if (it) return it;
+      if (ctr.n > 600) break;
+    }
+  }
+  if (ctr.leakCand) {
+    tcLeakLog.push({ grade: TC.grade, topicId: ctr.leakCand.topicId });
+    return ctr.leakCand;
+  }
+  return null;
+}
+/* Rút n câu (dựng hàng đầu vòng + nạp thêm giữa vòng + mô phỏng).
+   Bọc cờ chọn câu của vỏ đúng như rcvBuildRun. */
+function tcDrawItems(grade, n, state) {
+  var out = [];
+  var prevKey = null, oldFlag = false;
+  try { prevKey = currentTopicKey; } catch (e) {}
+  try { oldFlag = roundSelectionActive; } catch (e) {}
+  try {
+    try { roundSelectionActive = true; } catch (e) {}
+    for (var i = 0; i < n; i++) {
+      var it = tcDrawSlot(state.pools, state.usedKeys, state.usedFacts, state.recentSet);
+      if (!it) break;
+      state.usedKeys[it.key] = 1;
+      if (it.factKey) state.usedFacts[it.factKey] = 1;
+      out.push(it);
+    }
+  } finally {
+    try { roundSelectionActive = oldFlag; } catch (e) {}
+    try { currentTopicKey = prevKey; } catch (e) {}
+  }
+  return out;
+}
+/* Dựng hàng câu đầu vòng (40 câu) + trạng thái rút để nạp thêm. */
+function tcBuildQueue(grade) {
+  TC.grade = grade;
+  var pools = rcvPoolsFor(grade);
+  if (!pools || !pools.std.length) return { error: "no-bank" };
+  var rec = tcLoadRec();
+  var recentSet = {};
+  rec.recent.forEach(function (k) { recentSet[k] = 1; });
+  var state = { pools: pools, usedKeys: {}, usedFacts: {}, recentSet: recentSet };
+  var items = tcDrawItems(grade, TC_QUEUE_FIRST, state);
+  if (!items.length) return { error: "het-cau", at: 0 };
+  return { items: items, state: state };
+}
+function tcCaptureWrong(it) {
+  try {
+    if (window.__a1 && window.__a1.captureWrong) {
+      window.__a1.captureWrong({
+        grade: it.grade, subjectId: it.subjId, subjectName: it.subjName,
+        topicId: it.topicId, topicName: it.topicName,
+        q: {
+          type: "choose", prompt: it.prompt || "", visual: it.visual || "", figure: it.figure || "",
+          options: it.options.slice(), answer: it.answer, explain: it.explain || "", blankText: ""
+        }
+      });
+    }
+  } catch (e) {}
+}
+/* ---------------- màn giới thiệu ---------------- */
+function tcRenderIntro() {
+  window.__gtView = "item";
+  window.__gtDetail = null;
+  window.__gtCardQuiz = null;
+  TC.phase = "intro";
+  var g = (typeof profile !== "undefined" && profile) ? (profile.grade || 1) : 1;
+  var rec = tcLoadRec();
+  var html = '<div class="topbar"><div><h2>⚡ Tia chớp</h2><p>Đua tốc độ 60 giây với ngân hàng câu hỏi của lớp em: trả lời đúng càng nhiều càng tốt — trả lời càng nhanh, điểm cộng càng cao!</p></div></div>';
+  html += '<div class="rcv-qcard">' +
+    '<p class="rcv-meta">⏱️ Cả vòng chỉ có <b>60 giây</b>. Mỗi câu đúng được <b>100 điểm</b> + tối đa <b>50 điểm tốc độ</b> (trả lời trong 2 giây đầu được trọn 50, giảm dần tới giây thứ 8) + <b>50 điểm</b> mỗi khi nối được chuỗi 5 câu đúng liên tiếp.</p>' +
+    '<p class="rcv-meta">💪 Trả lời sai <b>không bị trừ giây, không bị trừ điểm</b> — cứ mạnh dạn trả lời nhé! Trong vòng sẽ không dừng giải thích; cuối vòng em xem lại toàn bộ câu và giải thích bằng chữ.</p>' +
+    '<p class="rcv-meta">📚 Câu nào sai sẽ được đưa vào Ôn câu sai để em ôn lại sau. Chế độ này không cộng sao — phần thưởng là điểm và kỷ lục tốc độ của em!</p>' +
+    '<div class="a2-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0">' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">⚡ Điểm cao nhất<br><b style="font-size:20px">' + rec.best + '</b></div>' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🎯 Số câu đúng nhất<br><b style="font-size:20px">' + rec.bestCount + '</b></div>' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🎮 Vòng đã chơi<br><b style="font-size:20px">' + rec.runs + '</b></div>' +
+    '</div>';
+  if (TC_MILESTONES) {
+    var earned = (window.__a1 && window.__a1.loadBadges) ? (window.__a1.loadBadges().earned || {}) : {};
+    var bdg = function (id, label) { return earned[id] ? "✅ " + label : "⬜ " + label; };
+    html += '<p class="rcv-meta">🏅 <b>Huy hiệu Tia chớp:</b> trong một vòng, nếu em trả lời đúng <b>từ một nửa số câu trở lên</b> và nối được chuỗi đúng liên tiếp đủ dài, em sẽ nhận huy hiệu — ' + bdg("tc-bronze", "⚡🥉 Tia chớp Đồng (chuỗi " + TC_MILESTONES.bronze + " câu)") + " &nbsp; " + bdg("tc-silver", "⚡🥈 Tia chớp Bạc (chuỗi " + TC_MILESTONES.silver + " câu)") + " &nbsp; " + bdg("tc-gold", "⚡🥇 Tia chớp Vàng (chuỗi " + TC_MILESTONES.gold + " câu)") + "</p>";
+  }
+  if (g < 3) {
+    html += '<p class="rcv-feedback" style="color:#a33307">🌱 Chế độ này dành cho anh chị lớp 3 trở lên. Em luyện thêm ở các mục khác rồi quay lại khi lên lớp 3 nhé!</p>';
+  } else {
+    html += '<div class="btn-row" style="margin-top:12px"><button class="btn success" id="tc-start">⚡ Bắt đầu đua (Lớp ' + g + ')</button></div>';
+  }
+  html += "</div>";
+  document.getElementById("gt-body").innerHTML = html;
+  var sb = document.getElementById("tc-start");
+  if (sb) sb.addEventListener("click", function () { tcStart(); });
+}
+/* ---------------- vòng chơi ---------------- */
+function tcStart() {
+  var g = (typeof profile !== "undefined" && profile) ? (profile.grade || 1) : 1;
+  if (g < 3) { tcRenderIntro(); return; }
+  var begin = function () {
+    if (typeof window.__ensureCompleteGrade === "function") { try { window.__ensureCompleteGrade(g); } catch (e) {} }
+    var built = tcBuildQueue(g);
+    if (!built || built.error || !built.items.length) {
+      gtToast("Chưa dựng được vòng chơi — em thử lại nhé!");
+      return;
+    }
+    TC.queue = built.items.slice();
+    TC.drawState = built.state;
+    TC.qPos = 0; TC.cur = null;
+    TC.score = 0; TC.correct = 0; TC.answered = 0; TC.streak = 0; TC.bestStreak = 0;
+    TC.history = []; TC.locked = false; TC.lastTickSec = -1;
+    TC.remainMs = TC_ROUND_MS;
+    TC.runId++;
+    TC.phase = "play";
+    tcStartTimer();
+    tcShowQuestion();
+  };
+  if (typeof GRADES !== "undefined" && GRADES[g]) begin();
+  else if (typeof window.__ensureGrade === "function") window.__ensureGrade(g, function (ok) { if (ok) begin(); else gtToast("Chưa tải được ngân hàng lớp — em thử lại nhé!"); });
+  else begin();
+}
+function tcPaintTimer(leftMs) {
+  var num = document.getElementById("tc-tnum");
+  var ring = document.getElementById("tc-ring");
+  var box = document.getElementById("tc-timer");
+  var sec = Math.max(0, Math.ceil(leftMs / 1000));
+  if (num) num.textContent = sec;
+  if (ring) ring.style.strokeDashoffset = String(163.4 * (1 - Math.max(0, Math.min(1, leftMs / TC_ROUND_MS))));
+  if (box) box.classList.toggle("low", sec <= 5);
+}
+function tcStartTimer() {
+  tcStopTimer();
+  TC.deadline = Date.now() + TC.remainMs;
+  tcPaintTimer(TC.remainMs);
+  TC.timerId = setInterval(tcTick, 100);
+}
+function tcStopTimer() { if (TC.timerId) { clearInterval(TC.timerId); TC.timerId = null; } }
+function tcTick() {
+  if (TC.phase !== "play") return;
+  /* Chuyển tab / ẩn trang → đồng hồ tạm dừng (bài học RCV). Tia chớp
+     không có hộp kiến thức giữa vòng nên không cần nhánh thứ hai. */
+  if (document.hidden) { TC.deadline += 100; return; }
+  var left = TC.deadline - Date.now();
+  if (left <= 0) { tcPaintTimer(0); tcEndRun("time"); return; }
+  tcPaintTimer(left);
+  var sec = Math.ceil(left / 1000);
+  if (sec <= 5 && sec !== TC.lastTickSec) {
+    TC.lastTickSec = sec;
+    try { if (typeof beep === "function") beep(880, 0, 0.07); } catch (e) {}
+  }
+}
+function tcShowQuestion() {
+  var it = TC.queue[TC.qPos];
+  if (!it) { tcEndRun("empty"); return; }
+  TC.cur = it;
+  TC.locked = false;
+  TC.qShownAt = Date.now();
+  var body = document.getElementById("gt-body");
+  var fig = "";
+  try { if (typeof figHTML === "function") fig = figHTML(it.figure); } catch (e) {}
+  var html = '<div class="topbar"><div><h2>⚡ Tia chớp — Lớp ' + TC.grade + '</h2></div></div>' +
+    '<div class="rcv-qcard" id="tc-qcard">' +
+    '<div class="tc-scorebar">' +
+    '<div class="rcv-timer" id="tc-timer"><svg width="64" height="64"><circle cx="32" cy="32" r="26" fill="none" stroke="#f0dfba" stroke-width="7"/><circle id="tc-ring" cx="32" cy="32" r="26" fill="none" stroke="#e07b39" stroke-width="7" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="0"/></svg><span class="rcv-tnum" id="tc-tnum">' + Math.ceil(Math.max(0, TC.deadline - Date.now()) / 1000) + '</span></div>' +
+    '<div class="tc-stat">🏆 Điểm<br><b id="tc-score">' + TC.score + '</b></div>' +
+    '<div class="tc-stat">✅ Đúng<br><b id="tc-correct">' + TC.correct + "/" + TC.answered + '</b></div>' +
+    '<div class="tc-stat">🔥 Chuỗi đúng<br><b id="tc-combo">' + TC.streak + '</b></div>' +
+    '</div>' +
+    '<span class="rcv-meta">' + gtEsc(it.subjName) + " • " + gtEsc(it.topicName) + '</span>' +
+    '<div class="rcv-prompt">' + gtEsc(it.prompt) + '</div>' +
+    (fig || it.visual ? '<div class="rcv-visual">' + fig + (it.visual || "") + '</div>' : "") +
+    '<div class="rcv-opts" id="tc-opts">' +
+    it.options.map(function (o, i) { return '<button type="button" class="rcv-opt" data-tc-opt="' + i + '"><b>' + "ABCD".charAt(i) + ".</b> " + o + '</button>'; }).join("") +
+    '</div>' +
+    '<div class="rcv-feedback" id="tc-fb"></div>' +
+    '</div>';
+  body.innerHTML = html;
+  /* Chốt của anh vu: toàn chế độ KHÔNG đọc câu hỏi — gỡ mọi nút nghe
+     (data-speak) nếu theo visual của câu lọt vào màn này. */
+  body.querySelectorAll("[data-speak]").forEach(function (el) { if (el.parentNode) el.parentNode.removeChild(el); });
+  body.querySelectorAll("[data-tc-opt]").forEach(function (b) {
+    b.addEventListener("click", function () { tcAnswer(parseInt(b.getAttribute("data-tc-opt"), 10)); });
+  });
+  tcPaintTimer(TC.deadline - Date.now());
+}
+function tcMarkOptions(chosenIdx) {
+  document.querySelectorAll("[data-tc-opt]").forEach(function (b) {
+    var i = parseInt(b.getAttribute("data-tc-opt"), 10);
+    b.disabled = true;
+    if (i === TC.cur.answer) b.classList.add("right");
+    else if (i === chosenIdx) b.classList.add("wrong");
+  });
+}
+function tcAnswer(idx) {
+  if (TC.phase !== "play" || TC.locked || !TC.cur) return;
+  TC.locked = true;
+  var it = TC.cur, runId = TC.runId;
+  var dt = Math.max(0, (Date.now() - TC.qShownAt) / 1000);
+  var ok = idx === it.answer;
+  TC.answered++;
+  var gained = 0;
+  if (ok) {
+    TC.correct++; TC.streak++;
+    if (TC.streak > TC.bestStreak) TC.bestStreak = TC.streak;
+    gained = tcScoreFor(dt, TC.streak);
+    TC.score += gained;
+  } else {
+    TC.streak = 0;
+    tcCaptureWrong(it);
+  }
+  TC.history.push({ item: it, outcome: ok ? "correct" : "wrong", chosen: idx, gained: gained });
+  tcMarkOptions(idx);
+  var fb = document.getElementById("tc-fb");
+  if (ok) {
+    if (fb) {
+      fb.textContent = "✅ Đúng rồi! +" + gained + " điểm" + ((TC.streak > 0 && TC.streak % 5 === 0) ? " 🔥 Chuỗi " + TC.streak + " câu đúng liên tiếp!" : "");
+      fb.style.color = "#256b2e";
+    }
+    try { if (typeof soundGood === "function") soundGood(); else if (typeof beep === "function") beep(1318, 0, 0.12); } catch (e) {}
+  } else {
+    if (fb) { fb.textContent = "❌ Chưa đúng — đáp án đúng đã được tô xanh."; fb.style.color = "#a33307"; }
+    var card = document.getElementById("tc-qcard");
+    if (card) { card.classList.remove("tc-shake"); void card.offsetWidth; card.classList.add("tc-shake"); }
+    try { if (typeof soundRetry === "function") soundRetry(); else if (typeof beep === "function") beep(196, 0, 0.15); } catch (e) {}
+  }
+  var sc = document.getElementById("tc-score"); if (sc) sc.textContent = TC.score;
+  var co = document.getElementById("tc-correct"); if (co) co.textContent = TC.correct + "/" + TC.answered;
+  var cb = document.getElementById("tc-combo"); if (cb) cb.textContent = TC.streak;
+  /* Đồng hồ tổng vẫn chạy trong lúc nháy báo (đua tốc độ thật);
+     hết giờ trong khoảng này thì tcTick kết thúc vòng và timeout
+     dưới đây tự vô hiệu nhờ phase/runId. */
+  setTimeout(function () {
+    if (TC.runId !== runId || TC.phase !== "play") return;
+    tcNext();
+  }, ok ? 420 : 750);
+}
+function tcNext() {
+  TC.qPos++;
+  if (TC.drawState && TC.queue.length - TC.qPos <= TC_QUEUE_REFILL_AT) {
+    var more = tcDrawItems(TC.grade, TC_QUEUE_REFILL_N, TC.drawState);
+    if (more.length) TC.queue = TC.queue.concat(more);
+  }
+  tcShowQuestion();
+}
+function tcAbortRun() {
+  tcStopTimer();
+  TC.runId++;
+  TC.phase = "idle";
+  TC.cur = null;
+  TC.locked = false;
+}
+function tcEndRun(reason) {
+  if (TC.phase === "end") return;
+  tcStopTimer();
+  TC.phase = "end";
+  var rec = tcLoadRec();
+  rec.runs += 1;
+  var newBest = TC.score > rec.best;
+  if (newBest) rec.best = TC.score;
+  if (TC.correct > rec.bestCount) rec.bestCount = TC.correct;
+  /* Luật ghép huy hiệu (anh vu chốt 2026-10-19): ghi chuỗi dài nhất
+     + tỉ lệ đúng của vòng này; bestStreakQ (chuỗi dài nhất trong
+     các vòng đạt điều kiện) chỉ tăng khi tỉ lệ đúng của vòng đạt
+     minAcc — 3 huy hiệu tc-* trong feat-a1.js đọc trường này. Vòng
+     không trả lời câu nào: tỉ lệ tính là 0, không chia cho 0. */
+  var roundAcc = TC.answered > 0 ? TC.correct / TC.answered : 0;
+  rec.lastStreak = TC.bestStreak;
+  rec.lastAcc = roundAcc;
+  if (TC.bestStreak > rec.bestStreak) rec.bestStreak = TC.bestStreak;
+  if (TC_MILESTONES && roundAcc >= TC_MILESTONES.minAcc && TC.bestStreak > rec.bestStreakQ) rec.bestStreakQ = TC.bestStreak;
+  rec.last = Date.now();
+  var seenKeys = [];
+  TC.history.forEach(function (h) { seenKeys.push(h.item.key); });
+  seenKeys.forEach(function (k) {
+    var i = rec.recent.indexOf(k);
+    if (i !== -1) rec.recent.splice(i, 1);
+    rec.recent.push(k);
+  });
+  while (rec.recent.length > 60) rec.recent.shift();
+  v14Save(TC_LS, rec);
+  /* Chụp trạng thái huy hiệu TRƯỚC khi ghi activity: recordActivity
+     bên trong tự gọi checkBadges (feat-a1), nên huy hiệu của vòng
+     này có thể được trao ngay tại đó — chụp sau sẽ lỡ mất. */
+  var tcEarnedBefore = {};
+  try { if (window.__a1 && window.__a1.loadBadges) tcEarnedBefore = (window.__a1.loadBadges().earned) || {}; } catch (e) {}
+  try { if (typeof window.__a1RecordActivity === "function") window.__a1RecordActivity(); } catch (e) {}
+  /* Trao huy hiệu qua cơ chế chung (checkBadges của feat-a1, mỗi
+     huy hiệu nhận một lần, ghi gameHocTap_badges_v1 — không khóa
+     mới); đối chiếu trước/sau để biết huy hiệu Tia chớp nào VỪA
+     nhận ở vòng này, hiện bằng chữ ở màn kết quả. */
+  var tcNewBadges = [];
+  if (window.__a1 && window.__a1.checkBadges) {
+    try { window.__a1.checkBadges(); } catch (e) {}
+    try {
+      var tcEarnedAfter = (window.__a1.loadBadges().earned) || {};
+      ["tc-bronze", "tc-silver", "tc-gold"].forEach(function (id) { if (tcEarnedAfter[id] && !tcEarnedBefore[id]) tcNewBadges.push(id); });
+    } catch (e) {}
+  }
+  /* Hết giờ: tiếng kết thúc vòng (hiệu ứng, qua beep như rcvBell).
+     KHÔNG tiếng khen nói, KHÔNG tóm tắt nói — chốt của anh vu. */
+  if (reason === "time") {
+    try { if (typeof beep === "function") { beep(784, 0, 0.15); beep(523, 0.16, 0.32); } } catch (e) {}
+  }
+  tcRenderEnd(reason, newBest, rec, tcNewBadges);
+}
+function tcRenderEnd(reason, newBest, rec, newBadges) {
+  var acc = TC.answered ? Math.round(100 * TC.correct / TC.answered) : 0;
+  var title = reason === "time" ? "⏰ Hết giờ!" : "⚡ Tia chớp — Hết vòng";
+  var html = '<div class="topbar"><div><h2>⚡ Tia chớp — Kết quả</h2></div></div>' +
+    '<div class="rcv-qcard"><div class="rcv-prompt" style="text-align:center">' + title + '</div>' +
+    (newBest ? '<p class="rcv-feedback" style="text-align:center;color:#256b2e">🎉 Kỷ lục điểm mới!</p>' : "") +
+    ((newBadges && newBadges.length) ? '<p class="rcv-feedback" style="text-align:center;color:#256b2e">🏅 Huy hiệu mới: ' + newBadges.map(function (id) { return TC_BADGE_LABEL[id] || id; }).join(" • ") + '!</p>' : "") +
+    '<div class="a2-stats" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0">' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🏆 Tổng điểm<br><b style="font-size:22px">' + TC.score + '</b></div>' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">✅ Đúng<br><b style="font-size:22px">' + TC.correct + "/" + TC.answered + ' câu</b></div>' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🎯 Chính xác<br><b style="font-size:22px">' + acc + '%</b></div>' +
+    '<div class="rcv-rung done" style="min-width:110px;padding:10px">🔥 Chuỗi cao nhất<br><b style="font-size:22px">' + TC.bestStreak + '</b></div>' +
+    '</div>' +
+    '<p class="rcv-meta" style="text-align:center">Kỷ lục của em: điểm cao nhất ' + rec.best + ' • số câu đúng nhất ' + rec.bestCount + ' • ' + rec.runs + ' vòng đã chơi</p>' +
+    '<div class="btn-row rcv-end-btns" style="justify-content:center;margin-top:10px"><button class="btn success" id="tc-again">🔁 Chơi lại</button><button class="btn ghost" id="tc-to-dir">🎉 Về thư mục giải trí</button></div></div>';
+  html += '<h3 class="gt-cards-title">📖 Xem lại các câu đã gặp</h3><div class="rcv-review">';
+  TC.history.forEach(function (h, hi) {
+    var it = h.item;
+    var cls = h.outcome === "wrong" ? "rcv-ritem fell" : "rcv-ritem";
+    var mark = h.outcome === "correct" ? ("✅ Đúng (+" + h.gained + " điểm)") : "❌ Sai";
+    html += '<div class="' + cls + '"><div class="rq">Câu ' + (hi + 1) + " — " + mark + "<br>" + gtEsc(it.prompt) + "</div>";
+    var figR = "";
+    try { if (typeof figHTML === "function") figR = figHTML(it.figure); } catch (e) {}
+    if (figR || it.visual) html += '<div class="rcv-visual">' + figR + (it.visual || "") + "</div>";
+    it.options.forEach(function (o, i) {
+      var oc = i === it.answer ? "ro ok" : (i === h.chosen ? "ro bad" : "ro");
+      var tag = i === it.answer ? " ✔ đáp án đúng" : (i === h.chosen ? " (em chọn)" : "");
+      html += '<div class="' + oc + '">' + "ABCD".charAt(i) + ". " + o + tag + "</div>";
+    });
+    html += '<div class="rcv-meta">' + gtEsc(it.subjName) + " • " + gtEsc(it.topicName) + "</div>";
+    if (it.explain) html += '<div class="re"><b>Giải thích:</b> ' + it.explain + "</div>";
+    /* Không nút nghe lại ở màn xem lại — toàn chế độ không có đọc
+       câu hỏi (chốt của anh vu, khác RCV ở điểm này). */
+    html += "</div>";
+  });
+  html += "</div>";
+  document.getElementById("gt-body").innerHTML = html;
+  var ag = document.getElementById("tc-again");
+  if (ag) ag.addEventListener("click", function () { tcStart(); });
+  var td = document.getElementById("tc-to-dir");
+  if (td) td.addEventListener("click", function () { TC.phase = "idle"; if (typeof window.__openGiaiTri === "function") window.__openGiaiTri(); });
+}
+/* CSS riêng của Tia chớp (mẫu v14Style/v15GtMenuStyle — chỉ thêm). */
+(function tcStyle() {
+  if (document.getElementById("v20-tc-style")) return;
+  var st = document.createElement("style"); st.id = "v20-tc-style";
+  st.textContent = [
+    ".tc-scorebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}",
+    ".tc-stat{font-weight:700;color:var(--ink-soft,#6f675a);font-size:14px;background:#fffdf6;border:3px solid var(--line,#f0dfba);border-radius:14px;padding:7px 13px;line-height:1.3}",
+    ".tc-stat b{font-size:20px;color:#33302a}",
+    "@keyframes tcShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}",
+    ".tc-shake{animation:tcShake .45s ease}",
+    "#tc-again,#tc-to-dir{font-family:inherit;font-size:19px;font-weight:800;padding:15px 24px;min-height:56px;border-radius:18px;cursor:pointer;line-height:1.25}",
+    "#tc-again{background:#58a05c;color:#fff;border:3px solid #3c7240;box-shadow:0 5px 0 #3c7240}",
+    "#tc-to-dir{background:#fffdf6;color:#33302a;border:3px solid #e07b39;box-shadow:0 5px 0 #e07b39}",
+    "#tc-again:active,#tc-to-dir:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}"
+  ].join("\n");
+  (document.head || document.body).appendChild(st);
+})();
+/* API phục vụ kiểm chứng (cùng khuôn window.__GT.rcv). */
+var TC_API = {
+  buildQueue: tcBuildQueue, drawItems: tcDrawItems,
+  start: tcStart, renderIntro: tcRenderIntro, answer: tcAnswer,
+  state: function () { return TC; }, records: tcLoadRec,
+  scoreFor: tcScoreFor, speedBonus: tcSpeedBonus,
+  milestones: TC_MILESTONES,
+  leakLog: function () { return tcLeakLog.slice(); },
+  endNow: function () { TC.deadline = Date.now() - 1; tcTick(); }
+};
+if (window.__GT) {
+  window.__GT.tc = TC_API;
+  window.__GT.renderTiaChop = tcRenderIntro;
+  /* Nút quay lại của vỏ giữa vòng Tia chớp: dừng vòng + về màn giới
+     thiệu, đúng như RCV (bọc lại handleBack sẵn có, không sửa RCV). */
+  if (typeof window.__GT.handleBack === "function") {
+    var tcOrigHandleBack = window.__GT.handleBack;
+    window.__GT.handleBack = function () {
+      if (TC.phase === "play") { tcAbortRun(); tcRenderIntro(); return true; }
+      if (TC.phase === "intro" || TC.phase === "end") { TC.phase = "idle"; return false; }
+      return tcOrigHandleBack.apply(this, arguments);
+    };
+  }
+}
