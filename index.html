@@ -698,14 +698,21 @@
     }
     function qBundles() {
       var tens = rand(1, 9), ones = rand(1, 9), total = tens * 10 + ones;
-      var bundles = "";
-      for (var i = 0; i < tens; i++) bundles += '<div class="bundle"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>';
-      var onesHtml = '<div class="ones">';
-      for (var j = 0; j < ones; j++) onesHtml += "<i></i>";
-      onesHtml += "</div>";
+      /* Đợt hình Tiểu học (v22): bó chục vẽ bằng SVG thật (trước là div chấm
+         HTML không được tính là hình). Bó/que là dữ kiện để đếm — tổng số
+         chấm chính là điều đề hỏi, không in số ở đâu trong hình. */
+      var bw = 34, gap = 10, ow = 9, W = tens * (bw + gap) + ones * (ow + 5) + 22, svg = '<svg viewBox="0 0 ' + W + ' 84" style="max-width:100%;height:auto" role="img" aria-label="Các bó chục và que lẻ">';
+      for (var i = 0; i < tens; i++) {
+        var bx = 10 + i * (bw + gap);
+        svg += '<rect x="' + bx + '" y="12" width="' + bw + '" height="58" rx="7" fill="#dcecfb" stroke="#2f6db3" stroke-width="2.2"/>';
+        for (var sIdx = 0; sIdx < 10; sIdx++) svg += '<line x1="' + (bx + 5 + sIdx * 2.7) + '" y1="19" x2="' + (bx + 5 + sIdx * 2.7) + '" y2="63" stroke="#2f6db3" stroke-width="1.7"/>';
+      }
+      var ox = 10 + tens * (bw + gap) + 2;
+      for (var j = 0; j < ones; j++) svg += '<rect x="' + (ox + j * (ow + 5)) + '" y="12" width="' + ow + '" height="58" rx="4" fill="#ffd9a8" stroke="#e4572e" stroke-width="2"/>';
+      svg += "</svg>";
       var opts = numOptions(total, 11, 99, 3);
       return { prompt: "Mỗi bó có 10 chấm. Có tất cả bao nhiêu chấm?",
-        visual: '<div class="bundles">' + bundles + onesHtml + "</div>",
+        visual: '<div style="text-align:center">' + svg + "</div>",
         options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }),
         answer: opts.indexOf(total), cols: 3 };
     }
@@ -730,10 +737,14 @@
         ans = a - b;
       }
       var opts = numOptions(ans, 1, 99, 3);
-      return { prompt: isAdd ? "Tính nhẩm: cộng hai số" : "Tính nhẩm: trừ hai số",
+      var q = { prompt: isAdd ? "Tính nhẩm: cộng hai số" : "Tính nhẩm: trừ hai số",
         visual: '<div class="expr">' + a + (isAdd ? " + " : " − ") + b + " = ?</div>",
         options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }),
         answer: opts.indexOf(ans), cols: 3 };
+      /* Đợt hình Tiểu học (v22): khối trăm–chục–đơn vị của hai số hạng là dữ
+         kiện (hai số đã có trong phép tính); kết quả không vẽ. */
+      if (Math.random() < 0.85) q.figure = figAddSubBlocksSVG(a, b, isAdd);
+      return q;
     }
     function qClock() {
       var h = pick([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
@@ -1064,16 +1075,23 @@
         return matchQ("Nối phép tính với kết quả đúng nhé!", pairs);
       };
     }
+    /* SỬA H1 (v22): nhãn tên ẩn thị giác cho mặt HÌNH trong màn ghép/lật thẻ
+       (hình khối, đồng hồ, tranh SVG tiếng Anh): mặt hình không có chữ nên
+       hai thẻ hình khác nhau bị coi là trùng giá trị. Nhãn chỉ đặt tên cho
+       chính hình đó (chuẩn alt-text), học sinh không nhìn thấy. */
+    function figNameSpan(name) {
+      return '<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap" aria-hidden="true">' + name + "</span>";
+    }
     function mShapeName() {
       var colors = shuffle(SHAPE_COLORS);
       return matchQ("Nối hình với tên hình nhé!", SHAPES.map(function (s, i) {
-        return { l: shapeSVG(s.id, colors[i % colors.length]), r: '<span class="match-text">' + s.name + "</span>" };
+        return { l: figNameSpan(s.name) + shapeSVG(s.id, colors[i % colors.length]), r: '<span class="match-text">' + s.name + "</span>" };
       }));
     }
     function mClockHour() {
       var hs = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]).slice(0, 4);
       return matchQ("Nối đồng hồ với giờ đúng nhé!", hs.map(function (h) {
-        return { l: clockSVG(h), r: '<span class="match-text">' + h + " giờ</span>" };
+        return { l: figNameSpan(h + " giờ") + clockSVG(h), r: '<span class="match-text">' + h + " giờ</span>" };
       }));
     }
     function mEngWordPic(pool) {
@@ -1081,7 +1099,7 @@
       if (pw.length < 3) return mEngWordMeaning(pool);
       var ws = pickWords(pw, 4);
       return matchQ("Nối từ với hình đúng nhé!", ws.map(function (w) {
-        return { l: '<span class="match-word">' + w[0] + "</span>", r: '<span class="opt-emoji">' + picHTML(w) + "</span>" };
+        return { l: '<span class="match-word">' + w[0] + "</span>", r: '<span class="opt-emoji">' + picHTML(w) + figNameSpan(w[0]) + "</span>" };
       }));
     }
     function mEngWordMeaning(pool) {
@@ -1136,13 +1154,13 @@
     function gMemShape() {
       var colors = shuffle(SHAPE_COLORS);
       return memQ("Lật thẻ tìm cặp đúng: hình và tên hình!", SHAPES.map(function (s, i) {
-        return { a: shapeSVG(s.id, colors[i % colors.length]), b: '<span class="mem-text">' + s.name + "</span>" };
+        return { a: figNameSpan(s.name) + shapeSVG(s.id, colors[i % colors.length]), b: '<span class="mem-text">' + s.name + "</span>" };
       }));
     }
     function gMemClock() {
       var hs = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]).slice(0, 4);
       return memQ("Lật thẻ tìm cặp đúng: đồng hồ và giờ!", hs.map(function (h) {
-        return { a: clockSVG(h), b: '<span class="mem-text">' + h + " giờ</span>" };
+        return { a: figNameSpan(h + " giờ") + clockSVG(h), b: '<span class="mem-text">' + h + " giờ</span>" };
       }));
     }
     function gMemEngFactory(pool) {
@@ -1151,7 +1169,7 @@
         if (pw.length >= 4) {
           var ws = pickWords(pw, 4);
           return memQ("Lật thẻ tìm cặp đúng: từ và hình!", ws.map(function (w) {
-            return { a: '<span class="mem-word">' + w[0] + "</span>", b: '<span class="opt-emoji">' + picHTML(w) + "</span>" };
+            return { a: '<span class="mem-word">' + w[0] + "</span>", b: '<span class="opt-emoji">' + picHTML(w) + figNameSpan(w[0]) + "</span>" };
           }));
         }
         var ws2 = pickWordsMode(pool, 4, "gloss");
@@ -2903,18 +2921,64 @@ function valueKeyOf(html) {
         return out.length ? out : authored;
       } catch (e) { return authored; }
     }
-    function factMCQ(f, sib){ return identifyRoundFact(mcqQ(f[0], kpTypedWrongs(f, sib), f[1], f[4]||null), f[0]); }
+    /* Đợt hình Tiểu học (v22): dữ kiện có thể mang phần tử thứ 6 (f[5]) là hình
+       minh hoạ — chuỗi HTML/SVG hoặc hàm trả chuỗi (đánh giá lười tại lúc sinh
+       câu). Hình là dữ kiện/ngữ cảnh của chính dữ kiện đó, KHÔNG chứa đáp án
+       (đáp án vẫn chỉ nằm ở f[1] dưới dạng chữ như cũ). Dữ kiện không có f[5]
+       cho ra chuỗi rỗng — hành vi y hệt trước. */
+    function kpFactVis(f){
+      var v = f && f[5];
+      if (!v) return "";
+      try { var s = typeof v === "function" ? v() : v; return s ? String(s) : ""; } catch (e) { return ""; }
+    }
+    function factMCQ(f, sib){ return identifyRoundFact(mcqQ(f[0], kpTypedWrongs(f, sib), f[1], f[4]||null, kpFactVis(f)), f[0]); }
     function factBlank(f, sib){
       var all = shuffle([f[1]].concat(kpTypedWrongs(f, sib)));
       return { roundIdentity: { type: "fact", facts: [f[0]] }, kind:"blank", badge:"✏️ Điền vào chỗ trống", prompt: f[0], blankText: String(f[1]), explain: f[4]||null,
-        visual: '<div class="sentence">Đáp án: ' + blankSlot() + "</div>",
+        visual: kpFactVis(f) + '<div class="sentence">Đáp án: ' + blankSlot() + "</div>",
         options: all.map(function(o){return {html:'<span class="opt-text">'+o+"</span>"};}), answer: all.indexOf(f[1]), cols: 3, optStack: true };
     }
+    /* Sửa H1 (2026-10-20): khoá GIÁ TRỊ của một vế cặp — cùng chuẩn hoá với
+       cổng phát hành của anh vu: bóc thẻ HTML, NFC, thường hoá, gộp khoảng
+       trắng, GIỮ NGUYÊN dấu tiếng Việt; số/phân số/hỗn số/phần trăm so theo
+       GIÁ TRỊ ("1" = "4/4" = "1,0"; "50%" cùng giá trị 1/2). Việc so trùng
+       chỉ dùng để kiểm duy nhất, không đổi cách trình bày đáp án (kể cả
+       ngoại lệ phân số nghịch đảo giữ nguyên dạng lật). */
+    function pairValKey(v){
+      var t = String(v == null ? "" : v).replace(/<[^>]*>/g, " ").normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+      var m;
+      if ((m = /^(-?\d+(?:[.,]\d+)?)\s*%$/.exec(t))) return "n|" + (parseFloat(m[1].replace(",", ".")) / 100);
+      if ((m = /^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/.exec(t))) { var dm = +m[3]; if (dm) return "n|" + ((+m[1]) + (+m[2]) / dm); }
+      if ((m = /^(-?\d+)\s*\/\s*(\d+)$/.exec(t))) { var dn = +m[2]; if (dn) return "n|" + ((+m[1]) / dn); }
+      if ((m = /^(-?\d+(?:[.,]\d+)?)$/.exec(t))) return "n|" + parseFloat(m[1].replace(",", "."));
+      return "t|" + t;
+    }
+    /* Sửa H1 (2026-10-20): TẦNG SINH màn ghép/lật thẻ chỉ phát các cặp mà
+       TỪNG CỘT phân biệt theo giá trị đã chuẩn hoá (trước đây bộ lấy mẫu
+       rút cặp không kiểm tra duy nhất trong màn, trong khi mã chấm so theo
+       số thứ tự cặp — hai thẻ cùng giá trị khiến học sinh bấm đúng giá trị
+       vẫn bị báo sai). Xáo trộn trước khi chọn tham lam để các lượt chơi
+       khác nhau giữ các cặp khác nhau trong cùng một ngân hàng cặp. Màn lật
+       thẻ còn đòi mọi mặt thẻ khác nhau giữa cả hai cột (như cổng
+       prepareRoundQuestion vẫn yêu cầu ở tầng chọn câu). */
+    function pickDistinctPairs(pairs, cross){
+      var src = shuffle((pairs || []).slice()), usedL = {}, usedR = {}, out = [];
+      src.forEach(function(p){
+        if (!p) return;
+        var lk = pairValKey(p[0]), rk = pairValKey(p[1]);
+        if (usedL[lk] || usedR[rk]) return;
+        if (cross && (usedR[lk] || usedL[rk])) return;
+        usedL[lk] = 1; usedR[rk] = 1; out.push(p);
+      });
+      return out.length ? out : (pairs || []).slice(0, 1);
+    }
     function pairsMatch(prompt, pairs){
-      return matchQ(prompt, pairs.map(function(p){ return { l:'<span class="match-text">'+p[0]+"</span>", r:'<span class="match-text">'+p[1]+"</span>" }; }));
+      var sel = pickDistinctPairs(pairs, false);
+      return matchQ(prompt, sel.map(function(p){ return { l:'<span class="match-text">'+p[0]+"</span>", r:'<span class="match-text">'+p[1]+"</span>" }; }));
     }
     function pairsMemory(pairs){
-      return memQ("Lật thẻ tìm cặp đúng nhé!", pairs.map(function(p){ return { a:'<span class="mem-text">'+p[0]+"</span>", b:'<span class="mem-text">'+p[1]+"</span>" }; }));
+      var sel = pickDistinctPairs(pairs, true);
+      return memQ("Lật thẻ tìm cặp đúng nhé!", sel.map(function(p){ return { a:'<span class="mem-text">'+p[0]+"</span>", b:'<span class="mem-text">'+p[1]+"</span>" }; }));
     }
     function factsTF(facts){
       return function(){
@@ -2934,7 +2998,7 @@ function valueKeyOf(html) {
            cặp hỏi–đáp, và cân bằng phán quyết cho cả màn. */
         tfBalanceItems(items, function (it) { return it.f[2]; });
         var rounds = items.map(function (it) {
-          return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">'+qaToStmt(it.f[0], it.shown)+"</div>", truth: it.truth, explain: "Đáp án đúng: "+it.f[1] };
+          return { visual: kpFactVis(it.f) + '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">'+qaToStmt(it.f[0], it.shown)+"</div>", truth: it.truth, explain: "Đáp án đúng: "+it.f[1] };
         });
         var q = tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
         q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f[0]; }) }; return q;
@@ -3102,10 +3166,13 @@ function valueKeyOf(html) {
     var TABLES3 = [2, 3, 4, 5, 6, 7, 8, 9];
     function g3Table(mul) {
       return function () {
-        var t = pick([6, 7, 8, 9, 6, 7, 8, 9, 2, 3, 4, 5]), k = rand(2, 9);
-        if (mul) return calcMCQ("Bảng nhân " + t, t + " × " + k + " = ?", t * k, 0, 100, "Thuộc bảng nhân " + t + ": " + t + " × " + k + " = " + (t * k) + ".");
+        var t = pick([6, 7, 8, 9, 6, 7, 8, 9, 2, 3, 4, 5]), k = rand(2, 9), q;
+        /* Đợt hình Tiểu học (v22): mảng chấm là mô hình trực quan chuẩn của
+           phép nhân/chia trong SGK — các chấm và số đĩa là dữ kiện của phép
+           tính đã nêu trong đề; tích/thương không in trong hình. */
+        if (mul) { q = calcMCQ("Bảng nhân " + t, t + " × " + k + " = ?", t * k, 0, 100, "Thuộc bảng nhân " + t + ": " + t + " × " + k + " = " + (t * k) + "."); if (Math.random() < 0.88) q.figure = figArraySVG(t, k); return q; }
         var p = t * k;
-        return calcMCQ("Bảng chia " + t, p + " : " + t + " = ?", k, 0, 10, "Vì " + t + " × " + k + " = " + p + " nên " + p + " : " + t + " = " + k + ".");
+        q = calcMCQ("Bảng chia " + t, p + " : " + t + " = ?", k, 0, 10, "Vì " + t + " × " + k + " = " + p + " nên " + p + " : " + t + " = " + k + "."); if (Math.random() < 0.88) q.figure = figDivGroupsSVG(p, t); return q;
       };
     }
     function g3TableBlank() {
@@ -3122,7 +3189,10 @@ function valueKeyOf(html) {
       var pairs = [], used = {}, guard = 0;
       while (pairs.length < 4 && guard++ < 200) {
         var t = pick(TABLES3), k = rand(2, 9), key = t + "x" + k;
-        if (used[key]) continue; used[key] = true;
+        /* Sửa H1 (2026-10-20): khử trùng cả theo TÍCH — hai phép nhân khác
+           nhau có thể cho cùng một tích (2 × 6 = 3 × 4 = 12) khiến cột kết
+           quả trùng giá trị trong cùng màn. */
+        if (used[key] || used["r" + (t * k)]) continue; used[key] = true; used["r" + (t * k)] = true;
         pairs.push({ a: '<span class="mem-expr">' + t + " × " + k + "</span>", b: '<span class="mem-num">' + (t * k) + "</span>" });
       }
       return memQ("Lật thẻ tìm cặp đúng: phép nhân và tích!", pairs);
@@ -3271,20 +3341,30 @@ function valueKeyOf(html) {
       var e = pick(ROMAN3);
       var wrongs = shuffle(ROMAN3.filter(function (x) { return x[0] !== e[0]; })).slice(0, 3).map(function (x) { return x[0]; });
       var all = shuffle([e[0]].concat(wrongs));
-      return { prompt: "Chữ số La Mã " + e[1] + " có giá trị là bao nhiêu?", visual: '<div class="big-word">' + e[1] + "</div>", options: all.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: all.indexOf(e[0]), cols: 4, explain: "I = 1, V = 5, X = 10 nên " + e[1] + " = " + e[0] + "." };
+      var q = { prompt: "Chữ số La Mã " + e[1] + " có giá trị là bao nhiêu?", visual: '<div class="big-word">' + e[1] + "</div>", options: all.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: all.indexOf(e[0]), cols: 4, explain: "I = 1, V = 5, X = 10 nên " + e[1] + " = " + e[0] + "." };
+      /* Đợt hình Tiểu học (v22): mặt đồng hồ số La Mã là ngữ cảnh SGK quen
+         thuộc — vòng số gồm đủ 12 số, kim chỉ đúng số đang hỏi (dữ kiện đề
+         đã nêu); giá trị số học của nó không in trong hình. */
+      if (e[0] <= 12 && Math.random() < 0.75) q.figure = figClockRomanSVG(e[0]);
+      return q;
     }
     function g3NumToRoman() {
       var e = pick(ROMAN3);
       var wrongs = shuffle(ROMAN3.filter(function (x) { return x[0] !== e[0]; })).slice(0, 2).map(function (x) { return x[1]; });
-      return mcqQ("Số " + e[0] + " viết bằng chữ số La Mã là?", wrongs, e[1], "Số " + e[0] + " viết là " + e[1] + " (I = 1, V = 5, X = 10).");
+      var q = mcqQ("Số " + e[0] + " viết bằng chữ số La Mã là?", wrongs, e[1], "Số " + e[0] + " viết là " + e[1] + " (I = 1, V = 5, X = 10).");
+      /* Thẻ số lớn chỉ nhắc lại số đã cho trong đề (dữ kiện), không chứa đáp án. */
+      if (Math.random() < 0.85) q.figure = figLetterCardSVG(String(e[0]));
+      return q;
     }
     function g3RomanBlank() {
       var e = pick(ROMAN3);
       var wrongs = shuffle(ROMAN3.filter(function (x) { return x[0] !== e[0]; })).slice(0, 2).map(function (x) { return x[1]; });
       var all = shuffle([e[1]].concat(wrongs));
-      return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền chữ số La Mã còn thiếu!", blankText: e[1],
+      var q = { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền chữ số La Mã còn thiếu!", blankText: e[1],
         visual: '<div class="sentence">Số ' + e[0] + " viết là: " + blankSlot() + "</div>",
         options: all.map(function (o) { return { html: '<span class="opt-word">' + o + "</span>" }; }), answer: all.indexOf(e[1]), cols: 3 };
+      if (Math.random() < 0.85) q.figure = figLetterCardSVG(String(e[0]));
+      return q;
     }
     function g3RomanMatch() {
       var es = shuffle(ROMAN3.slice()).slice(0, 4);
@@ -3298,11 +3378,13 @@ function valueKeyOf(html) {
         function () { return memQ("Lật thẻ tìm cặp đúng: số và chữ số La Mã!", memPairs); }];
     }
     function g3PeriArea() {
-      var v = rand(0, 5);
-      if (v === 0) { var a = rand(4, 15), b = rand(2, a - 1); return calcMCQ("Chu vi hình chữ nhật", "Dài " + a + " cm, rộng " + b + " cm — P = ?", (a + b) * 2, 0, 100, "Chu vi hình chữ nhật = (dài + rộng) × 2 = (" + a + " + " + b + ") × 2 = " + ((a + b) * 2) + " cm."); }
-      if (v === 1) { var a2 = rand(4, 15), b2 = rand(2, a2 - 1); return calcMCQ("Diện tích hình chữ nhật", "Dài " + a2 + " cm, rộng " + b2 + " cm — S = ?", a2 * b2, 0, 200, "Diện tích hình chữ nhật = dài × rộng = " + a2 + " × " + b2 + " = " + (a2 * b2) + " cm²."); }
-      if (v === 2) { var s = rand(3, 12); return calcMCQ("Chu vi hình vuông", "Cạnh " + s + " cm — P = ?", s * 4, 0, 60, "Chu vi hình vuông = cạnh × 4 = " + s + " × 4 = " + (s * 4) + " cm."); }
-      if (v === 3) { var s2 = rand(3, 12); return calcMCQ("Diện tích hình vuông", "Cạnh " + s2 + " cm — S = ?", s2 * s2, 0, 200, "Diện tích hình vuông = cạnh × cạnh = " + s2 + " × " + s2 + " = " + (s2 * s2) + " cm²."); }
+      var v = rand(0, 5), q;
+      /* Đợt hình Tiểu học (v22): hình kèm kích thước — kích thước cũng đã ghi
+         trong lời đề (dữ kiện hai kênh), chu vi/diện tích không vẽ. */
+      if (v === 0) { var a = rand(4, 15), b = rand(2, a - 1); q = calcMCQ("Chu vi hình chữ nhật", "Dài " + a + " cm, rộng " + b + " cm — P = ?", (a + b) * 2, 0, 100, "Chu vi hình chữ nhật = (dài + rộng) × 2 = (" + a + " + " + b + ") × 2 = " + ((a + b) * 2) + " cm."); q.figure = figRectSVG(a, b); return q; }
+      if (v === 1) { var a2 = rand(4, 15), b2 = rand(2, a2 - 1); q = calcMCQ("Diện tích hình chữ nhật", "Dài " + a2 + " cm, rộng " + b2 + " cm — S = ?", a2 * b2, 0, 200, "Diện tích hình chữ nhật = dài × rộng = " + a2 + " × " + b2 + " = " + (a2 * b2) + " cm²."); q.figure = figRectSVG(a2, b2); return q; }
+      if (v === 2) { var s = rand(3, 12); q = calcMCQ("Chu vi hình vuông", "Cạnh " + s + " cm — P = ?", s * 4, 0, 60, "Chu vi hình vuông = cạnh × 4 = " + s + " × 4 = " + (s * 4) + " cm."); q.figure = figSquareSVG(s); return q; }
+      if (v === 3) { var s2 = rand(3, 12); q = calcMCQ("Diện tích hình vuông", "Cạnh " + s2 + " cm — S = ?", s2 * s2, 0, 200, "Diện tích hình vuông = cạnh × cạnh = " + s2 + " × " + s2 + " = " + (s2 * s2) + " cm²."); q.figure = figSquareSVG(s2); return q; }
       if (v === 4) { var x = rand(3, 12), y = rand(3, 12), z = rand(3, 12); return calcMCQ("Chu vi hình tam giác", "Ba cạnh " + x + " cm, " + y + " cm, " + z + " cm — P = ?", x + y + z, 0, 60, "Chu vi tam giác = tổng độ dài ba cạnh = " + x + " + " + y + " + " + z + " = " + (x + y + z) + " cm."); }
       var p = rand(3, 10), q = rand(3, 10), r = rand(3, 10), w = rand(3, 10);
       return calcMCQ("Chu vi hình tứ giác", "Bốn cạnh " + p + ", " + q + ", " + r + ", " + w + " cm — P = ?", p + q + r + w, 0, 60, "Chu vi tứ giác = tổng độ dài bốn cạnh = " + (p + q + r + w) + " cm.");
@@ -3312,12 +3394,21 @@ function valueKeyOf(html) {
       return numBlankQ("Điền số còn thiếu vào chỗ trống!", '<div class="expr">(' + a + " + " + blankSlot() + ") × 2 = " + p + "</div>", b, 0, 20);
     }
     function g3PeriMatch() {
-      var s1 = rand(3, 9), a = rand(5, 11), b = rand(2, a - 1), s2 = rand(3, 8);
+      /* Sửa H1 (2026-10-20): trước đây CÙNG một hình chữ nhật bị hỏi cả chu
+         vi lẫn diện tích nên cột trái trùng ở MỌI màn; nay mỗi hình chỉ hỏi
+         một đại lượng, hai hình vuông khác cạnh nhau, hai hình chữ nhật
+         khác nhau, và các giá trị chu vi/diện tích trong cùng cột phải
+         phân biệt (vòng rút lại có bảo vệ). */
+      var s1 = rand(3, 9), a = rand(5, 11), b = rand(2, a - 1), s2 = rand(3, 8), a2 = rand(5, 11), b2 = rand(2, a2 - 1), guard = 0;
+      while (guard++ < 200 && (s2 === s1 || (a2 === a && b2 === b) || s1 * 4 === (a + b) * 2 || s2 * s2 === a2 * b2)) {
+        s2 = rand(3, 8); a2 = rand(5, 11); b2 = rand(2, a2 - 1);
+        if (s1 * 4 === (a + b) * 2) { a = rand(5, 11); b = rand(2, a - 1); }
+      }
       return matchQ("Nối hình với chu vi / diện tích đúng nhé!", [
         { l: '<span class="match-text">Vuông cạnh ' + s1 + " cm</span>", r: '<span class="opt-num">P = ' + (s1 * 4) + " cm</span>" },
         { l: '<span class="match-text">Chữ nhật dài ' + a + ", rộng " + b + " cm</span>", r: '<span class="opt-num">P = ' + ((a + b) * 2) + " cm</span>" },
         { l: '<span class="match-text">Vuông cạnh ' + s2 + " cm</span>", r: '<span class="opt-num">S = ' + (s2 * s2) + " cm²</span>" },
-        { l: '<span class="match-text">Chữ nhật dài ' + a + ", rộng " + b + " cm</span>", r: '<span class="opt-num">S = ' + (a * b) + " cm²</span>" }
+        { l: '<span class="match-text">Chữ nhật dài ' + a2 + ", rộng " + b2 + " cm</span>", r: '<span class="opt-num">S = ' + (a2 * b2) + " cm²</span>" }
       ]);
     }
     function g3AddSubBig(limit) {
@@ -3375,7 +3466,16 @@ function valueKeyOf(html) {
       return g3NumBlank("Điền số tiền còn thiếu vào chỗ trống!", '<div class="expr">' + n1 + " tờ 10 000 đồng = " + blankSlot() + " đồng</div>", total, 0, 100000);
     }
     function g3MoneyMatch() {
-      var ns = shuffle([1, 2, 3, 4]).slice(0, 2), vals = shuffle([5000, 10000, 20000, 50000]).slice(0, 2);
+      /* SỬA H1 (v22): trước đây các tổ hợp (số tờ × mệnh giá) khác nhau cho
+         cùng một tổng (2 tờ 10 000 = 4 tờ 5 000 = 20 000) và mặt trái còn
+         trùng nguyên văn ("1 tờ 10 000 đồng" hai lần). Nay sinh lại tới khi
+         cả 4 mặt trái khác nhau và cả 4 tổng tiền phân biệt. */
+      var ns, vals, totals, lefts, guard = 0;
+      do {
+        ns = shuffle([1, 2, 3, 4]).slice(0, 2); vals = shuffle([5000, 10000, 20000, 50000]).slice(0, 2);
+        totals = [ns[0] * 10000, ns[1] * 5000, vals[0], vals[1] * 2];
+        lefts = [ns[0] + "|10000", ns[1] + "|5000", "1|" + vals[0], "2|" + vals[1]];
+      } while ((new Set(totals).size !== 4 || new Set(lefts).size !== 4) && ++guard < 200);
       var pairs = [
         { l: '<span class="match-text">' + ns[0] + " tờ 10 000 đồng</span>", r: '<span class="opt-num">' + fmtN(ns[0] * 10000) + " đồng</span>" },
         { l: '<span class="match-text">' + ns[1] + " tờ 5 000 đồng</span>", r: '<span class="opt-num">' + fmtN(ns[1] * 5000) + " đồng</span>" },
@@ -3959,6 +4059,252 @@ function figK5LeverSVG(a, b, loadSide) {
   out += figText(cx, 132, "Điểm tựa", "middle", 11.5, FIG_MUT);
   return out + "</svg>";
 }
+/* ================= ĐỢT HÌNH TIỂU HỌC (v22) — 3 HỌ SVG MỚI + PHỤ TRỢ =================
+   Cùng kỷ luật B2: tham số hình lấy từ cùng biến mà bộ sinh dùng để tính câu
+   hỏi/đáp án (một nguồn sự thật duy nhất). Hình KHÔNG BAO GIỜ in đáp án:
+   - Phân số: phần tô là DỮ KIỆN khi đề hỏi "phần tô là mấy phần"; khi đề yêu
+     cầu so sánh, hình tô cả hai phân số được hỏi (đều là dữ kiện đề cho),
+     phán quyết lớn/bé KHÔNG được vẽ.
+   - Tiền: mệnh giá in trên tờ tiền là dữ kiện đề (đếm tiền/đổi tiền); tổng
+     tiền KHÔNG in ở đâu trong hình. Tờ tiền vẽ cách điệu phục vụ học tập,
+     không sao chép chi tiết bảo an của tiền thật.
+   - Khối 3D: hình khối là đối tượng được hỏi (nhận dạng/đếm) — dữ kiện đề. */
+/* H1a — thanh phân số: chia d phần bằng nhau, tô n phần đầu. Không in số. */
+function figFracBarSVG(n, d) {
+  d = Math.max(2, Math.min(16, d | 0)); n = Math.max(0, Math.min(d, n | 0));
+  var cw = Math.max(26, Math.min(44, Math.floor(300 / d))), W = d * cw + 8, y = 16, h = 38;
+  var out = figOpen("0 0 " + W + " 76", "Thanh phân số");
+  for (var i = 0; i < d; i++) {
+    out += '<rect x="' + (4 + i * cw) + '" y="' + y + '" width="' + cw + '" height="' + h + '" fill="' + (i < n ? FIG_ACC : "#fffdf6") + '" stroke="' + FIG_INK + '" stroke-width="2"/>';
+  }
+  out += '<rect x="4" y="' + y + '" width="' + (d * cw) + '" height="' + h + '" fill="none" stroke="' + FIG_INK + '" stroke-width="2.6"/>';
+  return out + "</svg>";
+}
+/* H1b — hình tròn chia d phần bằng nhau, tô n phần (bắt đầu từ đỉnh). */
+function figFracPieSVG(n, d) {
+  d = Math.max(2, Math.min(12, d | 0)); n = Math.max(0, Math.min(d, n | 0));
+  var cx = 70, cy = 70, r = 54, out = figOpen("0 0 140 140", "Hình tròn chia phần");
+  function pt(a) { return (cx + r * Math.sin(a)).toFixed(1) + "," + (cy - r * Math.cos(a)).toFixed(1); }
+  for (var i = 0; i < d; i++) {
+    var a0 = i * 2 * Math.PI / d, a1 = (i + 1) * 2 * Math.PI / d;
+    var large = (a1 - a0) > Math.PI ? 1 : 0;
+    var fill = i < n ? FIG_ACC : "#fffdf6";
+    if (d === 2) out += '<path d="M' + cx + ',' + cy + ' L' + pt(a0) + ' A' + r + ',' + r + ' 0 ' + large + ' 1 ' + pt(a1) + ' Z" fill="' + fill + '" stroke="' + FIG_INK + '" stroke-width="2.2"/>';
+    else out += '<path d="M' + cx + ',' + cy + ' L' + pt(a0) + ' A' + r + ',' + r + ' 0 ' + large + ' 1 ' + pt(a1) + ' Z" fill="' + fill + '" stroke="' + FIG_INK + '" stroke-width="2.2"/>';
+  }
+  return out + "</svg>";
+}
+/* H1c — hai thanh phân số xếp chồng (so sánh / cộng trừ hai phân số): cả hai
+   đều là dữ kiện của đề; hình không hề nói phân số nào lớn hơn hay kết quả. */
+function figFracBars2SVG(n1, d1, n2, d2) {
+  function row(n, d, y) {
+    d = Math.max(2, Math.min(16, d | 0)); n = Math.max(0, Math.min(d, n | 0));
+    /* Hai thanh CÙNG độ dài toàn thể (264) — cùng một đơn vị; mẫu số khác
+       nhau chỉ khác độ chia ô, không khác độ dài thanh (bản đầu chia ô cùng
+       bề rộng khiến toàn thể lệch nhau, dễ gây hiểu nhầm khi so sánh). */
+    var cw = 264 / d, s = "";
+    for (var i = 0; i < d; i++) s += '<rect x="' + (64 + i * cw) + '" y="' + y + '" width="' + cw + '" height="30" fill="' + (i < n ? FIG_ACC : "#fffdf6") + '" stroke="' + FIG_INK + '" stroke-width="2"/>';
+    s += '<rect x="64" y="' + y + '" width="' + (d * cw) + '" height="30" fill="none" stroke="' + FIG_INK + '" stroke-width="2.6"/>';
+    return s;
+  }
+  var out = figOpen("0 0 340 108", "Hai thanh phân số");
+  out += figText(8, 41, "Hình 1", "start", 13, FIG_MUT);
+  out += row(n1, d1, 22);
+  out += figText(8, 93, "Hình 2", "start", 13, FIG_MUT);
+  out += row(n2, d2, 74);
+  return out + "</svg>";
+}
+/* H1d — lưới 10×10 cho tỉ số phần trăm: tô pct ô (pct là dữ kiện đề cho). */
+function figFracGridSVG(pct) {
+  pct = Math.max(0, Math.min(100, Math.round(pct)));
+  var u = 15, x0 = 95, y0 = 14, out = figOpen("0 0 340 178", "Lưới 100 ô phần trăm");
+  for (var r = 0; r < 10; r++) for (var c = 0; c < 10; c++) {
+    var idx = r * 10 + c;
+    out += '<rect x="' + (x0 + c * u) + '" y="' + (y0 + r * u) + '" width="' + (u - 1.6) + '" height="' + (u - 1.6) + '" fill="' + (idx < pct ? FIG_ACC : "#fffdf6") + '" stroke="' + FIG_GRID + '" stroke-width="0.8"/>';
+  }
+  out += '<rect x="' + x0 + '" y="' + y0 + '" width="' + (10 * u - 1.6) + '" height="' + (10 * u - 1.6) + '" fill="none" stroke="' + FIG_INK + '" stroke-width="2.2"/>';
+  return out + "</svg>";
+}
+/* H2 — tiền Việt Nam cách điệu. amounts: mảng mệnh giá (đồng), ví dụ
+   [10000, 5000, 5000]. Xu (100/200/500) vẽ hình tròn, còn lại vẽ tờ tiền.
+   Mệnh giá in trên hình là dữ kiện; hình không in tổng số tiền. */
+var FIG_MONEY_COLORS = { 100: "#9c6644", 200: "#b08968", 500: "#588157", 1000: "#3a7d44", 2000: "#bc6c25", 5000: "#2f6db3", 10000: "#d99a26", 20000: "#4dabf7", 50000: "#69a83c", 100000: "#2a9d8f", 200000: "#8e6cc8", 500000: "#0aa2a2" };
+function figMoneyFmt(v) { return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+function figMoneySVG(amounts) {
+  var list = (amounts || []).slice(0, 9), per = 3;
+  var nw = 104, nh = 56, gap = 10, rows = Math.max(1, Math.ceil(list.length / per));
+  var cols = Math.min(per, Math.max(1, list.length));
+  var W = cols * nw + (cols - 1) * gap + 16, H = rows * nh + (rows - 1) * gap + 30;
+  var out = figOpen("0 0 " + W + " " + H, "Các tờ tiền và đồng xu");
+  list.forEach(function (v, i) {
+    var x = 8 + (i % per) * (nw + gap), y = 8 + Math.floor(i / per) * (nh + gap);
+    var col = FIG_MONEY_COLORS[v] || FIG_ACC;
+    if (v <= 500) {
+      out += '<circle cx="' + (x + nw / 2) + '" cy="' + (y + nh / 2) + '" r="26" fill="#f4e3b2" stroke="' + col + '" stroke-width="3.4"/>';
+      out += '<circle cx="' + (x + nw / 2) + '" cy="' + (y + nh / 2) + '" r="20.5" fill="none" stroke="' + col + '" stroke-width="1.2" opacity="0.65"/>';
+      out += figText(x + nw / 2, y + nh / 2 + 5, figMoneyFmt(v), "middle", 14.5, FIG_INK);
+      out += figText(x + nw / 2, y + nh / 2 + 17, "đồng", "middle", 9.5, FIG_MUT);
+    } else {
+      out += '<rect x="' + x + '" y="' + y + '" width="' + nw + '" height="' + nh + '" rx="7" fill="' + col + '" opacity="0.92"/>';
+      out += '<rect x="' + (x + 4.5) + '" y="' + (y + 4.5) + '" width="' + (nw - 9) + '" height="' + (nh - 9) + '" rx="5" fill="none" stroke="#ffffff" stroke-width="1.6" opacity="0.75"/>';
+      out += '<circle cx="' + (x + nw / 2) + '" cy="' + (y + 21) + '" r="10.5" fill="#ffffff" opacity="0.28"/>';
+      out += '<path d="M' + (x + nw / 2 - 6) + ',' + (y + 25.5) + ' l2.6,-5 2.2,3.6 2.4,-3.6 2.4,5 z" fill="#ffffff" opacity="0.5"/>';
+      out += figText(x + nw / 2, y + 45, figMoneyFmt(v) + " đồng", "middle", 13.5, "#ffffff");
+      out += figText(x + 10, y + 15, "★", "middle", 10, "#ffffff");
+      out += figText(x + nw - 10, y + 15, "★", "middle", 10, "#ffffff");
+    }
+  });
+  out += figText(W / 2, H - 6, "Tiền học tập (vẽ cách điệu)", "middle", 10.5, FIG_MUT);
+  return out + "</svg>";
+}
+/* H3 — khối 3D đơn giản có bóng: trụ / cầu / nón. Khối vẽ trong hộp 120×120. */
+function figSolidInner(kind) {
+  if (kind === "cau") {
+    return '<circle cx="60" cy="62" r="40" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="2.6"/>' +
+      '<ellipse cx="60" cy="62" rx="40" ry="13" fill="none" stroke="' + FIG_ACC + '" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.8"/>' +
+      '<ellipse cx="44" cy="44" rx="13" ry="8" fill="#ffffff" opacity="0.75" transform="rotate(-24 44 44)"/>';
+  }
+  if (kind === "non") {
+    return '<path d="M60,14 L96,96 A36,11 0 0 1 24,96 Z" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<path d="M60,14 L96,96 A36,11 0 0 1 60,107 Z" fill="' + FIG_ACC + '" opacity="0.20"/>' +
+      '<ellipse cx="60" cy="96" rx="36" ry="11" fill="none" stroke="' + FIG_ACC + '" stroke-width="2.2"/>';
+  }
+  /* mặc định: khối trụ */
+  return '<path d="M24,34 L24,92 A36,12 0 0 0 96,92 L96,34 Z" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="2.6"/>' +
+    '<path d="M60,46 A36,12 0 0 0 96,34 L96,92 A36,12 0 0 1 60,104 Z" fill="' + FIG_ACC + '" opacity="0.18"/>' +
+    '<ellipse cx="60" cy="34" rx="36" ry="12" fill="#ffffff" stroke="' + FIG_ACC + '" stroke-width="2.6"/>';
+}
+function figSolidSVG(kind) {
+  return figOpen("0 0 120 120", "Hình khối") + figSolidInner(kind) + "</svg>";
+}
+/* H3b — dãy khối để nhận dạng/đếm/xếp chồng: kinds = ["tru","cau",...] tối đa 5. */
+function figSolidsRowSVG(kinds) {
+  var list = (kinds || []).slice(0, 5), n = Math.max(1, list.length);
+  var W = n * 112 + 8, out = figOpen("0 0 " + W + " 128", "Dãy hình khối");
+  list.forEach(function (k, i) {
+    out += '<g transform="translate(' + (4 + i * 112) + ',4)">' + figSolidInner(k) + "</g>";
+  });
+  return out + "</svg>";
+}
+/* Phụ trợ Học vần — thẻ chữ/vần lớn (chữ trên thẻ là dữ kiện đề cho sẵn). */
+function figLetterCardSVG(text) {
+  var fs = String(text).length > 3 ? 34 : 44;
+  return figOpen("0 0 200 118", "Thẻ chữ") +
+    '<rect x="14" y="12" width="172" height="94" rx="14" fill="#fffdf6" stroke="' + FIG_ACC + '" stroke-width="3"/>' +
+    figText(100, 76, String(text), "middle", fs, FIG_INK) + "</svg>";
+}
+/* Phụ trợ Ghép tiếng — thẻ ghép âm đầu + vần, ô kết quả để "?" (không lộ tiếng). */
+function figComposeCardSVG(initial, rhyme) {
+  /* Cỡ chữ co theo độ dài để vần dài (uông, iêu…) không tràn khỏi ô. */
+  function fs(t) { var L = String(t).length; return L <= 2 ? 32 : (L === 3 ? 26 : 21); }
+  return figOpen("0 0 300 118", "Thẻ ghép tiếng") +
+    '<rect x="8" y="14" width="76" height="72" rx="12" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="2.6"/>' +
+    figText(46, 62, String(initial), "middle", fs(initial), FIG_INK) +
+    figText(104, 62, "+", "middle", 30, FIG_MUT) +
+    '<rect x="124" y="14" width="76" height="72" rx="12" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="2.6"/>' +
+    figText(162, 62, String(rhyme), "middle", fs(rhyme), FIG_INK) +
+    figText(218, 62, "=", "middle", 30, FIG_MUT) +
+    '<rect x="238" y="14" width="54" height="72" rx="12" fill="#ffffff" stroke="' + FIG_MEAS + '" stroke-width="2.6" stroke-dasharray="7 5"/>' +
+    figText(265, 64, "?", "middle", 34, FIG_MEAS) + "</svg>";
+}
+/* Phụ trợ Chữ số La Mã — mặt đồng hồ số La Mã, kim giờ chỉ h, kim phút chỉ 12.
+   Vòng số La Mã là nội dung học; vị trí kim chỉ là ngữ cảnh đồng hồ. */
+function figClockRomanSVG(h) {
+  var RN = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
+  var out = '<svg viewBox="0 0 200 200" class="clock-svg" role="img" aria-label="Đồng hồ số La Mã">';
+  out += '<circle cx="100" cy="100" r="94" fill="#fff7dd" stroke="' + FIG_INK + '" stroke-width="5"/>';
+  out += '<circle cx="100" cy="100" r="80" fill="#fffdf6" stroke="#e8ddba" stroke-width="2"/>';
+  for (var i = 0; i < 12; i++) {
+    var a = i * 30 * Math.PI / 180, r = 63;
+    var x = 100 + r * Math.sin(a), y = 100 - r * Math.cos(a);
+    out += '<text x="' + x.toFixed(1) + '" y="' + (y + 5).toFixed(1) + '" text-anchor="middle" font-size="' + (RN[i].length > 2 ? 13 : 15) + '" font-weight="800" fill="' + FIG_INK + '">' + RN[i] + "</text>";
+    var a2 = i * 30 * Math.PI / 180;
+    out += '<circle cx="' + (100 + 76 * Math.sin(a2)).toFixed(1) + '" cy="' + (100 - 76 * Math.cos(a2)).toFixed(1) + '" r="2.2" fill="' + FIG_MUT + '"/>';
+  }
+  var ha = ((h % 12) * 30) * Math.PI / 180;
+  out += '<line x1="100" y1="100" x2="' + (100 + 44 * Math.sin(ha)).toFixed(1) + '" y2="' + (100 - 44 * Math.cos(ha)).toFixed(1) + '" stroke="' + FIG_INK + '" stroke-width="7" stroke-linecap="round"/>';
+  out += '<line x1="100" y1="100" x2="100" y2="50" stroke="' + FIG_MEAS + '" stroke-width="4.5" stroke-linecap="round"/>';
+  out += '<circle cx="100" cy="100" r="7" fill="' + FIG_INK + '"/>';
+  return out + "</svg>";
+}
+
+/* Phụ trợ đợt hình Tiểu học (v22) — mảng chấm cho phép nhân/chia, tia số,
+   khối trăm–chục–đơn vị. Mọi con số vẽ trong hình đều là dữ kiện đề cho;
+   kết quả phép tính không bao giờ được vẽ. */
+/* Mảng chấm rows × perRow (mô hình phép nhân: các chấm là dữ kiện để đếm). */
+function figArraySVG(rows, perRow) {
+  rows = Math.max(1, Math.min(10, rows | 0)); perRow = Math.max(1, Math.min(10, perRow | 0));
+  var u = 21, W = perRow * u + 18, H = rows * u + 18, out = figOpen("0 0 " + W + " " + H, "Mảng chấm");
+  for (var r = 0; r < rows; r++) for (var c = 0; c < perRow; c++)
+    out += '<circle cx="' + (9 + u / 2 + c * u) + '" cy="' + (9 + u / 2 + r * u) + '" r="7" fill="' + FIG_ACC + '"/>';
+  return out + "</svg>";
+}
+/* Chia đều: total chấm ở trên, groups đĩa trống đứt nét ở dưới (mỗi đĩa được
+   mấy chấm là điều phải tìm — hình không chia sẵn). */
+function figDivGroupsSVG(total, groups) {
+  total = Math.max(2, Math.min(90, total | 0)); groups = Math.max(2, Math.min(9, groups | 0));
+  var per = 10, rows = Math.ceil(total / per), u = 17;
+  var W = 340, H = rows * u + 74, out = figOpen("0 0 " + W + " " + H, "Chia đều vào các đĩa");
+  for (var i = 0; i < total; i++)
+    out += '<circle cx="' + (20 + (i % per) * u + u / 2) + '" cy="' + (12 + Math.floor(i / per) * u + u / 2) + '" r="5.6" fill="' + FIG_ACC + '"/>';
+  var pw = Math.min(64, (W - 30 - (groups - 1) * 10) / groups), y = rows * u + 26;
+  for (var g = 0; g < groups; g++)
+    out += '<rect x="' + (15 + g * (pw + 10)) + '" y="' + y + '" width="' + pw + '" height="30" rx="9" fill="#ffffff" stroke="' + FIG_MEAS + '" stroke-width="2.2" stroke-dasharray="6 4"/>';
+  return out + "</svg>";
+}
+/* Tia số từ from đến to (mỗi vạch 1 đơn vị, tối đa 13 vạch). opts.labels:
+   {giá trị: nhãn} — vạch không có nhãn thì để trống; opts.hl: mảng giá trị
+   được khoanh đậm; opts.bracket: [v1, v2] vẽ ngoặc khoảng ở phía trên. */
+function figNumLineSVG(from, to, opts) {
+  opts = opts || {};
+  var n = Math.max(2, Math.min(13, to - from + 1)), u = (300) / (n - 1 || 1), x0 = 20, y = 56;
+  var out = figOpen("0 0 340 " + (opts.bracket ? 108 : 92), "Tia số");
+  out += '<line x1="' + (x0 - 8) + '" y1="' + y + '" x2="' + (x0 + (n - 1) * u + 14) + '" y2="' + y + '" stroke="' + FIG_INK + '" stroke-width="2.6"/>';
+  out += '<path d="M' + (x0 + (n - 1) * u + 14) + ',' + y + ' l-9,-5 v10 z" fill="' + FIG_INK + '"/>';
+  for (var i = 0; i < n; i++) {
+    var v = from + i, x = x0 + i * u, hl = opts.hl && opts.hl.indexOf(v) !== -1;
+    out += '<line x1="' + x + '" y1="' + (y - 7) + '" x2="' + x + '" y2="' + (y + 7) + '" stroke="' + FIG_INK + '" stroke-width="2.2"/>';
+    if (hl) out += '<circle cx="' + x + '" cy="' + y + '" r="11" fill="none" stroke="' + FIG_MEAS + '" stroke-width="2.6"/>';
+    var lab = opts.labels && opts.labels[v] != null ? String(opts.labels[v]) : "";
+    if (lab) out += figText(x, y + 26, lab, "middle", lab === "?" ? 17 : 13.5, lab === "?" ? FIG_MEAS : FIG_INK);
+  }
+  if (opts.bracket) {
+    /* Kẹp hai đầu ngoặc vào đoạn tia thực vẽ (n vạch đã kẹp ≤13) để không
+       chạy khỏi khung khi khoảng truyền vào dài hơn đoạn hiển thị. */
+    var bLo = Math.max(from, Math.min(from + n - 1, opts.bracket[0])), bHi = Math.max(from, Math.min(from + n - 1, opts.bracket[1]));
+    var bx1 = x0 + (bLo - from) * u, bx2 = x0 + (bHi - from) * u, by = 22;
+    out += '<path d="M' + bx1 + ',' + (by + 8) + ' L' + bx1 + ',' + by + ' L' + bx2 + ',' + by + ' L' + bx2 + ',' + (by + 8) + '" fill="none" stroke="' + FIG_MEAS + '" stroke-width="2.4"/>';
+  }
+  return out + "</svg>";
+}
+/* Khối giá trị theo hàng: trăm = ô vuông lớn có lưới 10×10 mờ, chục = thanh
+   10 ô, đơn vị = ô nhỏ. figBlocksRowSVG vẽ một hàng cho số n (0–999). */
+function figBlocksRowSVG(n, color, y) {
+  var h = Math.floor(n / 100), t = Math.floor(n / 10) % 10, o = n % 10, x = 14, s = "";
+  for (var i = 0; i < h; i++) {
+    s += '<rect x="' + x + '" y="' + y + '" width="40" height="40" fill="' + color + '" opacity="0.30" stroke="' + color + '" stroke-width="2"/>';
+    for (var gLine = 1; gLine < 10; gLine++) {
+      s += '<line x1="' + (x + gLine * 4) + '" y1="' + y + '" x2="' + (x + gLine * 4) + '" y2="' + (y + 40) + '" stroke="' + color + '" stroke-width="0.6" opacity="0.5"/>';
+      s += '<line x1="' + x + '" y1="' + (y + gLine * 4) + '" x2="' + (x + 40) + '" y2="' + (y + gLine * 4) + '" stroke="' + color + '" stroke-width="0.6" opacity="0.5"/>';
+    }
+    x += 46;
+  }
+  for (var j = 0; j < t; j++) { s += '<rect x="' + x + '" y="' + y + '" width="9" height="40" fill="' + color + '" opacity="0.55" stroke="' + color + '" stroke-width="1.6"/>'; x += 13; }
+  for (var k = 0; k < o; k++) { s += '<rect x="' + x + '" y="' + (y + 28) + '" width="9" height="9" fill="' + color + '" stroke="' + color + '" stroke-width="1.4"/>'; x += 13; }
+  return { svg: s, width: x + 4 };
+}
+function figNumBlocksSVG(n) {
+  var r = figBlocksRowSVG(n, FIG_ACC, 14);
+  return figOpen("0 0 " + Math.max(120, r.width) + " 68", "Khối trăm chục đơn vị") + r.svg + "</svg>";
+}
+/* Hai số dạng khối cho cộng/trừ: hàng trên số a (xanh), hàng dưới số b (cam)
+   kèm dấu phép tính — cả hai đều là dữ kiện; kết quả không vẽ. */
+function figAddSubBlocksSVG(a, b, isAdd) {
+  var r1 = figBlocksRowSVG(a, FIG_ACC, 10), r2 = figBlocksRowSVG(b, FIG_MEAS, 62);
+  var W = Math.max(r1.width, r2.width, 120);
+  return figOpen("0 0 " + W + " 116", "Khối số cộng trừ") + r1.svg + r2.svg + "</svg>";
+}
+
 function eng6FormGen(list, asBlank) {
   return function () {
     var c = pick(list);
@@ -4047,6 +4393,88 @@ function findTopic127(grade, id) {
   if (!GRADES[grade]) return null;
   GRADES[grade].subjects.forEach(function (s) { s.topics.forEach(function (t) { if (t.id === id) found = t; }); });
   return found;
+}
+/* Đợt hình Tiểu học (v22): gắn hình minh hoạ vào bộ sinh của một chủ đề
+   knowledgePools THEO CHỈ SỐ DỮ KIỆN — pools.choose[i] và pools.blank[i]
+   của knowledgePools sinh đúng từ facts[i], nên tags[i] gắn hình cho dữ
+   kiện thứ i (hình là dữ kiện/ngữ cảnh của chính câu đó, không chứa đáp án
+   ngoài những gì đề đã nêu). Chỉ thêm trường visual vào câu đã sinh: không
+   đổi nội dung câu, không đổi số lượng biến thể. tags[i] là chuỗi HTML/SVG
+   hoặc hàm trả chuỗi (đánh giá lười lúc sinh câu). */
+function figTagFacts(grade, id, tags) {
+  var t = findTopic127(grade, id);
+  if (!t || !t.pools || !tags) return;
+  /* Gắn hình theo ĐỊNH DANH DỮ KIỆN, không theo vị trí mảng: Phase B/C có
+     thể dựng lại pools (bộ sinh luân phiên dữ kiện, bộ sinh phái sinh) sau
+     khi tệp dữ liệu nạp, nên vị trí i trong mảng không còn ứng với dữ kiện i.
+     Mỗi câu dữ kiện đều mang roundIdentity.facts[0] = nguyên văn câu hỏi của
+     dữ kiện (factMCQ/factBlank đóng dấu), referenceFacts giữ đúng thứ tự gốc
+     — tra hình theo văn bản dữ kiện thì bộ sinh nào sinh câu của dữ kiện đó
+     cũng nhận đúng hình của nó, ở mọi thứ tự mảng. */
+  var facts = t.pools.referenceFacts || [];
+  var byText = {};
+  facts.forEach(function (f, i) {
+    if (f && f[0] != null && tags[i] != null) byText[String(f[0])] = tags[i];
+  });
+  if (!Object.keys(byText).length) return;
+  ["choose", "blank"].forEach(function (kind) {
+    var pool = t.pools[kind] || [];
+    pool.forEach(function (g, j) {
+      if (typeof g !== "function" || g.__figIdTag) return;
+      var wrapped = (function (orig) {
+        return function () {
+          var q = orig();
+          if (q) {
+            try {
+              var key = (q.roundIdentity && q.roundIdentity.facts && q.roundIdentity.facts[0]) || q.prompt;
+              var tag = key != null ? byText[String(key)] : null;
+              if (tag != null) {
+                var v = typeof tag === "function" ? tag() : tag;
+                if (v) {
+                  v = String(v);
+                  if (v.indexOf("<svg") === 0 && !q.figure) q.figure = v;
+                  else q.visual = v + (q.visual || "");
+                }
+              }
+            } catch (e) {}
+          }
+          return q;
+        };
+      })(g);
+      wrapped.__figIdTag = true;
+      pool[j] = wrapped;
+    });
+  });
+}
+/* Đợt hình Tiểu học (v22): như figTagFacts nhưng chọn dữ kiện theo CHUỖI CON
+   trong câu hỏi của dữ kiện (khớp qua referenceFacts của knowledgePools) —
+   dùng cho ngân hàng tĩnh dài, tránh đếm nhầm chỉ số. rules là mảng
+   [chuỗi con, hình]; quy tắc đầu tiên khớp được áp dụng. */
+function figTagFactsByText(grade, id, rules) {
+  var t = findTopic127(grade, id);
+  if (!t || !t.pools || !t.pools.referenceFacts || !rules) return;
+  var tags = {};
+  t.pools.referenceFacts.forEach(function (f, i) {
+    if (!f || !f[0]) return;
+    for (var r = 0; r < rules.length; r++) {
+      if (String(f[0]).indexOf(rules[r][0]) !== -1) { tags[i] = rules[r][1]; break; }
+    }
+  });
+  figTagFacts(grade, id, tags);
+}
+/* Đợt hình Tiểu học (v22): bọc một bộ sinh tham số để gắn hình SVG (trường
+   figure, qua panel trắng figHTML) cho một tỉ lệ lượt sinh — hình dựng từ
+   chính câu đã sinh bởi hàm figFn(q) (đọc tham số từ prompt/biến của câu
+   hoặc trả null để bỏ qua). Giữ đa dạng: rate < 1 nghĩa là một phần câu
+   vẫn không có hình như cũ. */
+function figWrapGen(gen, rate, figFn) {
+  return function () {
+    var q = gen();
+    if (q && !q.figure && Math.random() < rate) {
+      try { var f = figFn(q); if (f) q.figure = f; } catch (e) {}
+    }
+    return q;
+  };
 }
 function deriveFromPairs127(t) {
   if (!t.pools || !t.pools.match || !t.pools.match.length) return false;

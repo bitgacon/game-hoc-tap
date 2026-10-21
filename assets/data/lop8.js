@@ -73,7 +73,7 @@ var M8C2_FACTS = [
 /* ---- Chương III: Tứ giác ---- */
 function quadSVG8(kind) {
   var pts = { "Hình vuông": '<rect x="60" y="30" width="80" height="80"/>', "Hình chữ nhật": '<rect x="40" y="40" width="120" height="60"/>', "Hình bình hành": '<polygon points="55,110 90,30 165,30 130,110"/>', "Hình thoi": '<polygon points="100,20 160,70 100,120 40,70"/>', "Hình thang cân": '<polygon points="55,110 80,35 140,35 165,110"/>', "Tứ giác thường": '<polygon points="45,105 75,25 150,50 145,118"/>' };
-  return '<svg width="200" height="140" viewBox="0 0 200 140" role="img"><g fill="rgba(47,111,79,0.15)" stroke="#2f6f4f" stroke-width="3" stroke-linejoin="round">' + pts[kind] + "</g></svg>";
+  return '<svg width="200" height="140" viewBox="0 0 200 140" role="img"><title>' + kind + '</title><g fill="rgba(47,111,79,0.15)" stroke="#2f6f4f" stroke-width="3" stroke-linejoin="round">' + pts[kind] + "</g></svg>";
 }
 var QUADS8 = ["Hình vuông", "Hình chữ nhật", "Hình bình hành", "Hình thoi", "Hình thang cân", "Tứ giác thường"];
 function m8ShapeID() { var kind = pick(QUADS8); var wrongs = shuffle(QUADS8.filter(function (x) { return x !== kind; })).slice(0, 3); return mcqQ("Hình vẽ dưới đây là hình gì?", wrongs, kind, "Dựa vào đặc điểm các cạnh và góc của hình để nhận diện.", quadSVG8(kind)); }

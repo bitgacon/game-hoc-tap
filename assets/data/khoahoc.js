@@ -520,6 +520,116 @@ window.__KH_PARTS = {
         "Vì cao su tự hút không khí vào"
        ],
        "ex": "Không khí khi lạnh đi sẽ co lại, chiếm ít chỗ hơn nên quả bóng trông xẹp hơn."
+      },
+      {
+       "q": "Một tảng băng trôi khổng lồ trên biển trông như một ngọn núi nhỏ nhô lên mặt nước. Phần lớn của tảng băng thật ra nằm ở đâu?",
+       "ans": "Khoảng chín phần mười tảng băng chìm dưới mặt nước",
+       "wrong": [
+        "Phần lớn tảng băng nằm trên mặt nước",
+        "Tảng băng nằm trọn trên mặt nước như chiếc thuyền",
+        "Một nửa tảng băng ở trên, một nửa ở dưới nước"
+       ],
+       "ex": "Nước đá nhẹ hơn nước lỏng nên băng nổi, nhưng chỉ khoảng một phần mười nhô lên, còn chín phần mười chìm dưới mặt nước."
+      },
+      {
+       "q": "Em gấp giấy làm bông tuyết sáu cánh. Bông tuyết thật trên trời luôn có hình dạng thế nào?",
+       "ans": "Luôn có sáu cánh (sáu cạnh)",
+       "wrong": [
+        "Luôn có năm cánh như ngôi sao",
+        "Luôn có tám cánh như hoa hướng dương",
+        "Mỗi bông một số cánh khác nhau, không cố định"
+       ],
+       "ex": "Các phân tử nước khi đóng băng xếp thành hình sáu cạnh, nên bông tuyết nào cũng có sáu cánh."
+      },
+      {
+       "q": "Trưa hè đang nắng chang chang, bỗng mây đen kéo đến và rơi xuống những cục băng nhỏ bằng hạt ngô. Đó là hiện tượng gì?",
+       "ans": "Mưa đá: những cục băng rơi từ mây giông",
+       "wrong": [
+        "Tuyết rơi giữa mùa hè",
+        "Mưa phùn đóng băng",
+        "Sương giá rơi từ trên cây"
+       ],
+       "ex": "Trong mây giông, hơi nước đông thành cục băng, nặng dần rồi rơi xuống thành mưa đá."
+      },
+      {
+       "q": "Nước biển có vị mặn. Muối trong nước biển từ đâu mà có?",
+       "ans": "Sông suối mang muối khoáng từ đất đá chảy ra biển",
+       "wrong": [
+        "Cá và tôm trong biển tiết ra muối",
+        "Đáy biển mọc đầy cây muối",
+        "Mặt Trời chiếu xuống làm nước biển mặn"
+       ],
+       "ex": "Mưa và sông suối rửa trôi muối khoáng trong đất đá, mang ra biển tích lại lâu ngày nên nước biển mặn."
+      },
+      {
+       "q": "Ở một số vùng núi lửa, thỉnh thoảng một cột nước nóng và hơi nước phun cao lên trời từ lòng đất. Hiện tượng đó gọi là gì?",
+       "ans": "Mạch nước phun (suối nước nóng phun trào)",
+       "wrong": [
+        "Thác nước chảy ngược",
+        "Sóng thần trong lòng đất",
+        "Mưa rơi ngược lên trời"
+       ],
+       "ex": "Nước ngầm bị đá nóng dưới lòng đất đun sôi, áp lực đẩy nước phun lên cao thành mạch nước phun."
+      },
+      {
+       "q": "Trong hang động tối, từ trần hang mọc xuống những cột đá nhọn như băng, gọi là nhũ đá. Nhũ đá hình thành thế nào?",
+       "ans": "Nước nhỏ giọt lâu năm để lại khoáng chất, mọc dần xuống",
+       "wrong": [
+        "Do dơi làm tổ lâu ngày hoá đá",
+        "Do người xưa treo đá trang trí",
+        "Do băng đóng trên trần hang không tan"
+       ],
+       "ex": "Nước mưa thấm qua đá mang theo khoáng chất, nhỏ giọt xuống trần hang; khoáng chất đọng lại từng chút một qua rất nhiều năm thành nhũ đá."
+      },
+      {
+       "q": "Em mở nắp chai nước ngọt có ga, nghe tiếng «xì» và thấy nhiều bọt khí nổi lên. Những bọt khí đó là gì?",
+       "ans": "Khí ga được nén tan trong nước ngọt, thoát ra khi mở nắp",
+       "wrong": [
+        "Không khí từ ngoài chui vào chai",
+        "Nước ngọt đang sôi lên",
+        "Bọt xà phòng còn sót trong chai"
+       ],
+       "ex": "Khi đóng chai, người ta nén khí ga (khí các-bô-níc) tan vào nước ngọt. Mở nắp, áp lực giảm, khí ga thoát ra thành bọt."
+      },
+      {
+       "q": "Sáng mùa đông lạnh, em thở ra và thấy một làn trắng như khói bay trước mặt. Làn trắng đó là gì?",
+       "ans": "Hơi nước trong hơi thở gặp lạnh ngưng tụ thành giọt nhỏ",
+       "wrong": [
+        "Khói từ phổi của em bay ra",
+        "Bụi trắng trong không khí buổi sáng",
+        "Hơi lạnh từ miệng em đóng băng ngay"
+       ],
+       "ex": "Hơi thở của em chứa hơi nước ấm. Gặp không khí lạnh bên ngoài, hơi nước ngưng tụ thành những giọt rất nhỏ trông như làn khói trắng."
+      },
+      {
+       "q": "Ngoài Trái Đất, hành tinh láng giềng nào cũng có băng ở hai cực giống Trái Đất?",
+       "ans": "Sao Hoả",
+       "wrong": [
+        "Sao Kim",
+        "Sao Thuỷ",
+        "Sao Mộc"
+       ],
+       "ex": "Ở hai cực của Sao Hoả có băng (phần lớn là băng nước và băng khô), giống như hai cực của Trái Đất."
+      },
+      {
+       "q": "Sáng sớm mùa đông, em thấy trên lá cỏ và mái tôn có lớp trắng mỏng như rắc muối, chạm vào lạnh buốt. Lớp trắng đó là gì?",
+       "ans": "Hơi nước đông lại thành lớp băng mỏng, gọi là sương muối",
+       "wrong": [
+        "Muối do gió biển thổi vào đọng lại",
+        "Phấn hoa màu trắng bay xuống",
+        "Bụi đường đọng lại sau một đêm"
+       ],
+       "ex": "Đêm đông rất lạnh, hơi nước trong không khí gặp bề mặt lạnh giá liền đông lại thành lớp băng mỏng gọi là sương muối."
+      },
+      {
+       "q": "Em thả một viên đá (nước đá) vào cốc nước, viên đá nổi lên chứ không chìm. Vì sao?",
+       "ans": "Vì nước đá nhẹ hơn nước lỏng",
+       "wrong": [
+        "Vì trong viên đá có nhiều bọt khí như phao",
+        "Vì viên đá quá nhỏ nên không chìm được",
+        "Vì nước trong cốc đẩy viên đá lên trên mãi"
+       ],
+       "ex": "Khi nước đông thành đá, nó nở ra và trở nên nhẹ hơn nước lỏng, nên đá nổi trên mặt nước."
       }
      ],
      "blank": [
@@ -643,6 +753,50 @@ window.__KH_PARTS = {
        "ex": "Chất lỏng không có hình dạng riêng: đổ vào cốc thì hình cốc, đổ vào chai thì hình chai.",
        "pre": "Chất lỏng không có hình dạng ",
        "post": " mà mang hình dạng của vật chứa nó."
+      },
+      {
+       "ans": "dưới",
+       "wrong": [
+        "trên",
+        "ngang",
+        "bên cạnh"
+       ],
+       "ex": "Chỉ khoảng một phần mười tảng băng nhô lên, phần còn lại chìm dưới mặt nước.",
+       "pre": "Người ta thường nói «phần nổi của tảng băng trôi». Thật ra khoảng chín phần mười tảng băng nằm ",
+       "post": " mặt nước."
+      },
+      {
+       "ans": "sáu",
+       "wrong": [
+        "năm",
+        "tám",
+        "bảy"
+       ],
+       "ex": "Phân tử nước đóng băng xếp theo hình sáu cạnh nên bông tuyết luôn có sáu cánh.",
+       "pre": "Dù hình dáng rất đa dạng, bông tuyết nào cũng có đúng ",
+       "post": " cánh."
+      },
+      {
+       "ans": "mặn",
+       "wrong": [
+        "ngọt",
+        "chua",
+        "đắng"
+       ],
+       "ex": "Sông suối mang muối khoáng từ đất đá ra biển, tích lại nên nước biển mặn.",
+       "pre": "Nước ở biển và đại dương có vị ",
+       "post": " vì chứa nhiều muối khoáng hoà tan."
+      },
+      {
+       "ans": "nở",
+       "wrong": [
+        "co",
+        "bay hơi",
+        "tan"
+       ],
+       "ex": "Nước là chất đặc biệt: đông thành đá thì nở ra, vì thế chai nước đầy để ngăn đá có thể bị nứt.",
+       "pre": "Khi nước đông thành đá, nước ",
+       "post": " ra, chiếm nhiều chỗ hơn lúc còn lỏng."
       }
      ],
      "match": [],
@@ -716,6 +870,31 @@ window.__KH_PARTS = {
        "stmt": "Chiếc đinh sắt để lâu ngoài trời bị gỉ là biến đổi hoá học.",
        "truth": true,
        "explain": "Đúng: sắt gỉ tạo ra chất mới là gỉ sắt màu nâu đỏ, khác hẳn sắt ban đầu."
+      },
+      {
+       "stmt": "Phần lớn của một tảng băng trôi nằm chìm dưới mặt nước, chỉ một phần nhỏ nhô lên.",
+       "truth": true,
+       "explain": "Đúng. Khoảng chín phần mười tảng băng chìm dưới nước vì nước đá chỉ nhẹ hơn nước lỏng một chút."
+      },
+      {
+       "stmt": "Nước đá nặng hơn nước lỏng nên viên đá luôn chìm xuống đáy cốc.",
+       "truth": false,
+       "explain": "Sai. Nước đá nhẹ hơn nước lỏng nên viên đá nổi trên mặt nước."
+      },
+      {
+       "stmt": "Mưa đá là những cục băng hình thành trong mây giông rồi rơi xuống đất.",
+       "truth": true,
+       "explain": "Đúng. Hơi nước trong mây giông đông thành cục băng, nặng dần và rơi xuống thành mưa đá."
+      },
+      {
+       "stmt": "Nước biển mặn vì các con cá trong biển tiết ra muối.",
+       "truth": false,
+       "explain": "Sai. Muối trong biển do mưa và sông suối hoà tan muối khoáng từ đất đá mang ra, tích lại lâu ngày."
+      },
+      {
+       "stmt": "Nhũ đá trong hang động lớn dần lên nhờ nước nhỏ giọt mang khoáng chất đọng lại qua rất nhiều năm.",
+       "truth": true,
+       "explain": "Đúng. Từng giọt nước để lại một chút khoáng chất, qua hàng nghìn năm thành cột nhũ đá."
       }
      ]
     },
@@ -1075,6 +1254,116 @@ window.__KH_PARTS = {
         "Vỏ nhựa dẫn điện tốt hơn đồng"
        ],
        "ex": "Nhựa là vật cách điện. Vỏ nhựa bọc ngoài giúp em chạm vào dây an toàn, điện chỉ chạy trong lõi đồng."
+      },
+      {
+       "q": "Trời giông, em thấy tia chớp loé sáng rồi một lúc sau mới nghe tiếng sấm rền. Vì sao?",
+       "ans": "Ánh sáng truyền nhanh hơn âm thanh rất nhiều",
+       "wrong": [
+        "Tiếng sấm sinh ra sau tia chớp một lúc lâu",
+        "Chớp ở gần em hơn tiếng sấm",
+        "Tai nghe chậm hơn mắt nhìn thấy"
+       ],
+       "ex": "Chớp và sấm sinh ra cùng lúc, nhưng ánh sáng đi nhanh hơn âm thanh rất nhiều nên em thấy chớp trước, nghe sấm sau."
+      },
+      {
+       "q": "Em chà bóng bay vào tóc rồi áp lên tường, bóng bay dính chặt vào tường một lúc. Vì sao?",
+       "ans": "Bóng bay nhiễm tĩnh điện sau khi cọ xát vào tóc",
+       "wrong": [
+        "Tóc có keo dính truyền sang bóng bay",
+        "Tường có nam châm hút bóng bay",
+        "Bóng bay nhẹ nên tự bay lên dính tường"
+       ],
+       "ex": "Khi cọ xát vào tóc, bóng bay tích điện (tĩnh điện) nên hút dính vào tường."
+      },
+      {
+       "q": "Hai bạn mặc áo đen và áo trắng đứng dưới nắng trưa. Bạn nào thấy nóng hơn?",
+       "ans": "Bạn mặc áo đen, vì màu đen hấp thụ nhiệt nhiều hơn",
+       "wrong": [
+        "Bạn mặc áo trắng, vì màu trắng phản chiếu nắng vào người",
+        "Cả hai nóng như nhau vì cùng một nắng",
+        "Tuỳ thuộc bạn nào đứng gần cây hơn"
+       ],
+       "ex": "Màu tối như màu đen hấp thụ ánh sáng và nhiệt nhiều hơn màu sáng, nên mặc áo đen ra nắng sẽ nóng hơn."
+      },
+      {
+       "q": "Mùa hè, đom đóm lập loè phát sáng trong bụi cây vào ban đêm. Ánh sáng đó từ đâu ra?",
+       "ans": "Cơ thể đom đóm tự tạo ra ánh sáng nhờ phản ứng hoá học",
+       "wrong": [
+        "Đom đóm phản chiếu ánh sáng Mặt Trăng",
+        "Đom đóm nuốt phải hạt phát sáng",
+        "Đom đóm có bóng đèn nhỏ trong bụng"
+       ],
+       "ex": "Trong cơ thể đom đóm có chất đặc biệt, gặp ô-xi tạo ra ánh sáng mà gần như không toả nhiệt."
+      },
+      {
+       "q": "Nhà em thay bóng đèn sợi đốt bằng bóng đèn LED cùng độ sáng. Hoá đơn tiền điện thay đổi thế nào?",
+       "ans": "Giảm xuống, vì đèn LED tốn ít điện hơn hẳn",
+       "wrong": [
+        "Tăng lên, vì đèn LED sáng hơn nên tốn điện hơn",
+        "Không đổi, vì bóng đèn nào cũng tốn điện như nhau",
+        "Giảm vì đèn LED nhỏ hơn đèn sợi đốt"
+       ],
+       "ex": "Đèn LED biến phần lớn điện thành ánh sáng, ít lãng phí thành nhiệt, nên cùng độ sáng mà tốn ít điện hơn đèn sợi đốt."
+      },
+      {
+       "q": "Hai phi hành gia đứng cạnh nhau ngoài vũ trụ vẫn phải nói chuyện qua radio trong bộ đồ. Vì sao?",
+       "ans": "Ngoài vũ trụ không có không khí để truyền âm thanh",
+       "wrong": [
+        "Vì bộ đồ vũ trụ làm tai họ không nghe được",
+        "Vì ngoài vũ trụ quá ồn ào",
+        "Vì họ phải nói tiếng Anh qua máy dịch"
+       ],
+       "ex": "Âm thanh cần không khí (hoặc chất khác) để truyền đi. Ngoài vũ trụ gần như không có không khí nên tiếng nói không truyền trực tiếp được."
+      },
+      {
+       "q": "Trưa nắng ở bãi biển, em đi chân trần: cát nóng bỏng chân nhưng bước xuống nước biển lại thấy mát. Vì sao?",
+       "ans": "Cát nóng lên nhanh hơn nước rất nhiều",
+       "wrong": [
+        "Nước biển được để trong tủ lạnh tự nhiên",
+        "Cát có màu sẫm hơn nước biển",
+        "Gió biển thổi làm nước lạnh đi"
+       ],
+       "ex": "Cùng một nắng, cát (đất) nóng lên rất nhanh còn nước nóng lên chậm, nên trưa nắng cát bỏng chân mà nước biển vẫn mát."
+      },
+      {
+       "q": "Trên trần phòng em có dán những ngôi sao dạ quang. Ban ngày chúng mờ nhạt, nhưng tắt đèn tối lại phát sáng xanh. Vì sao?",
+       "ans": "Ban ngày chúng «nạp» ánh sáng, tối đến từ từ phát ra",
+       "wrong": [
+        "Chúng có pin nhỏ tự bật khi tối",
+        "Chúng phản chiếu ánh sáng từ ngoài đường",
+        "Mắt em quen bóng tối nên tưởng chúng sáng"
+       ],
+       "ex": "Chất dạ quang hấp thụ ánh sáng ban ngày (hoặc ánh đèn) rồi phát ra dần trong bóng tối."
+      },
+      {
+       "q": "Em gảy thử hai dây đàn: một dây căng, một dây chùng. Dây nào cho âm thanh cao hơn?",
+       "ans": "Dây căng cho âm cao hơn",
+       "wrong": [
+        "Dây chùng cho âm cao hơn",
+        "Hai dây cho âm cao như nhau",
+        "Dây nào dài hơn cho âm cao hơn"
+       ],
+       "ex": "Dây càng căng rung càng nhanh nên âm càng cao; dây chùng rung chậm, âm trầm hơn."
+      },
+      {
+       "q": "Nhà kính trồng rau có mái và vách bằng kính hoặc ni-lông trong. Bên trong nhà kính thường ấm hơn bên ngoài. Vì sao?",
+       "ans": "Ánh nắng vào được nhưng nhiệt khó thoát ra ngoài",
+       "wrong": [
+        "Kính tự sinh ra nhiệt để sưởi cây",
+        "Trong nhà kính có nhiều cây nên chen chúc ấm",
+        "Ni-lông trong suốt giữ gió nóng từ ngoài thổi vào"
+       ],
+       "ex": "Ánh sáng Mặt Trời xuyên qua kính làm nóng bên trong, còn nhiệt bị giữ lại khó thoát ra, nên nhà kính luôn ấm."
+      },
+      {
+       "q": "Bếp năng lượng Mặt Trời có một chiếc gương cong sáng bóng. Gương đó dùng để làm gì?",
+       "ans": "Hứng ánh nắng và hội tụ vào đáy nồi cho nóng lên",
+       "wrong": [
+        "Để người nấu soi mặt khi nấu ăn",
+        "Để che nắng cho nồi khỏi cháy",
+        "Để phản chiếu hình ảnh món ăn lên cao"
+       ],
+       "ex": "Gương cong thu ánh nắng từ một vùng rộng rồi dồn vào một điểm ở đáy nồi, làm nồi nóng lên và nấu chín thức ăn."
       }
      ],
      "blank": [
@@ -1198,6 +1487,50 @@ window.__KH_PARTS = {
        "ex": "Tiết kiệm điện là dùng điện vừa đủ, tắt khi không cần. Việc này giúp nhà em đỡ tốn tiền điện.",
        "pre": "Tắt điện khi không dùng là một cách ",
        "post": " điện."
+      },
+      {
+       "ans": "nhanh",
+       "wrong": [
+        "chậm",
+        "ngang",
+        "yếu"
+       ],
+       "ex": "Ánh sáng đi nhanh hơn âm thanh rất nhiều nên chớp đến mắt em trước, tiếng sấm đến tai sau.",
+       "pre": "Ta thấy tia chớp trước khi nghe tiếng sấm vì ánh sáng truyền ",
+       "post": " hơn âm thanh rất nhiều."
+      },
+      {
+       "ans": "điện",
+       "wrong": [
+        "từ",
+        "quang",
+        "nhiệt"
+       ],
+       "ex": "Cọ xát làm bóng bay tích tĩnh điện, nhờ đó nó hút dính vào tường.",
+       "pre": "Bóng bay cọ xát vào tóc có thể dính vào tường. Hiện tượng này liên quan đến tĩnh ",
+       "post": "."
+      },
+      {
+       "ans": "năng lượng",
+       "wrong": [
+        "ánh sáng",
+        "âm thanh",
+        "nước"
+       ],
+       "ex": "Pin trữ năng lượng hoá học và biến thành điện khi em bật đèn pin hay đồ chơi.",
+       "pre": "Pin trong đèn pin và đồ chơi là nơi lưu trữ ",
+       "post": " để cấp điện dần khi em sử dụng."
+      },
+      {
+       "ans": "dội",
+       "wrong": [
+        "bay",
+        "chìm",
+        "vỡ"
+       ],
+       "ex": "Âm thanh gặp vách núi bị phản xạ (dội) trở lại tai em, tạo thành tiếng vọng.",
+       "pre": "Em đứng trước vách núi và hét to. Một lúc sau, em nghe tiếng của mình ",
+       "post": " trở lại, đó là tiếng vọng."
       }
      ],
      "match": [],
@@ -1271,6 +1604,31 @@ window.__KH_PARTS = {
        "stmt": "Nhiệt kế là dụng cụ dùng để đo chiều dài.",
        "truth": false,
        "explain": "Sai: nhiệt kế đo nhiệt độ. Dụng cụ đo chiều dài là thước."
+      },
+      {
+       "stmt": "Ánh sáng truyền nhanh hơn âm thanh nên trong cơn giông, em thấy chớp trước khi nghe tiếng sấm.",
+       "truth": true,
+       "explain": "Đúng. Chớp và sấm sinh ra cùng lúc nhưng ánh sáng đến mắt em nhanh hơn nhiều."
+      },
+      {
+       "stmt": "Tiếng sấm luôn xuất hiện trước tia chớp vài giây.",
+       "truth": false,
+       "explain": "Sai. Sấm và chớp sinh ra cùng một lúc; em thấy chớp trước vì ánh sáng truyền nhanh hơn âm thanh."
+      },
+      {
+       "stmt": "Mặc áo màu đen ra nắng trưa sẽ nóng hơn mặc áo màu trắng.",
+       "truth": true,
+       "explain": "Đúng. Màu đen hấp thụ ánh sáng và nhiệt nhiều hơn màu trắng."
+      },
+      {
+       "stmt": "Âm thanh truyền được qua nơi hoàn toàn không có không khí.",
+       "truth": false,
+       "explain": "Sai. Âm thanh cần môi trường như không khí, nước hay chất rắn để truyền; nơi không có không khí thì không truyền được."
+      },
+      {
+       "stmt": "Đom đóm là con vật tự phát ra ánh sáng được nhờ phản ứng hoá học trong cơ thể.",
+       "truth": true,
+       "explain": "Đúng. Chất trong cơ thể đom đóm gặp ô-xi tạo ra ánh sáng gần như không toả nhiệt."
       }
      ]
     },
@@ -1625,6 +1983,116 @@ window.__KH_PARTS = {
         "Tuyết chưa kịp rơi"
        ],
        "ex": "Sương mù là hơi nước ngưng tụ thành giọt nhỏ li ti lơ lửng sát mặt đất, làm ta khó nhìn xa."
+      },
+      {
+       "q": "Các phi hành gia sống và làm việc nhiều tháng liền ở đâu trên vũ trụ?",
+       "ans": "Trên Trạm Vũ trụ Quốc tế bay quanh Trái Đất",
+       "wrong": [
+        "Trên Mặt Trăng, trong trạm mặt trăng",
+        "Trên một hành tinh khác gần Trái Đất",
+        "Trên tàu vũ trụ bay thẳng mãi không quay về"
+       ],
+       "ex": "Trạm Vũ trụ Quốc tế là một «ngôi nhà» khổng lồ bay quanh Trái Đất, nơi phi hành gia của nhiều nước cùng sống và làm thí nghiệm."
+      },
+      {
+       "q": "Trạm Vũ trụ Quốc tế bay rất nhanh quanh Trái Đất. Mỗi ngày, phi hành gia trên trạm thấy Mặt Trời mọc khoảng bao nhiêu lần?",
+       "ans": "Khoảng 16 lần",
+       "wrong": [
+        "Đúng 1 lần như ở mặt đất",
+        "Khoảng 4 lần",
+        "Khoảng 100 lần"
+       ],
+       "ex": "Trạm bay một vòng quanh Trái Đất chỉ mất khoảng 90 phút, nên trong một ngày phi hành gia thấy Mặt Trời mọc và lặn khoảng 16 lần."
+      },
+      {
+       "q": "Đêm trời quang, em thấy một vệt sáng lao nhanh qua bầu trời rồi tắt, mọi người gọi là «sao băng». Thật ra nó là gì?",
+       "ans": "Một mẩu đá vũ trụ nhỏ cháy sáng khi lao vào khí quyển",
+       "wrong": [
+        "Một ngôi sao thật rơi xuống Trái Đất",
+        "Một chiếc máy bay bay rất cao và nhanh",
+        "Một tia chớp ở rất xa"
+       ],
+       "ex": "Sao băng không phải ngôi sao. Đó là mẩu đá hoặc bụi vũ trụ lao vào khí quyển, ma sát nóng lên và cháy sáng thành vệt."
+      },
+      {
+       "q": "Sao chổi là khối băng và bụi bay quanh Mặt Trời. Khi nào sao chổi có chiếc đuôi sáng dài?",
+       "ans": "Khi bay đến gần Mặt Trời",
+       "wrong": [
+        "Khi bay ra xa Mặt Trời nhất",
+        "Khi đi qua phía sau Mặt Trăng",
+        "Vào những đêm không trăng"
+       ],
+       "ex": "Đến gần Mặt Trời, băng trên sao chổi bốc hơi, hơi và bụi bị đẩy ra phía sau tạo thành chiếc đuôi sáng."
+      },
+      {
+       "q": "Nơi nào là nơi sâu nhất của các đại dương trên Trái Đất?",
+       "ans": "Rãnh Mariana (Ma-ri-a-na) ở Thái Bình Dương",
+       "wrong": [
+        "Giữa Đại Tây Dương",
+        "Hồ Baikal (Bai-can) ở Nga",
+        "Sông Amazon (A-ma-dôn) ở Nam Mỹ"
+       ],
+       "ex": "Rãnh Mariana sâu khoảng 11 ki-lô-mét dưới mặt biển — sâu hơn cả chiều cao của núi Everest (Ê-vơ-rét)."
+      },
+      {
+       "q": "Sa mạc nào là sa mạc nóng lớn nhất thế giới, nằm ở phía bắc châu Phi?",
+       "ans": "Sa mạc Sahara (Xa-ha-ra)",
+       "wrong": [
+        "Sa mạc Gobi (Gô-bi) ở châu Á",
+        "Sa mạc ở Nam Cực",
+        "Sa mạc Kalahari (Ca-la-ha-ri) ở châu Phi"
+       ],
+       "ex": "Sahara là sa mạc nóng lớn nhất thế giới, ban ngày rất nóng nhưng ban đêm lại lạnh hẳn xuống."
+      },
+      {
+       "q": "Người dân vùng biển thấy nước biển mỗi ngày dâng lên cao rồi rút xuống thấp, gọi là thuỷ triều. Thuỷ triều chủ yếu do đâu?",
+       "ans": "Sức hút của Mặt Trăng đối với nước biển",
+       "wrong": [
+        "Gió thổi nước biển dồn vào bờ",
+        "Cá voi bơi tạo sóng lớn",
+        "Mặt Trời đun nóng làm nước biển nở ra"
+       ],
+       "ex": "Mặt Trăng ở gần Trái Đất, sức hút của nó kéo nước biển phồng lên tạo thành thuỷ triều."
+      },
+      {
+       "q": "Ở vùng gần Bắc Cực, có đêm em thấy trên trời những dải sáng xanh, tím uốn lượn như dải lụa phát sáng. Hiện tượng đó gọi là gì?",
+       "ans": "Cực quang",
+       "wrong": [
+        "Cầu vồng ban đêm",
+        "Mưa sao băng",
+        "Sét hòn trên trời"
+       ],
+       "ex": "Cực quang xuất hiện khi các hạt từ Mặt Trời gặp khí quyển gần hai cực của Trái Đất và làm khí phát sáng."
+      },
+      {
+       "q": "Trên Mặt Trăng không bao giờ có gió thổi hay mưa rơi. Vì sao?",
+       "ans": "Vì Mặt Trăng không có lớp không khí bao quanh",
+       "wrong": [
+        "Vì Mặt Trăng ở quá xa Mặt Trời",
+        "Vì Mặt Trăng luôn quay một mặt về Trái Đất",
+        "Vì bề mặt Mặt Trăng toàn là đá cứng"
+       ],
+       "ex": "Gió và mưa đều cần không khí. Mặt Trăng hầu như không có khí quyển nên không có gió, không có mưa."
+      },
+      {
+       "q": "Trong Hệ Mặt Trời, hành tinh nào ở gần Mặt Trời nhất?",
+       "ans": "Sao Thuỷ",
+       "wrong": [
+        "Sao Kim",
+        "Trái Đất",
+        "Sao Hoả"
+       ],
+       "ex": "Thứ tự từ Mặt Trời ra: Sao Thuỷ, Sao Kim, Trái Đất, Sao Hoả... Sao Thuỷ ở gần Mặt Trời nhất."
+      },
+      {
+       "q": "Sao Hoả được gọi là «hành tinh đỏ». Vì sao nó có màu đỏ?",
+       "ans": "Bề mặt có nhiều đất đá chứa sắt đã bị gỉ",
+       "wrong": [
+        "Vì Sao Hoả rất nóng, đỏ rực như lửa",
+        "Vì nó phản chiếu ánh sáng đỏ của Mặt Trời",
+        "Vì trên đó mọc đầy cây lá đỏ"
+       ],
+       "ex": "Đất đá trên Sao Hoả giàu chất sắt. Sắt bị ô-xi hoá (gỉ) tạo màu đỏ cam bao phủ khắp hành tinh."
       }
      ],
      "blank": [
@@ -1748,6 +2216,50 @@ window.__KH_PARTS = {
        "ex": "Mây gồm vô số giọt nước li ti. Khi giọt nước lớn dần và nặng, chúng rơi xuống thành mưa.",
        "pre": "Những giọt nước rất nhỏ ngưng tụ lại lơ lửng trên cao tạo thành ",
        "post": "."
+      },
+      {
+       "ans": "Mộc",
+       "wrong": [
+        "Kim",
+        "Hoả",
+        "Thổ"
+       ],
+       "ex": "Sao Mộc là hành tinh lớn nhất Hệ Mặt Trời; riêng cơn bão lớn trên nó đã rộng hơn cả Trái Đất.",
+       "pre": "Hành tinh lớn nhất trong Hệ Mặt Trời là Sao ",
+       "post": ", lớn hơn Trái Đất rất nhiều lần."
+      },
+      {
+       "ans": "đá",
+       "wrong": [
+        "sao",
+        "mây",
+        "tuyết"
+       ],
+       "ex": "Mẩu đá hay bụi vũ trụ lao vào khí quyển, ma sát nóng cháy tạo thành vệt sáng gọi là sao băng.",
+       "pre": "«Sao băng» mà em thấy lao qua trời đêm thật ra là một mẩu ",
+       "post": " vũ trụ nhỏ cháy sáng trong khí quyển."
+      },
+      {
+       "ans": "Everest",
+       "wrong": [
+        "Phú Sĩ",
+        "Fansipan",
+        "Bạch Mã"
+       ],
+       "ex": "Núi Everest cao khoảng 8,9 ki-lô-mét so với mặt biển, là nóc nhà của thế giới.",
+       "pre": "Ngọn núi cao nhất thế giới, được gọi là «nóc nhà của thế giới», là núi ",
+       "post": " (Ê-vơ-rét)."
+      },
+      {
+       "ans": "thuỷ triều",
+       "wrong": [
+        "sóng thần",
+        "lũ lụt",
+        "bốc hơi"
+       ],
+       "ex": "Sức hút của Mặt Trăng kéo nước biển tạo thành thuỷ triều lên xuống mỗi ngày.",
+       "pre": "Hiện tượng nước biển dâng lên và rút xuống hằng ngày do sức hút của Mặt Trăng gọi là ",
+       "post": "."
       }
      ],
      "match": [],
@@ -1821,6 +2333,31 @@ window.__KH_PARTS = {
        "stmt": "Nước mưa rơi xuống đất là hết hẳn, không bao giờ quay lại sông hồ.",
        "truth": false,
        "explain": "Sai: nước mưa chảy về sông hồ, rồi lại bốc hơi lên thành mây và mưa tiếp. Nước đi vòng tròn không ngừng."
+      },
+      {
+       "stmt": "«Sao băng» là một ngôi sao thật trên trời rơi xuống đất.",
+       "truth": false,
+       "explain": "Sai. Sao băng là mẩu đá vũ trụ nhỏ cháy sáng khi lao vào khí quyển, không phải ngôi sao rơi."
+      },
+      {
+       "stmt": "Phi hành gia sống và làm việc trên Trạm Vũ trụ Quốc tế bay quanh Trái Đất.",
+       "truth": true,
+       "explain": "Đúng. Trạm Vũ trụ Quốc tế bay một vòng quanh Trái Đất chỉ khoảng 90 phút."
+      },
+      {
+       "stmt": "Núi Everest (Ê-vơ-rét) là ngọn núi cao nhất thế giới.",
+       "truth": true,
+       "explain": "Đúng. Everest cao khoảng 8,9 ki-lô-mét so với mặt biển, được gọi là nóc nhà của thế giới."
+      },
+      {
+       "stmt": "Mặt Trăng góp phần tạo nên thuỷ triều lên xuống ở biển nhờ sức hút của nó.",
+       "truth": true,
+       "explain": "Đúng. Sức hút của Mặt Trăng kéo nước biển, làm mực nước dâng lên và rút xuống mỗi ngày."
+      },
+      {
+       "stmt": "Sa mạc Sahara (Xa-ha-ra) là vùng đất lạnh giá, quanh năm phủ đầy băng tuyết.",
+       "truth": false,
+       "explain": "Sai. Sahara là sa mạc nóng lớn nhất thế giới: ban ngày rất nóng, ban đêm mới lạnh hẳn xuống."
       }
      ]
     },
@@ -2180,6 +2717,116 @@ window.__KH_PARTS = {
         "Giai đoạn nhộng"
        ],
        "ex": "Con tằm là ấu trùng của con ngài. Tằm ăn lá dâu, lớn lên, nhả tơ làm kén rồi hoá nhộng và thành ngài."
+      },
+      {
+       "q": "Con vật nào là con vật lớn nhất trên Trái Đất từ trước đến nay?",
+       "ans": "Cá voi xanh",
+       "wrong": [
+        "Voi châu Phi",
+        "Khủng long bạo chúa",
+        "Cá nhà táng"
+       ],
+       "ex": "Cá voi xanh dài khoảng 30 mét, nặng bằng khoảng 30 con voi cộng lại — là con vật lớn nhất từng sống trên Trái Đất."
+      },
+      {
+       "q": "Bạch tuộc bị cá mập cắn mất một xúc tu khi chạy trốn. Một thời gian sau, điều gì xảy ra?",
+       "ans": "Xúc tu mới sẽ mọc lại dần",
+       "wrong": [
+        "Bạch tuộc chỉ còn bảy xúc tu mãi mãi",
+        "Bạch tuộc mọc thêm hai xúc tu thay thế",
+        "Bạch tuộc phải lột xác như cua mới lành"
+       ],
+       "ex": "Bạch tuộc (và cả sao biển) có khả năng mọc lại phần cơ thể bị mất."
+      },
+      {
+       "q": "Cây bẫy kẹp có hai nửa lá như chiếc bẫy. Khi ruồi đậu vào, lá sập lại bắt lấy ruồi. Cây bắt côn trùng để làm gì?",
+       "ans": "Để lấy thêm chất dinh dưỡng từ côn trùng",
+       "wrong": [
+        "Để bảo vệ hoa khỏi bị ăn mất",
+        "Để trang trí cho lá đẹp hơn",
+        "Để dự trữ thức ăn cho mùa đông"
+       ],
+       "ex": "Cây bẫy kẹp sống ở đất nghèo dinh dưỡng nên bắt côn trùng, tiêu hoá chúng để lấy thêm chất đạm."
+      },
+      {
+       "q": "Mùa đông lạnh giá kéo dài, nhiều con gấu chui vào hang ngủ say nhiều tháng liền, không ăn uống. Gấu ngủ đông để làm gì?",
+       "ans": "Để tiết kiệm năng lượng, vượt qua mùa lạnh thiếu thức ăn",
+       "wrong": [
+        "Để tránh bị người săn bắt vào mùa đông",
+        "Để chờ lông mọc dài thêm",
+        "Để sinh con trong hang ấm"
+       ],
+       "ex": "Ngủ đông giúp gấu dùng rất ít năng lượng, sống nhờ lớp mỡ dự trữ qua mùa đông lạnh và khan hiếm thức ăn."
+      },
+      {
+       "q": "Con tắc kè hoa đứng trên lá xanh thì da chuyển xanh, đứng trên thân cây nâu thì da chuyển nâu. Khả năng đó giúp nó điều gì?",
+       "ans": "Nguỵ trang, trốn kẻ thù và rình mồi",
+       "wrong": [
+        "Báo hiệu thời tiết sắp thay đổi",
+        "Hấp thụ ánh nắng tốt hơn",
+        "Làm đẹp để thu hút bạn tình"
+       ],
+       "ex": "Đổi màu da giúp tắc kè hoa hoà lẫn vào xung quanh, vừa tránh kẻ thù vừa dễ rình bắt côn trùng."
+      },
+      {
+       "q": "Mỗi năm, nhiều đàn chim như chim én, chim nhạn bay hàng nghìn ki-lô-mét từ phương bắc về phương nam rồi quay lại. Chúng di cư để làm gì?",
+       "ans": "Tìm nơi ấm áp và nhiều thức ăn hơn",
+       "wrong": [
+        "Tập bay cho chim non biết đường",
+        "Trốn khỏi Mặt Trăng mùa đông",
+        "Đi thăm họ hàng ở phương nam"
+       ],
+       "ex": "Khi phương bắc vào đông lạnh giá, ít thức ăn, chim di cư về phương nam ấm áp, nhiều thức ăn, đến mùa xuân lại bay về."
+      },
+      {
+       "q": "Loài cây nào mọc nhanh đến mức có thể cao thêm gần một mét chỉ trong một ngày?",
+       "ans": "Cây tre",
+       "wrong": [
+        "Cây sồi",
+        "Cây thông",
+        "Cây xoài"
+       ],
+       "ex": "Tre là loài cây mọc nhanh nhất thế giới; một số loài tre cao thêm tới khoảng 90 xăng-ti-mét trong một ngày."
+      },
+      {
+       "q": "Ở đáy biển sâu tối om, một loài cá có «cần câu» phát sáng trước miệng. Ánh sáng đó để làm gì?",
+       "ans": "Dụ con mồi nhỏ bơi đến gần",
+       "wrong": [
+        "Để nhìn đường như đèn pin",
+        "Để xua đuổi cá lớn",
+        "Để sưởi ấm cơ thể"
+       ],
+       "ex": "Đó là cá vây chân (cá đèn lồng biển sâu). «Bóng đèn» phát sáng của nó dụ tôm cá nhỏ tò mò bơi đến và bị ăn thịt."
+      },
+      {
+       "q": "Gấu túi koala (cô-a-la) ở Úc nổi tiếng là «vua ngủ». Mỗi ngày nó ngủ khoảng bao lâu?",
+       "ans": "Tới khoảng 20 giờ mỗi ngày",
+       "wrong": [
+        "Khoảng 2 giờ mỗi ngày",
+        "Đúng 8 giờ như học sinh",
+        "Nó không ngủ, chỉ nhắm mắt nghỉ"
+       ],
+       "ex": "Lá bạch đàn (khuynh diệp) mà koala ăn rất ít chất dinh dưỡng, nên nó ngủ tới khoảng 20 giờ mỗi ngày để tiết kiệm năng lượng."
+      },
+      {
+       "q": "Sao biển bị mất một cánh (một «tay»). Điều gì xảy ra sau đó một thời gian?",
+       "ans": "Cánh mới sẽ mọc lại",
+       "wrong": [
+        "Sao biển chết ngay vì mất cánh",
+        "Sao biển mọc thêm hẳn hai cánh mới",
+        "Cánh bị mất tự bơi đi thành sao biển mới ngay"
+       ],
+       "ex": "Sao biển có khả năng tái sinh: cánh bị mất sẽ mọc lại dần, có khi mất cả năm mới hoàn chỉnh."
+      },
+      {
+       "q": "Gấu trúc lớn dành phần lớn thời gian trong ngày để ăn một loại cây. Đó là cây gì?",
+       "ans": "Cây tre trúc",
+       "wrong": [
+        "Cây chuối",
+        "Cây dừa",
+        "Cây ngô"
+       ],
+       "ex": "Khoảng 99 phần trăm thức ăn của gấu trúc là lá và thân tre trúc; mỗi ngày nó ăn rất nhiều giờ liền."
       }
      ],
      "blank": [
@@ -2316,6 +2963,50 @@ window.__KH_PARTS = {
        "ex": "Ếch đẻ trứng dưới nước, trứng nở thành nòng nọc, nòng nọc lớn dần thành ếch.",
        "pre": "Vòng đời của ếch bắt đầu từ ",
        "post": " do ếch mẹ đẻ ra."
+      },
+      {
+       "ans": "ba",
+       "wrong": [
+        "hai",
+        "năm",
+        "bốn"
+       ],
+       "ex": "Hai quả tim của bạch tuộc bơm máu qua mang, quả tim còn lại bơm máu đi khắp cơ thể.",
+       "pre": "Không giống con người chỉ có một quả tim, con bạch tuộc có tới ",
+       "post": " quả tim."
+      },
+      {
+       "ans": "ngủ đông",
+       "wrong": [
+        "di cư",
+        "lột xác",
+        "kiếm ăn"
+       ],
+       "ex": "Khi ngủ đông, cơ thể gấu hoạt động rất chậm, sống nhờ lớp mỡ dự trữ.",
+       "pre": "Để vượt qua mùa đông lạnh và thiếu thức ăn, nhiều con gấu chui vào hang ",
+       "post": " nhiều tháng liền."
+      },
+      {
+       "ans": "côn trùng",
+       "wrong": [
+        "giọt nước",
+        "hạt giống",
+        "lá khô"
+       ],
+       "ex": "Những loài cây «ăn thịt» này tiêu hoá côn trùng để bổ sung chất đạm.",
+       "pre": "Cây bẫy kẹp và cây nắp ấm bắt ",
+       "post": " để lấy thêm chất dinh dưỡng vì đất nơi chúng sống rất nghèo."
+      },
+      {
+       "ans": "gêpa",
+       "wrong": [
+        "hoa mai",
+        "đen",
+        "săn"
+       ],
+       "ex": "Báo gêpa là con vật chạy nhanh nhất trên cạn nhờ thân hình thon dài và đôi chân khoẻ.",
+       "pre": "Con vật chạy nhanh nhất trên mặt đất, có thể đạt khoảng 100 ki-lô-mét mỗi giờ trong quãng ngắn, là báo ",
+       "post": "."
       }
      ],
      "match": [],
@@ -2389,6 +3080,31 @@ window.__KH_PARTS = {
        "stmt": "Thức ăn ôi thiu để ngoài trời lâu, hâm lại vẫn ăn an toàn.",
        "truth": false,
        "explain": "Sai: thức ăn ôi thiu đã có nhiều vi khuẩn gây bệnh. Ăn vào có thể bị đau bụng, ngộ độc."
+      },
+      {
+       "stmt": "Cá voi xanh là con vật lớn nhất trên Trái Đất.",
+       "truth": true,
+       "explain": "Đúng. Cá voi xanh dài khoảng 30 mét, nặng bằng khoảng 30 con voi."
+      },
+      {
+       "stmt": "Bạch tuộc chỉ có một quả tim giống như con người.",
+       "truth": false,
+       "explain": "Sai. Bạch tuộc có tới ba quả tim: hai quả bơm máu qua mang, một quả bơm đi khắp cơ thể."
+      },
+      {
+       "stmt": "Có loài cây biết bắt và tiêu hoá côn trùng để lấy thêm chất dinh dưỡng.",
+       "truth": true,
+       "explain": "Đúng. Cây bẫy kẹp, cây nắp ấm sống ở đất nghèo nên bắt côn trùng để bổ sung chất đạm."
+      },
+      {
+       "stmt": "Nhiều loài chim di cư bay rất xa để tìm nơi ấm áp và nhiều thức ăn hơn.",
+       "truth": true,
+       "explain": "Đúng. Khi mùa đông đến, chim bay về phương nam ấm áp rồi trở về vào mùa xuân."
+      },
+      {
+       "stmt": "Sao biển bị mất một cánh là chết ngay, không bao giờ mọc lại được.",
+       "truth": false,
+       "explain": "Sai. Sao biển có khả năng mọc lại cánh đã mất, dù phải mất nhiều tháng."
       }
      ]
     },
@@ -2735,6 +3451,116 @@ window.__KH_PARTS = {
         "Chỉ sau khi ăn kẹo"
        ],
        "ex": "Đánh răng sáng sau khi ngủ dậy và tối trước khi đi ngủ giúp răng chắc khoẻ, phòng sâu răng."
+      },
+      {
+       "q": "Em chạy thi với bạn xong, tim đập thình thịch nhanh hơn hẳn lúc ngồi yên. Vì sao tim đập nhanh hơn khi vận động?",
+       "ans": "Để bơm nhiều máu mang ô-xi đến các cơ đang làm việc",
+       "wrong": [
+        "Vì tim bị mệt nên đập loạn nhịp",
+        "Vì chạy làm tim to ra ngay lập tức",
+        "Vì phổi ngừng hoạt động khi chạy"
+       ],
+       "ex": "Khi vận động, các cơ cần nhiều ô-xi và chất dinh dưỡng hơn. Tim đập nhanh và mạnh hơn để bơm máu đến các cơ kịp thời."
+      },
+      {
+       "q": "Trời nóng, em chơi thể thao một lúc thì người đẫm mồ hôi. Đổ mồ hôi giúp cơ thể em điều gì?",
+       "ans": "Giúp cơ thể hạ nhiệt, mát xuống",
+       "wrong": [
+        "Giúp cơ thể thải hết chất béo ra ngoài",
+        "Là dấu hiệu cơ thể đang bị bệnh",
+        "Giúp em cao lên nhanh hơn"
+       ],
+       "ex": "Mồ hôi thoát ra da rồi bay hơi, mang theo nhiệt, giúp cơ thể không bị quá nóng."
+      },
+      {
+       "q": "Một người lớn khoẻ mạnh có khoảng bao nhiêu chiếc xương trong cơ thể?",
+       "ans": "Khoảng 206 chiếc xương",
+       "wrong": [
+        "Khoảng 50 chiếc xương",
+        "Khoảng 1000 chiếc xương",
+        "Đúng 10 chiếc xương"
+       ],
+       "ex": "Người lớn có khoảng 206 chiếc xương. Khi còn là em bé, số xương nhiều hơn, lớn lên một số xương dính liền lại với nhau."
+      },
+      {
+       "q": "Vì sao khi làm thẻ căn cước, người ta lại lấy dấu vân tay của từng người?",
+       "ans": "Vì vân tay của mỗi người là duy nhất, không ai giống ai",
+       "wrong": [
+        "Vì vân tay ai cũng giống nhau nên dễ so sánh",
+        "Vì vân tay thay đổi mỗi ngày nên phải chụp mới",
+        "Vì ngón tay là nơi sạch nhất trên cơ thể"
+       ],
+       "ex": "Vân tay của mỗi người khác hẳn nhau và hầu như không đổi theo thời gian, nên được dùng để nhận biết từng người."
+      },
+      {
+       "q": "Khi bị nghẹt mũi vì cảm, em ăn cơm thấy nhạt nhẽo, kém ngon hẳn. Vì sao?",
+       "ans": "Vì mũi ngửi mùi giúp em cảm nhận vị thức ăn rõ hơn",
+       "wrong": [
+        "Vì lưỡi bị hỏng khi em bị cảm",
+        "Vì thức ăn hôm đó nấu dở hơn",
+        "Vì nghẹt mũi làm mắt không nhìn thấy món ăn"
+       ],
+       "ex": "Ngửi và nếm phối hợp với nhau. Mũi nghẹt, không ngửi được mùi thơm của thức ăn nên em thấy ăn kém ngon."
+      },
+      {
+       "q": "Một hạt bụi bay vào mũi, em hắt hơi thật mạnh. Hắt hơi giúp cơ thể em điều gì?",
+       "ans": "Đẩy bụi và vi khuẩn ra khỏi mũi",
+       "wrong": [
+        "Làm sạch phổi khỏi nước",
+        "Giúp em tỉnh ngủ ngay",
+        "Làm mát cơ thể khi trời nóng"
+       ],
+       "ex": "Hắt hơi là phản xạ bảo vệ: luồng khí mạnh thổi bật bụi bẩn và vi khuẩn ra khỏi mũi."
+      },
+      {
+       "q": "Cơ quan nào là cơ quan lớn nhất của cơ thể người?",
+       "ans": "Làn da",
+       "wrong": [
+        "Quả tim",
+        "Lá gan",
+        "Bộ xương"
+       ],
+       "ex": "Làn da bao phủ toàn bộ cơ thể, là cơ quan lớn nhất; da bảo vệ cơ thể và giúp em cảm nhận nóng, lạnh, đau."
+      },
+      {
+       "q": "Em ngồi học cong lưng, cúi gập người suốt nhiều ngày. Thói quen này có hại gì?",
+       "ans": "Làm cột sống dễ bị cong vẹo, đau lưng",
+       "wrong": [
+        "Làm em cao nhanh hơn bạn bè",
+        "Không ảnh hưởng gì đến cơ thể",
+        "Giúp mắt nhìn gần rõ hơn mãi mãi"
+       ],
+       "ex": "Ngồi đúng tư thế — lưng thẳng, mắt cách vở vừa phải — giúp cột sống khoẻ và mắt đỡ mỏi."
+      },
+      {
+       "q": "Trước khi chơi đá bóng, các anh vận động viên luôn khởi động, xoay khớp và chạy nhẹ một lúc. Khởi động giúp điều gì?",
+       "ans": "Làm nóng cơ bắp, tránh chuột rút và chấn thương",
+       "wrong": [
+        "Giúp trận đấu bắt đầu sớm hơn",
+        "Để khán giả nhận ra cầu thủ",
+        "Giúp cơ bắp mệt trước cho quen"
+       ],
+       "ex": "Khởi động làm cơ bắp ấm và mềm dẻo hơn, nhờ đó em vận động an toàn, ít bị chuột rút hay bong gân."
+      },
+      {
+       "q": "Cứ vài giây, mắt em lại chớp một lần mà em không để ý. Chớp mắt thường xuyên giúp mắt điều gì?",
+       "ans": "Làm ướt mắt và đẩy bụi nhỏ ra ngoài",
+       "wrong": [
+        "Giúp mắt nghỉ ngủ từng chút một",
+        "Làm mắt to ra theo thời gian",
+        "Giúp em nhìn xa hơn"
+       ],
+       "ex": "Mỗi lần chớp, nước mắt trải đều làm ướt bề mặt mắt và cuốn đi bụi nhỏ, giữ cho mắt sạch và không bị khô."
+      },
+      {
+       "q": "Chiếc xương nào là xương dài nhất và chắc nhất trong cơ thể em?",
+       "ans": "Xương đùi ở chân",
+       "wrong": [
+        "Xương sườn ở ngực",
+        "Xương ngón tay",
+        "Xương sống lưng"
+       ],
+       "ex": "Xương đùi là xương dài và chắc nhất, chịu phần lớn sức nặng của cơ thể khi em đứng và đi lại."
       }
      ],
      "blank": [
@@ -2858,6 +3684,50 @@ window.__KH_PARTS = {
        "ex": "Kinh nguyệt là hiện tượng bình thường ở bạn nữ tuổi dậy thì, xuất hiện đều đặn mỗi tháng.",
        "pre": "Bạn nữ có ",
        "post": " đều đặn mỗi tháng khi đến tuổi dậy thì."
+      },
+      {
+       "ans": "nhanh",
+       "wrong": [
+        "chậm",
+        "ngừng",
+        "nhẹ"
+       ],
+       "ex": "Vận động càng mạnh, tim đập càng nhanh để đưa máu giàu ô-xi đến các cơ.",
+       "pre": "Khi em chạy nhanh hoặc leo cầu thang, quả tim đập ",
+       "post": " hơn để bơm máu đi nuôi cơ thể."
+      },
+      {
+       "ans": "32",
+       "wrong": [
+        "20",
+        "24",
+        "28"
+       ],
+       "ex": "Trẻ em có 20 chiếc răng sữa; lớn lên thay bằng 32 chiếc răng vĩnh viễn.",
+       "pre": "Một người lớn thường có ",
+       "post": " chiếc răng vĩnh viễn, nhiều hơn bộ răng sữa 20 chiếc của trẻ em."
+      },
+      {
+       "ans": "mát",
+       "wrong": [
+        "nặng",
+        "cao",
+        "đói"
+       ],
+       "ex": "Mồ hôi bay hơi mang theo nhiệt nên cơ thể mát xuống.",
+       "pre": "Khi trời nóng, mồ hôi thoát ra trên da và bay hơi, giúp cơ thể ",
+       "post": " xuống."
+      },
+      {
+       "ans": "thẳng",
+       "wrong": [
+        "cong",
+        "nghiêng",
+        "cúi"
+       ],
+       "ex": "Ngồi lưng thẳng, hai chân đặt vững trên sàn là tư thế học đúng.",
+       "pre": "Khi ngồi học và viết bài, em nên giữ lưng ",
+       "post": " để cột sống không bị cong vẹo."
       }
      ],
      "match": [],
@@ -2931,6 +3801,31 @@ window.__KH_PARTS = {
        "stmt": "Uống nước ngọt thay nước lọc hằng ngày là rất tốt cho cơ thể.",
        "truth": false,
        "explain": "Sai: nước ngọt nhiều đường, uống thay nước lọc dễ sâu răng và thừa cân. Em nên uống nước lọc là chính."
+      },
+      {
+       "stmt": "Khi vận động mạnh, quả tim đập nhanh hơn lúc em ngồi nghỉ.",
+       "truth": true,
+       "explain": "Đúng. Tim phải bơm nhiều máu hơn để đưa ô-xi đến các cơ đang hoạt động."
+      },
+      {
+       "stmt": "Đổ mồ hôi khi trời nóng hoặc khi vận động là dấu hiệu cơ thể đang bị ốm.",
+       "truth": false,
+       "explain": "Sai. Đổ mồ hôi là cách bình thường để cơ thể hạ nhiệt khi nóng hoặc vận động."
+      },
+      {
+       "stmt": "Làn da là cơ quan lớn nhất của cơ thể người.",
+       "truth": true,
+       "explain": "Đúng. Da bao phủ toàn thân, bảo vệ cơ thể và giúp cảm nhận nóng lạnh."
+      },
+      {
+       "stmt": "Vân tay của tất cả mọi người đều giống hệt nhau.",
+       "truth": false,
+       "explain": "Sai. Vân tay của mỗi người là duy nhất, không ai giống ai."
+      },
+      {
+       "stmt": "Khởi động kĩ trước khi chơi thể thao giúp em ít bị chuột rút và đau cơ.",
+       "truth": true,
+       "explain": "Đúng. Khởi động làm cơ bắp ấm lên, mềm dẻo và sẵn sàng vận động an toàn."
       }
      ]
     },
@@ -3298,6 +4193,116 @@ window.__KH_PARTS = {
         "Lá cây biến thành hoa"
        ],
        "ex": "Lá cây thoát hơi nước ra ngoài. Hơi nước gặp thành túi mát hơn sẽ ngưng tụ thành giọt nước đọng trong túi."
+      },
+      {
+       "q": "Em muốn quan sát rõ những chữ in rất nhỏ và gân lá, hoa văn trên cánh bướm. Dụng cụ nào giúp em?",
+       "ans": "Kính lúp cầm tay",
+       "wrong": [
+        "Ống nhòm nhìn xa",
+        "Nhiệt kế",
+        "Cái cân tiểu li"
+       ],
+       "ex": "Kính lúp phóng to hình ảnh của vật nhỏ, giúp em nhìn rõ chi tiết mà mắt thường khó thấy."
+      },
+      {
+       "q": "Làm mô hình núi lửa phun trào: em đổ bột nở (baking soda) vào miệng núi lửa rồi rót giấm vào. Điều gì xảy ra?",
+       "ans": "Hỗn hợp sủi bọt mạnh, trào ra như dung nham",
+       "wrong": [
+        "Hỗn hợp đông cứng lại thành đá",
+        "Không có gì xảy ra cả",
+        "Giấm biến thành nước đá ngay"
+       ],
+       "ex": "Bột nở gặp giấm (có tính a-xít) sinh ra nhiều khí, sủi bọt trào lên như núi lửa phun. Thí nghiệm này cần có người lớn bên cạnh."
+      },
+      {
+       "q": "Em đặt một chậu cây trong hộp kín tối, chỉ khoét một lỗ nhỏ cho ánh sáng vào. Sau vài ngày, cây mọc thế nào?",
+       "ans": "Cây mọc cong, hướng về phía lỗ có ánh sáng",
+       "wrong": [
+        "Cây mọc thẳng lên như bình thường",
+        "Cây mọc cong xuống đất",
+        "Cây ngừng lớn hẳn không mọc nữa"
+       ],
+       "ex": "Cây xanh luôn hướng về phía có ánh sáng để lá hứng nắng quang hợp. Thí nghiệm cho thấy ánh sáng rất quan trọng với cây."
+      },
+      {
+       "q": "Em để hai viên đá giống nhau: một viên ngoài nắng, một viên trong bóng râm. Viên nào tan nhanh hơn?",
+       "ans": "Viên đá ngoài nắng tan nhanh hơn",
+       "wrong": [
+        "Viên đá trong bóng râm tan nhanh hơn",
+        "Hai viên tan nhanh như nhau",
+        "Viên trong bóng râm không bao giờ tan"
+       ],
+       "ex": "Nơi có nắng ấm hơn nên đá tan nhanh hơn. Đây là thí nghiệm so sánh chỉ khác nhau một điều kiện: có nắng hay không."
+      },
+      {
+       "q": "Em cắm một cọc xuống sân và đánh dấu đầu bóng của cọc lúc 8 giờ, 10 giờ, 12 giờ, 15 giờ. Em nhận ra điều gì?",
+       "ans": "Bóng của cọc đổi hướng và độ dài theo từng lúc",
+       "wrong": [
+        "Bóng của cọc đứng yên cả ngày",
+        "Bóng chỉ xuất hiện vào buổi trưa",
+        "Bóng dài nhất vào đúng giữa trưa"
+       ],
+       "ex": "Mặt Trời trông như di chuyển trên bầu trời (do Trái Đất tự quay) nên bóng đổi hướng và độ dài: sáng và chiều bóng dài, trưa bóng ngắn nhất."
+      },
+      {
+       "q": "Em thả nhẹ một quả trứng vào cốc nước lọc, trứng chìm. Em hoà thật nhiều muối vào nước rồi thả lại, trứng nổi lên. Vì sao?",
+       "ans": "Nước muối đặc «nâng» quả trứng tốt hơn nước thường",
+       "wrong": [
+        "Muối làm quả trứng nhẹ đi",
+        "Quả trứng nở to ra nên nổi",
+        "Muối biến nước thành chất rắn đỡ trứng"
+       ],
+       "ex": "Nước muối đặc hơn (nặng hơn) nước thường nên lực nâng lớn hơn, đủ sức đỡ quả trứng nổi lên."
+      },
+      {
+       "q": "Em đặt một nam châm dưới tờ giấy, rắc mạt sắt lên trên rồi gõ nhẹ. Mạt sắt xếp thành những đường cong quanh nam châm. Thí nghiệm này cho thấy điều gì?",
+       "ans": "Cho thấy vùng tác dụng của nam châm quanh nó",
+       "wrong": [
+        "Nam châm làm giấy nặng hơn",
+        "Mạt sắt tự chạy về phía có nắng",
+        "Giấy có điện nên hút mạt sắt"
+       ],
+       "ex": "Mắt thường không thấy được vùng tác dụng (từ trường) của nam châm, nhưng mạt sắt xếp thành hình giúp em «nhìn thấy» nó."
+      },
+      {
+       "q": "Em cắm một bông hoa trắng vào cốc nước pha màu đỏ. Hôm sau, cánh hoa có những vệt đỏ. Thí nghiệm này cho biết điều gì?",
+       "ans": "Nước được thân cây vận chuyển lên tới hoa",
+       "wrong": [
+        "Hoa tự đổi màu khi để trong nhà",
+        "Màu đỏ nhuộm từ cánh hoa bên ngoài vào",
+        "Hoa trắng luôn chuyển đỏ sau một ngày"
+       ],
+       "ex": "Nước màu đi theo thân lên hoa làm cánh hoa đổi màu — chứng tỏ thân cây vận chuyển nước từ dưới lên trên."
+      },
+      {
+       "q": "Kính tiềm vọng trên tàu ngầm (và đồ chơi tự làm bằng hai gương) giúp người bên dưới nhìn được trên mặt nước. Nó hoạt động nhờ gì?",
+       "ans": "Hai gương phản chiếu ánh sáng theo đường gấp khúc",
+       "wrong": [
+        "Một ống kính phóng to rất mạnh",
+        "Một màn hình điện tử trong ống",
+        "Âm thanh truyền qua ống lên trên"
+       ],
+       "ex": "Hai gương đặt nghiêng lần lượt phản chiếu hình ảnh qua ống gấp khúc, giúp em nhìn qua vật chắn hoặc từ dưới lên trên."
+      },
+      {
+       "q": "Nhỏ một giọt nước trong lên trang sách, em thấy chữ dưới giọt nước to và rõ hơn. Vì sao?",
+       "ans": "Giọt nước cong hoạt động như một kính lúp nhỏ",
+       "wrong": [
+        "Nước làm mực in nở to ra",
+        "Chữ in dưới nước tự di chuyển gần mắt em",
+        "Nước làm trang sách mỏng đi"
+       ],
+       "ex": "Giọt nước có mặt cong như thấu kính của kính lúp nên phóng to hình ảnh chữ bên dưới."
+      },
+      {
+       "q": "Muốn nhìn thấy những sinh vật cực nhỏ sống trong một giọt nước ao, em cần dụng cụ nào?",
+       "ans": "Kính hiển vi",
+       "wrong": [
+        "Kính lúp thông thường",
+        "Ống nhòm",
+        "Mắt thường nhìn thật kĩ"
+       ],
+       "ex": "Kính hiển vi phóng to hàng trăm lần, cho em thấy cả một thế giới sinh vật nhỏ bé trong giọt nước mà mắt thường không thấy được."
       }
      ],
      "blank": [
@@ -3421,6 +4426,50 @@ window.__KH_PARTS = {
        "ex": "Đặt câu hỏi rõ ràng là bước khởi đầu. Từ câu hỏi, em dự đoán rồi tìm cách kiểm chứng.",
        "pre": "Sau khi quan sát điều lạ, em đặt một ",
        "post": " rồi mới dự đoán và kiểm chứng."
+      },
+      {
+       "ans": "lúp",
+       "wrong": [
+        "hiển vi",
+        "tiềm vọng",
+        "mát"
+       ],
+       "ex": "Kính lúp là thấu kính cầm tay giúp em nhìn vật nhỏ to và rõ hơn.",
+       "pre": "Dụng cụ cầm tay có một thấu kính cong, dùng để phóng to vật nhỏ khi quan sát, là kính ",
+       "post": "."
+      },
+      {
+       "ans": "Mặt Trời",
+       "wrong": [
+        "gió",
+        "Mặt Trăng",
+        "nhà"
+       ],
+       "ex": "Ánh nắng chiếu qua màn giọt nước nhỏ phía trước em sẽ tán thành cầu vồng khi em quay lưng về phía Mặt Trời.",
+       "pre": "Để tự làm cầu vồng bằng vòi phun nước vào ngày nắng, em đứng quay lưng về phía ",
+       "post": " và phun nước thành màn sương mịn."
+      },
+      {
+       "ans": "đặc",
+       "wrong": [
+        "loãng",
+        "nóng",
+        "ngọt"
+       ],
+       "ex": "Nước muối càng đặc càng nặng, lực nâng càng lớn nên đỡ được quả trứng nổi lên.",
+       "pre": "Quả trứng chìm trong nước thường nhưng nổi trong nước muối ",
+       "post": " vì nước muối nâng trứng tốt hơn."
+      },
+      {
+       "ans": "gương",
+       "wrong": [
+        "đèn",
+        "pin",
+        "quạt"
+       ],
+       "ex": "Hai gương phản chiếu hình ảnh qua lại theo đường gấp khúc trong ống tiềm vọng.",
+       "pre": "Kính tiềm vọng giúp em nhìn qua vật chắn cao nhờ hai chiếc ",
+       "post": " đặt nghiêng trong ống."
       }
      ],
      "match": [],
@@ -3494,6 +4543,31 @@ window.__KH_PARTS = {
        "stmt": "Nam châm hút được cả vật bằng nhựa và gỗ.",
        "truth": false,
        "explain": "Sai: nam châm chỉ hút vật bằng sắt và một số kim loại. Nhựa và gỗ không bị nam châm hút."
+      },
+      {
+       "stmt": "Kính lúp giúp em nhìn các vật nhỏ to và rõ hơn.",
+       "truth": true,
+       "explain": "Đúng. Thấu kính cong của kính lúp phóng to hình ảnh của vật."
+      },
+      {
+       "stmt": "Quả trứng thả vào loại nước nào cũng luôn nổi lên mặt nước.",
+       "truth": false,
+       "explain": "Sai. Trứng chìm trong nước thường, chỉ nổi khi nước muối đủ đặc để nâng nó."
+      },
+      {
+       "stmt": "Cây xanh đặt trong hộp tối có một lỗ sáng sẽ mọc hướng về phía lỗ sáng đó.",
+       "truth": true,
+       "explain": "Đúng. Cây luôn hướng về phía có ánh sáng để lá hứng nắng."
+      },
+      {
+       "stmt": "Trộn giấm với bột nở sẽ sủi bọt mạnh, giống mô hình núi lửa phun trào.",
+       "truth": true,
+       "explain": "Đúng. Giấm gặp bột nở sinh ra khí, sủi bọt trào lên. Khi làm thí nghiệm này em cần có người lớn ở bên."
+      },
+      {
+       "stmt": "Chỉ cần nhìn thật kĩ bằng mắt thường là em thấy hết mọi sinh vật nhỏ bé trong giọt nước.",
+       "truth": false,
+       "explain": "Sai. Nhiều sinh vật trong giọt nước nhỏ đến mức phải dùng kính hiển vi mới nhìn thấy được."
       }
      ]
     },

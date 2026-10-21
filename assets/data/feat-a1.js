@@ -415,7 +415,7 @@
     { id: "tc-bronze", emoji: "⚡", name: "Tia chớp Đồng", desc: "Trong một vòng Tia chớp: trả lời đúng từ một nửa số câu trở lên và đúng liên tiếp 5 câu", cond: function () { var r = loadJSON("gameHocTap_tiachop_v1", null); return !!r && (r.bestStreakQ || 0) >= 5; } },
     { id: "tc-silver", emoji: "⚡", name: "Tia chớp Bạc", desc: "Trong một vòng Tia chớp: trả lời đúng từ một nửa số câu trở lên và đúng liên tiếp 8 câu", cond: function () { var r = loadJSON("gameHocTap_tiachop_v1", null); return !!r && (r.bestStreakQ || 0) >= 8; } },
     { id: "tc-gold", emoji: "⚡", name: "Tia chớp Vàng", desc: "Trong một vòng Tia chớp: trả lời đúng từ một nửa số câu trở lên và đúng liên tiếp 14 câu", cond: function () { var r = loadJSON("gameHocTap_tiachop_v1", null); return !!r && (r.bestStreakQ || 0) >= 14; } },
-    { id: "card-collector", emoji: "🃏", name: "Nhà sưu tập", cond: function () { var c = loadJSON("gameHocTap_cards_v1", null); return !!c && !!c.unlocked && Object.keys(c.unlocked).length >= 12; } }
+    { id: "card-collector", emoji: "🃏", name: "Nhà sưu tập", cond: function () { var c = loadJSON("gameHocTap_cards_v1", null); if (!c || !c.unlocked) return false; var total = (window.__GT && window.__GT.cards && window.__GT.cards.length) ? window.__GT.cards.length : 14; return Object.keys(c.unlocked).length >= total; } } /* V22: tổng thẻ lấy động từ __GT.cards khi giaitri.js đã nạp; dự phòng 14 = GT_CARDS.length hiện tại */
   ];
   function badgeDef(id) { for (var i = 0; i < BADGES.length; i++) if (BADGES[i].id === id) return BADGES[i]; return null; }
   function awardBadge(id) {

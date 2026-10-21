@@ -99,31 +99,45 @@ function g5FracAddSubDiff() {
   var a = rand(1, d1), b = rand(1, d2);
   var sub = Math.random() < 0.45 && a * d2 > b * d1;
   var n = sub ? a * d2 - b * d1 : a * d2 + b * d1, d = d1 * d2;
-  return frMCQ5((sub ? "Tính: " : "Tính: ") + opFrac5(a, d1) + (sub ? " − " : " + ") + opFrac5(b, d2) + " = ?", n, d,
+  var q = frMCQ5((sub ? "Tính: " : "Tính: ") + opFrac5(a, d1) + (sub ? " − " : " + ") + opFrac5(b, d2) + " = ?", n, d,
     "Quy đồng mẫu số chung là " + d + ": " + opFrac5(a, d1) + " = " + (a * d2) + "/" + d + ", " + opFrac5(b, d2) + " = " + (b * d1) + "/" + d + ". Kết quả rút gọn: " + fr5(n, d) + ".");
+  /* Đợt hình Tiểu học (v22): hai thanh tô đúng hai số hạng (dữ kiện đề);
+     tổng/hiệu không vẽ. */
+  if (Math.random() < 0.75) q.figure = figFracBars2SVG(a, d1, b, d2);
+  return q;
 }
 function g5Mixed() {
   var v = rand(0, 2);
   if (v === 0) { var w = rand(1, 6), d = pick([2, 3, 4, 5, 6, 8]), n = rand(1, d - 1);
-    return frMCQ5("Hỗn số " + w + " " + n + "/" + d + " viết dưới dạng phân số là?", w * d + n, d, w + " " + n + "/" + d + " = (" + w + " × " + d + " + " + n + ")/" + d + " = " + (w * d + n) + "/" + d + "."); }
+    var q0 = frMCQ5("Hỗn số " + w + " " + n + "/" + d + " viết dưới dạng phân số là?", w * d + n, d, w + " " + n + "/" + d + " = (" + w + " × " + d + " + " + n + ")/" + d + " = " + (w * d + n) + "/" + d + ".");
+    if (Math.random() < 0.65) q0.figure = figFracBarSVG(n, d);
+    return q0; }
   if (v === 1) { var d2 = pick([2, 3, 4, 5, 6]), w2 = rand(1, 6), n2 = rand(1, d2 - 1), imp = w2 * d2 + n2;
     var ans = w2 + " " + fr5(n2, d2), wrongs = [(w2 + 1) + " " + fr5(n2, d2), w2 + " " + fr5(Math.min(d2 - 1, n2 + 1), d2), (w2 - 1 > 0 ? w2 - 1 : w2 + 2) + " " + fr5(n2, d2)];
     return mcqQ("Phân số " + imp + "/" + d2 + " viết dưới dạng hỗn số là?", wrongs, ans, imp + " : " + d2 + " = " + w2 + " (dư " + n2 + ") nên " + imp + "/" + d2 + " = " + ans + "."); }
   var d3 = pick([2, 3, 4, 5]), w3 = rand(1, 4), n3 = rand(1, d3 - 1), w4 = rand(1, 4), n4 = rand(1, d3 - 1);
-  return frMCQ5("Tính: " + w3 + " " + n3 + "/" + d3 + " + " + w4 + " " + n4 + "/" + d3 + " = ? (viết dưới dạng phân số tối giản)", (w3 + w4) * d3 + n3 + n4, d3,
+  var q2 = frMCQ5("Tính: " + w3 + " " + n3 + "/" + d3 + " + " + w4 + " " + n4 + "/" + d3 + " = ? (viết dưới dạng phân số tối giản)", (w3 + w4) * d3 + n3 + n4, d3,
     "Cộng phần nguyên: " + w3 + " + " + w4 + " = " + (w3 + w4) + "; cộng phần phân số: " + n3 + "/" + d3 + " + " + n4 + "/" + d3 + " = " + (n3 + n4) + "/" + d3 + ". Gộp lại được " + fr5((w3 + w4) * d3 + n3 + n4, d3) + ".");
+  if (Math.random() < 0.65) q2.figure = figFracBars2SVG(n3, d3, n4, d3);
+  return q2;
 }
 function g5DecFrac() {
   var v = rand(0, 2);
   if (v === 0) { var d = pick([10, 100, 1000]); var n = d === 1000 ? rand(1, 99) * 10 : rand(1, d - 1);
-    return decMCQ("Phân số thập phân " + n + "/" + d + " viết dưới dạng số thập phân là?", "", Math.round(n * 100 / d), n + "/" + d + " = " + decStr(Math.round(n * 100 / d)) + " (mẫu số " + fmtN(d) + " gợi ý số chữ số sau dấu phẩy)."); }
+    var q0 = decMCQ("Phân số thập phân " + n + "/" + d + " viết dưới dạng số thập phân là?", "", Math.round(n * 100 / d), n + "/" + d + " = " + decStr(Math.round(n * 100 / d)) + " (mẫu số " + fmtN(d) + " gợi ý số chữ số sau dấu phẩy).");
+    /* Thanh 10 phần / lưới 100 ô tô đúng tử số đã cho trong đề (dữ kiện);
+       dạng số thập phân cần tìm không in trong hình. */
+    if (d === 10) q0.figure = figFracBarSVG(n, 10); else if (d === 100) q0.figure = figFracGridSVG(n);
+    return q0; }
   if (v === 1) { var h2 = rand(5, 999); if (h2 % 100 === 0) h2 += 5;
     var dd, nn; if (h2 % 10 === 0) { dd = 10; nn = h2 / 10; } else { dd = 100; nn = h2; }
     var ans = nn + "/" + dd;
     var wrongs = [(nn + 1) + "/" + dd, nn + "/" + (dd === 10 ? 100 : 1000), (nn * 10) + "/" + dd];
     return mcqQ("Số thập phân " + decStr(h2) + " viết dưới dạng phân số thập phân là?", wrongs.filter(function (x) { return x !== ans; }), ans, decStr(h2) + " = " + ans + " (đếm số chữ số sau dấu phẩy để chọn mẫu số 10, 100)."); }
   var d3 = pick([10, 100]), n3 = rand(1, d3 - 1);
-  return decMCQ("Số thập phân nào bằng phân số " + n3 + "/" + d3 + "?", "", Math.round(n3 * 100 / d3), n3 + "/" + d3 + " = " + decStr(Math.round(n3 * 100 / d3)) + ".");
+  var q3 = decMCQ("Số thập phân nào bằng phân số " + n3 + "/" + d3 + "?", "", Math.round(n3 * 100 / d3), n3 + "/" + d3 + " = " + decStr(Math.round(n3 * 100 / d3)) + ".");
+  q3.figure = d3 === 10 ? figFracBarSVG(n3, 10) : figFracGridSVG(n3);
+  return q3;
 }
 /* --- Số thập phân --- */
 function g5DecRead() {
@@ -280,9 +294,17 @@ function g5Circle() {
 function g5Ratio() {
   var v = rand(0, 2);
   if (v === 0) { var a = rand(2, 30), b = rand(2, 30);
-    return frMCQ5("Tỉ số của " + a + " và " + b + " viết dưới dạng phân số tối giản là?", a, b, "Tỉ số của " + a + " và " + b + " là " + a + " : " + b + " = " + fr5(a, b) + "."); }
+    var q0 = frMCQ5("Tỉ số của " + a + " và " + b + " viết dưới dạng phân số tối giản là?", a, b, "Tỉ số của " + a + " và " + b + " là " + a + " : " + b + " = " + fr5(a, b) + ".");
+    /* Thanh hiện tỉ số GỐC (dữ kiện đề). Chỉ gắn khi tỉ số còn rút gọn được:
+       nếu đã tối giản, đếm ô thanh sẽ đọc thẳng ra đáp án. */
+    var ga = a, gb = b; while (gb) { var gt = ga % gb; ga = gb; gb = gt; }
+    if (a <= b && b <= 16 && ga > 1) q0.figure = figFracBarSVG(a, b);
+    return q0; }
   if (v === 1) { var k = rand(2, 9), g = rand(2, 8), a2 = k * g, b2 = (k + rand(1, 5)) * g;
-    return frMCQ5("Rút gọn tỉ số " + a2 + " : " + b2 + " về tỉ số tối giản (dạng phân số)!", a2, b2, "Chia cả hai số cho " + g + ": " + a2 + " : " + b2 + " = " + fr5(a2, b2) + "."); }
+    var q1 = frMCQ5("Rút gọn tỉ số " + a2 + " : " + b2 + " về tỉ số tối giản (dạng phân số)!", a2, b2, "Chia cả hai số cho " + g + ": " + a2 + " : " + b2 + " = " + fr5(a2, b2) + ".");
+    /* Không gắn hình ở biến thể này: thanh theo tỉ số đã rút gọn sẽ để lộ
+       đáp án (đếm ô là ra), thanh theo tỉ số gốc thì mẫu số quá lớn. */
+    return q1; }
   var a3 = rand(3, 40), b3 = rand(3, 40);
   return mcqQ("Tỉ số của " + b3 + " và " + a3 + " là gì?", [a3 + " : " + b3, b3 + " : " + a3 + " (đảo ngược)", a3 + " + " + b3], b3 + " : " + a3, "Tỉ số của hai số viết số thứ nhất trước: tỉ số của " + b3 + " và " + a3 + " là " + b3 + " : " + a3 + ".");
 }
@@ -300,11 +322,17 @@ function g5SumDiffRatio() {
   var parts = pick([[2, 3], [3, 4], [2, 5], [3, 5], [4, 5], [1, 3], [3, 7], [5, 3]]);
   var unitVal = rand(4, 25);
   if (v === 0) { var total = (parts[0] + parts[1]) * unitVal, small = parts[0] * unitVal, big = parts[1] * unitVal;
-    return calcMCQ("Bài toán tổng – tỉ: hai số có tổng bằng " + total + ", tỉ số của hai số là " + parts[0] + "/" + parts[1] + ". Tìm số bé.", "Tổng số phần: " + parts[0] + " + " + parts[1] + " = " + (parts[0] + parts[1]), small, 0, 500,
-      "Giá trị một phần = " + total + " : " + (parts[0] + parts[1]) + " = " + unitVal + ". Số bé = " + unitVal + " × " + parts[0] + " = " + small + " (số lớn = " + big + ")."); }
+    var q0 = calcMCQ("Bài toán tổng – tỉ: hai số có tổng bằng " + total + ", tỉ số của hai số là " + parts[0] + "/" + parts[1] + ". Tìm số bé.", "Tổng số phần: " + parts[0] + " + " + parts[1] + " = " + (parts[0] + parts[1]), small, 0, 500,
+      "Giá trị một phần = " + total + " : " + (parts[0] + parts[1]) + " = " + unitVal + ". Số bé = " + unitVal + " × " + parts[0] + " = " + small + " (số lớn = " + big + ").");
+    /* Mô hình thanh theo tỉ số đã cho (số phần là dữ kiện); giá trị mỗi số
+       không ghi trong hình. */
+    if (Math.random() < 0.8) q0.figure = figFracBars2SVG(parts[0], parts[0] + parts[1], parts[1], parts[0] + parts[1]);
+    return q0; }
   var diff = Math.abs(parts[1] - parts[0]) * unitVal, s2 = Math.min(parts[0], parts[1]) * unitVal, b2 = Math.max(parts[0], parts[1]) * unitVal;
-  return calcMCQ("Bài toán hiệu – tỉ: hai số có hiệu bằng " + diff + ", tỉ số của hai số là " + parts[0] + "/" + parts[1] + ". Tìm số lớn.", "Hiệu số phần: " + Math.abs(parts[1] - parts[0]), b2, 0, 500,
+  var q1 = calcMCQ("Bài toán hiệu – tỉ: hai số có hiệu bằng " + diff + ", tỉ số của hai số là " + parts[0] + "/" + parts[1] + ". Tìm số lớn.", "Hiệu số phần: " + Math.abs(parts[1] - parts[0]), b2, 0, 500,
     "Giá trị một phần = " + diff + " : " + Math.abs(parts[1] - parts[0]) + " = " + unitVal + ". Số lớn = " + b2 + ", số bé = " + s2 + ".");
+  if (Math.random() < 0.8) q1.figure = figFracBars2SVG(parts[0], parts[0] + parts[1], parts[1], parts[0] + parts[1]);
+  return q1;
 }
 function g5Percent() {
   var v = rand(0, 1);
@@ -319,7 +347,11 @@ function g5Percent() {
   }
   var pcts = [[10, 200], [25, 80], [50, 60], [20, 150], [75, 40], [30, 90], [5, 400], [40, 75], [60, 45], [15, 240]];
   var c = pick(pcts), val = c[0] * c[1] / 100;
-  return calcMCQ("Tìm giá trị phần trăm của một số", c[0] + "% của " + c[1] + " = ?", val, 0, 500, c[0] + "% của " + c[1] + " = " + c[1] + " × " + c[0] + "% = " + val + ".");
+  var q = calcMCQ("Tìm giá trị phần trăm của một số", c[0] + "% của " + c[1] + " = ?", val, 0, 500, c[0] + "% của " + c[1] + " = " + c[1] + " × " + c[0] + "% = " + val + ".");
+  /* Lưới 100 ô tô đúng tỉ số phần trăm ĐÃ CHO trong đề; giá trị cần tìm
+     (số học sinh/tiền...) không xuất hiện trong hình. */
+  if (Math.random() < 0.85) q.figure = figFracGridSVG(c[0]);
+  return q;
 }
 /* --- Thể tích, hình hộp chữ nhật, hình lập phương --- */
 function g5VolConv() {
@@ -378,14 +410,39 @@ function g5TimeConv() {
   var c = pick(cases)();
   return calcMCQ("Đổi số đo thời gian", c[0], c[1], 0, 5000, c[2] + " Kết quả: " + fmtN(c[1]) + ".");
 }
+/* Đợt hình Tiểu học (v22): sơ đồ chuyển động s–t–v — đường đi và 3 ô đại
+   lượng; đại lượng cần tìm để "?" (không bao giờ in giá trị của nó). */
+function g5MotionSVG(sTxt, tTxt, vTxt) {
+  function chip(x, label, val) {
+    var hot = val === "?";
+    return '<rect x="' + x + '" y="8" width="104" height="34" rx="9" fill="' + (hot ? "#fdeeda" : "#eef4fa") + '" stroke="' + (hot ? FIG_MEAS : FIG_ACC) + '" stroke-width="2"/>' +
+      figText(x + 52, 31, label + " = " + val, "middle", 13, FIG_INK);
+  }
+  return figOpen("0 0 340 118", "Sơ đồ chuyển động") +
+    chip(6, "s", sTxt) + chip(118, "t", tTxt) + chip(230, "v", vTxt) +
+    '<line x1="18" y1="98" x2="322" y2="98" stroke="' + FIG_INK + '" stroke-width="3"/>' +
+    '<line x1="30" y1="98" x2="310" y2="98" stroke="#ffffff" stroke-width="2" stroke-dasharray="14 12"/>' +
+    '<rect x="26" y="66" width="54" height="17" rx="6" fill="' + FIG_ACC + '"/>' +
+    '<rect x="38" y="55" width="28" height="13" rx="5" fill="' + FIG_ACC + '"/>' +
+    '<circle cx="40" cy="86" r="6.5" fill="' + FIG_INK + '"/><circle cx="68" cy="86" r="6.5" fill="' + FIG_INK + '"/>' +
+    '<line x1="306" y1="98" x2="306" y2="58" stroke="' + FIG_MEAS + '" stroke-width="3"/>' +
+    '<path d="M306,58 l16,5 -16,5 z" fill="' + FIG_MEAS + '"/>' +
+    "</svg>";
+}
 function g5Motion() {
   var v = rand(0, 2);
   if (v === 0) { var t = rand(2, 8), vv = rand(5, 60), s = vv * t;
-    return calcMCQ("Chuyển động đều: tìm vận tốc", "Đi " + s + " km trong " + t + " giờ — v = ?", vv, 0, 200, "v = s : t = " + s + " : " + t + " = " + vv + " km/giờ."); }
+    var q0 = calcMCQ("Chuyển động đều: tìm vận tốc", "Đi " + s + " km trong " + t + " giờ — v = ?", vv, 0, 200, "v = s : t = " + s + " : " + t + " = " + vv + " km/giờ.");
+    if (Math.random() < 0.85) q0.figure = g5MotionSVG(s + " km", t + " giờ", "?");
+    return q0; }
   if (v === 1) { var vv2 = rand(5, 60), t2 = rand(2, 9);
-    return calcMCQ("Chuyển động đều: tìm quãng đường", "Vận tốc " + vv2 + " km/giờ, đi trong " + t2 + " giờ — s = ?", vv2 * t2, 0, 600, "s = v × t = " + vv2 + " × " + t2 + " = " + (vv2 * t2) + " km."); }
+    var q1 = calcMCQ("Chuyển động đều: tìm quãng đường", "Vận tốc " + vv2 + " km/giờ, đi trong " + t2 + " giờ — s = ?", vv2 * t2, 0, 600, "s = v × t = " + vv2 + " × " + t2 + " = " + (vv2 * t2) + " km.");
+    if (Math.random() < 0.85) q1.figure = g5MotionSVG("?", t2 + " giờ", vv2 + " km/giờ");
+    return q1; }
   var vv3 = rand(4, 50), t3 = rand(2, 10), s3 = vv3 * t3;
-  return calcMCQ("Chuyển động đều: tìm thời gian", "Quãng đường " + s3 + " km, vận tốc " + vv3 + " km/giờ — t = ?", t3, 0, 60, "t = s : v = " + s3 + " : " + vv3 + " = " + t3 + " giờ.");
+  var q2 = calcMCQ("Chuyển động đều: tìm thời gian", "Quãng đường " + s3 + " km, vận tốc " + vv3 + " km/giờ — t = ?", t3, 0, 60, "t = s : v = " + s3 + " : " + vv3 + " = " + t3 + " giờ.");
+  if (Math.random() < 0.85) q2.figure = g5MotionSVG(s3 + " km", "?", vv3 + " km/giờ");
+  return q2;
 }
 /* --- Thống kê: biểu đồ hình quạt, tỉ số số lần lặp lại --- */
 var G5_PIE_SETS = [
@@ -433,7 +490,7 @@ function g5EventRatio() {
 /* ================= TOÁN 5 — chủ đề ================= */
 var MATH5_TOPICS = [
   { id: "m5-ontap", emoji: "🔁", name: "Ôn tập: số tự nhiên, phân số, hỗn số", sub: "Bài 1–8 • Cộng trừ phân số khác mẫu, phân số thập phân, hỗn số", pools: { choose: [g5NatCalc, g5FracAddSubDiff, g5Mixed, g5DecFrac, g5FracAddSubDiff, g5NatCalc, g5Mixed], blank: [function () { var pr = pick([[2, 3], [3, 4], [2, 5], [4, 5], [3, 5]]); var a = rand(1, pr[0]), b = rand(1, pr[1]); return frBlank5("Điền kết quả của phép tính " + opFrac5(a, pr[0]) + " + " + opFrac5(b, pr[1]) + "!", a * pr[1] + b * pr[0], pr[0] * pr[1], "Quy đồng mẫu số chung là " + (pr[0] * pr[1]) + " rồi cộng hai tử số, sau đó rút gọn."); }, function () { var d = pick([10, 100]), n = rand(1, d - 1), ansH = Math.round(n * 100 / d), os = decOpts(ansH, 3); return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền số thập phân bằng phân số " + n + "/" + d + "!", blankText: decStr(ansH), visual: '<div class="sentence">Đáp án: ' + blankSlot() + "</div>", options: os.map(function (o) { return { html: '<span class="opt-num">' + decStr(o) + "</span>" }; }), answer: os.indexOf(ansH), cols: 3, explain: n + "/" + d + " = " + decStr(ansH) + "." }; }],
-    match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 300) { var d = pick([3, 4, 5, 6, 8]); var a = rand(1, d - 1), b = rand(1, d - a); var key = a + "/" + d + "+" + b; if (used[key]) continue; used[key] = 1; prs.push([a + "/" + d + " + " + b + "/" + d, fr5(a + b, d)]); } return pairsMatch("Nối phép tính phân số với kết quả đúng nhé!", prs); }],
+    match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 300) { var d = pick([3, 4, 5, 6, 8]); var a = rand(1, d - 1), b = rand(1, d - a); var key = a + "/" + d + "+" + b; var rk = fr5(a + b, d); if (used[key] || used["r" + rk]) continue; used[key] = 1; used["r" + rk] = 1; prs.push([a + "/" + d + " + " + b + "/" + d, rk]); } return pairsMatch("Nối phép tính phân số với kết quả đúng nhé!", prs); }],
     games: [factsTF([["Cộng hai phân số khác mẫu số phải quy đồng mẫu số trước", "Đúng", "Sai", null], ["Hỗn số 2 1/3 bằng phân số 7/3", "Đúng", "Sai", null], ["Phân số thập phân là phân số có mẫu số là 10, 100, 1000...", "Đúng", "Sai", null], ["Khi cộng hai phân số, ta cộng cả tử số và mẫu số", "Sai", "Đúng", null]]), factsCatch([["Tính 1/2 + 1/4 = ?", "3/4", "2/6", "1/6", "Quy đồng: 1/2 = 2/4; 2/4 + 1/4 = 3/4."], ["Hỗn số 1 1/2 bằng phân số nào?", "3/2", "2/2", "1/2", "1 1/2 = (1 × 2 + 1)/2 = 3/2."]])] } },
   { id: "m5-thapphan", emoji: "🔢", name: "Số thập phân", sub: "Khái niệm, hàng của chữ số, so sánh, làm tròn, viết số đo dạng thập phân", pools: { choose: [g5DecRead, g5DecParts, g5DecCompare, g5DecRound, g5DecMeasure, g5DecParts, g5DecCompare], blank: [g5DecSign, function () { var h = rand(115, 9999); return decBlank("Điền số thập phân thích hợp!", "? = " + vnNum3(Math.floor(h / 100)) + " phẩy " + (h % 100), h, "Viết phần nguyên, dấu phẩy, rồi phần thập phân: " + decStr(h) + "."); }],
     match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 300) { var m = rand(1, 9), dm = rand(1, 9); var key = m + "m" + dm; if (used[key]) continue; used[key] = 1; prs.push([m + " m " + dm + " dm", decStr(m * 100 + dm * 10) + " m"]); } return pairsMatch("Nối số đo với số thập phân đúng nhé!", prs); }],
@@ -498,7 +555,7 @@ var MATH5_TOPICS = [
     kp.choose.push(g5Box, g5Cube, g5VolConv, g5Box);
     kp.blank.push(function () { var a = rand(2, 12); return g3NumBlank("Điền thể tích hình lập phương cạnh " + a + " cm!", '<div class="expr">V = ' + blankSlot() + " cm³</div>", a * a * a, 0, 2000); });
     return kp; })() },
-  { id: "m5-chuyendong", emoji: "🚗", name: "Số đo thời gian và chuyển động đều", sub: "Cộng trừ nhân chia số đo thời gian • Vận tốc, quãng đường, thời gian (v = s : t)", pools: { choose: [g5TimeMeasure, g5Motion, g5TimeConv, g5TimeMeasure, g5Motion, g5TimeConv, g5Motion], blank: [function () { var v = rand(5, 60), t = rand(2, 9); return g3NumBlank("Điền quãng đường đi được với vận tốc " + v + " km/giờ trong " + t + " giờ!", '<div class="expr">s = ' + blankSlot() + " km</div>", v * t, 0, 600); }, function () { var h = rand(1, 5); return g3NumBlank("Điền số thích hợp vào chỗ trống!", '<div class="expr">' + h + " giờ = " + blankSlot() + " phút</div>", h * 60, 0, 400); }],
+  { id: "m5-chuyendong", emoji: "🚗", name: "Số đo thời gian và chuyển động đều", sub: "Cộng trừ nhân chia số đo thời gian • Vận tốc, quãng đường, thời gian (v = s : t)", pools: { choose: [g5TimeMeasure, g5Motion, g5TimeConv, g5TimeMeasure, g5Motion, g5TimeConv, g5Motion], blank: [function () { var v = rand(5, 60), t = rand(2, 9); var q = g3NumBlank("Điền quãng đường đi được với vận tốc " + v + " km/giờ trong " + t + " giờ!", '<div class="expr">s = ' + blankSlot() + " km</div>", v * t, 0, 600); q.figure = g5MotionSVG("?", t + " giờ", v + " km/giờ"); return q; }, function () { var h = rand(1, 5); return g3NumBlank("Điền số thích hợp vào chỗ trống!", '<div class="expr">' + h + " giờ = " + blankSlot() + " phút</div>", h * 60, 0, 400); }],
     match: [function () { return pairsMatch("Nối công thức với ý đúng nhé!", [["v = s : t", "Tìm vận tốc"], ["s = v × t", "Tìm quãng đường"], ["t = s : v", "Tìm thời gian"], ["1 giờ", "60 phút"]]); }],
     games: [factsTF([["Vận tốc được tính bằng quãng đường chia cho thời gian", "Đúng", "Sai", null], ["60 phút bằng 1 giờ, 1 phút bằng 60 giây", "Đúng", "Sai", null], ["Muốn tìm quãng đường, lấy thời gian chia cho vận tốc", "Sai", "Đúng", null], ["Một người đi nhanh hơn thì vận tốc lớn hơn", "Đúng", "Sai", null]]), factsCatch([["Xe đi 120 km trong 2 giờ. Vận tốc của xe là?", "60 km/giờ", "240 km/giờ", "118 km/giờ", "v = 120 : 2 = 60 km/giờ."], ["Đổi 2 giờ 30 phút ra phút là?", "150 phút", "230 phút", "120 phút", "2 giờ = 120 phút, cộng 30 phút = 150 phút."]])] } },
   { id: "m5-thongke", emoji: "📊", name: "Thống kê và xác suất", sub: "Biểu đồ hình quạt tròn • Tỉ số số lần lặp lại của sự kiện", pools: (function () { var kp = knowledgePools([
@@ -1976,4 +2033,78 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
   t = findT("kh5-chat"); if (t) { t.pools.choose.push(k1PanelsGen, k1PanelsGen, k1TransGen); }
   t = findT("kh5-moi"); if (t) { t.pools.choose.push(k2ChainGen, k2ChainGen, k2ChainGen); }
   t = findT("kh5-nangluong"); if (t) { t.pools.choose.push(k4ShadowGen, k4ShadowGen); }
+})();
+
+/* ================= ĐỢT HÌNH TIỂU HỌC (v22) — Lớp 5 =================
+   Gắn hình theo dữ kiện (figTagFacts / figTagFactsByText của vỏ): tranh
+   emoji theo chủ đề của chính câu, lưới 100 ô cho tỉ số phần trăm đã cho
+   trong đề. Đáp án không nằm trong hình. */
+(function () {
+  function bp(e) { return '<div class="big-pic">' + e + "</div>"; }
+  function bar35() { return figFracBarSVG(3, 5); }
+  function grid(n) { return function () { return figFracGridSVG(n); }; }
+  figTagFacts(5, "m5-tiso", { 0: bar35, 2: grid(25), 3: grid(50), 9: bar35 });
+  figTagFacts(5, "tv5-tungu", { 0: bp("🧒"), 1: bp("🏔️"), 2: bp("📚"), 3: bp("🎭"), 4: bp("🌺"), 5: bp("🧓"), 6: bp("❤️"), 7: bp("🌍"), 8: bp("🏔️"), 9: bp("🎨"), 10: bp("🌺"), 11: bp("📚"), 12: bp("🧓") });
+  figTagFacts(5, "ls5-thegioi", { 0: bp("🌍"), 1: bp("🌊"), 2: bp("🌏"), 3: bp("🏜️"), 4: bp("🌍"), 5: bp("🌏"), 6: bp("🐪"), 7: bp("🔺"), 8: bp("📜"), 9: bp("🏛️"), 10: bp("🏅"), 11: bp("🧊"), 12: bp("👥"), 13: bp("🦁"), 14: bp("🌊"), 15: bp("🏜️"), 16: bp("🏞️"), 17: bp("📜"), 18: bp("🏅"), 19: bp("🦘"), 20: bp("🗺️"), 21: bp("👥"), 22: bp("🧊") });
+  figTagFactsByText(5, "kh5-nangluong", [
+    ["Năng lượng gió và nước chảy", bp("💨")], ["Chất đốt (than, củi", bp("🔥")], ["TIẾT KIỆM điện", bp("💡")],
+    ["người bị điện giật", bp("⚡")], ["Pin trong mạch điện", bp("🔋")], ["Tuabin gió", bp("💨")],
+    ["Điện dùng trong gia đình", bp("🏭")], ["KHÔNG cần dùng điện", bp("🚲")], ["Lõi dây điện", bp("🔌")],
+    ["năng lượng tái tạo", bp("♻️")], ["Đèn LED", bp("💡")], ["Pin đã hết điện", bp("🪫")],
+    ["Đồng hồ điện", bp("🔌")], ["Năng lượng mặt trời", bp("☀️")], ["Sức nước chảy xưa nay", bp("💧")],
+    ["ra khỏi lớp học cuối cùng", bp("💡")], ["Bóng đèn điện chuyển", bp("💡")], ["Quạt điện chuyển", bp("🌀")],
+    ["Ấm điện đun nước", bp("♨️")], ["thả diều gần đường dây điện", bp("🪁")], ["giông sét", bp("⛈️")],
+    ["mùi ga rò rỉ", bp("⚠️")], ["thuỷ điện Sơn La", bp("💧")], ["Át-tô-mát", bp("🔌")],
+    ["Đèn pin hoạt động", bp("🔦")], ["Tiết kiệm chất đốt khi nấu ăn", bp("🍲")], ["Tay cầm của bàn là", bp("🔌")],
+    ["Pin mặt trời phát", bp("☀️")], ["Đi xe đạp thay vì", bp("🚲")], ["cạn kiệt nếu dùng mãi", bp("🛢️")],
+    ["tay đang ướt", bp("⚡")], ["Bình nước nóng năng lượng mặt trời", bp("☀️")], ["Cắm chung quá nhiều thiết bị", bp("🔌")],
+    ["mạch điện", bp("🔋")], ["dẫn điện", bp("🔌")], ["cách điện", bp("🧤")], ["năng lượng", bp("⚡")]
+  ]);
+  figTagFactsByText(5, "kh5-sinhsan", [
+    ["sinh sản của thực vật có hoa diễn ra", bp("🌸")], ["Thụ phấn là", bp("🐝")], ["phát triển thành quả", bp("🍎")],
+    ["Hạt nảy mầm cần", bp("🌱")], ["Cây con mọc lên từ đâu", bp("🌱")], ["Động vật đẻ trứng gồm", bp("🥚")],
+    ["Vòng đời của ếch", bp("🐸")], ["Vòng đời của bướm", bp("🦋")], ["Thú (động vật có vú)", bp("🐄")],
+    ["nhân giống bằng cách nào ngoài gieo hạt", bp("🌿")], ["ong, bướm có ích", bp("🐝")], ["vòng đời của muỗi", bp("🦟")],
+    ["phát triển của cây con từ hạt", bp("🌱")], ["màu sắc và hương thơm", bp("🌸")], ["Hạt giống gồm", bp("🌰")],
+    ["trước khi gieo", bp("🌱")], ["sinh sản chủ yếu bằng củ", bp("🥔")], ["Trứng ếch được đẻ ở đâu", bp("🐸")],
+    ["biến thái KHÔNG hoàn toàn", bp("🦗")], ["Chim non mới nở", bp("🐣")], ["bảo vệ các loài ong và bướm", bp("🦋")],
+    ["Cá sinh sản", bp("🐟")], ["Cây chuối sinh sản", bp("🍌")], ["Hoa lưỡng tính", bp("🌺")],
+    ["chứa hạt phấn", bp("🌸")], ["Thụ tinh ở thực vật", bp("🌸")], ["bồ công anh", bp("🌼")],
+    ["Quả ké", bp("🌿")], ["lá bỏng (cây sống đời)", bp("🍃")], ["Gà mái ấp trứng", bp("🐔")],
+    ["trứng chim cần được chim bố mẹ ấp", bp("🥚")], ["Rùa biển đẻ trứng", bp("🐢")], ["Cá và ếch thụ tinh", bp("🐟")],
+    ["Vòng đời của gà", bp("🐔")], ["Cây con lớn lên khoẻ mạnh", bp("🌱")], ["Giâm cành là", bp("🌿")],
+    ["Thú con mới sinh", bp("🍼")], ["Quả chín thơm, ngọt", bp("🍎")], ["Muỗi cái đẻ trứng", bp("🦟")],
+    ["Chiết cành khác giâm cành", bp("🌿")]
+  ]);
+  figTagFactsByText(5, "kh5-vikhuan", [
+    ["Muối dưa", bp("🥒")], ["lây lan qua những đường nào", bp("🦠")], ["phòng tránh bệnh do vi khuẩn", bp("🧼")],
+    ["ăn chín, uống sôi", bp("🍲")], ["mùi ôi, chua", bp("🦠")], ["Khi ho, hắt hơi", bp("😷")],
+    ["tủ lạnh có tác dụng gì", bp("🧊")], ["Vi khuẩn có ở những đâu", bp("🦠")], ["Tiêm vắc-xin", bp("💉")],
+    ["dùng chung cốc, thìa", bp("🥄")], ["Nước uống an toàn", bp("💧")], ["Kính hiển vi", bp("🔬")],
+    ["Vi khuẩn lactic", bp("🥛")], ["Sữa chua cần được bảo quản", bp("🧊")], ["tiêu chảy cấp", bp("🦠")],
+    ["thời điểm nào em cần rửa tay", bp("🧼")], ["Ủ phân hữu cơ", bp("🌱")], ["thức ăn chín ngay cạnh thịt sống", bp("🥩")],
+    ["Men vi sinh", bp("🥛")], ["Thức ăn thừa", bp("🍱")], ["Dung dịch rửa tay khô", bp("🧴")],
+    ["hình dạng nào", bp("🦠")], ["Vi khuẩn sinh sản bằng cách nào", bp("🦠")], ["sâu răng chủ yếu", bp("🦷")],
+    ["kháng sinh cần dùng", bp("💊")], ["Nước mắm và tương", bp("🫙")], ["Vi khuẩn trong đất", bp("🌱")],
+    ["Đeo khẩu trang", bp("😷")], ["Phơi chăn màn", bp("☀️")], ["ăn rau sống", bp("🥬")],
+    ["tiết canh, gỏi sống", bp("⚠️")], ["Sữa tươi tiệt trùng", bp("🥛")], ["chơi với chó, mèo", bp("🐶")],
+    ["Lớp học nên được vệ sinh", bp("🧹")], ["rễ cây họ đậu", bp("🌱")], ["Khi bị ốm", bp("🤒")],
+    ["hộp sữa chua thấy phồng", bp("⚠️")], ["uống nước lã", bp("💧")]
+  ]);
+  figTagFactsByText(5, "kh5-suckhoe", [
+    ["hình thành và lớn lên qua các giai đoạn", bp("🧒")], ["Tuổi dậy thì là giai đoạn", bp("🧑")], ["khoẻ mạnh ở tuổi dậy thì", bp("🥗")],
+    ["Vùng riêng tư (vùng kín)", bp("🚫")], ["chạm vào vùng riêng tư", bp("✋")], ["KHÔNG AN TOÀN, cần từ chối", bp("⚠️")],
+    ["người lạ bám theo", bp("🏃")], ["người lớn tin cậy", bp("👨‍👩‍👧")], ["trên mạng Internet", bp("💻")],
+    ["bạn bị trêu chọc, sờ vào cơ thể", bp("🛡️")], ["tự bảo vệ bản thân", bp("✋")], ["Ngủ đủ giấc", bp("😴")],
+    ["dấu hiệu bất thường", bp("🩺")], ["bắt đầu vào khoảng độ tuổi nào", bp("🧑")], ["Ăn uống đầy đủ ở tuổi dậy thì", bp("🍽️")],
+    ["Vận động và chơi thể thao", bp("🏃")], ["Cảm xúc thay đổi thất thường", bp("💬")], ["Quy tắc 5 ngón tay", bp("✋")],
+    ["ở nhà một mình", bp("🏠")], ["Khi đi bơi, quy tắc an toàn", bp("🏊")], ["ảnh bí mật", bp("🚫")],
+    ["bị lạc ở nơi đông người", bp("🧭")], ["số điện thoại nào để phòng", bp("📞")], ["ở trong bụng mẹ", bp("👶")],
+    ["Trẻ sơ sinh cần được chăm sóc", bp("🍼")], ["Tuổi vị thành niên kéo dài", bp("🧑")], ["da thường thay đổi thế nào", bp("🧼")],
+    ["Uống đủ nước mỗi ngày", bp("💧")], ["Thuốc lá và rượu bia", bp("🚭")], ["hình ảnh không phù hợp về cơ thể", bp("🚫")],
+    ["ôm, hôn làm em khó chịu", bp("✋")], ["gửi ảnh cơ thể", bp("🚫")], ["đi học về muộn", bp("🌙")],
+    ["trêu chọc về cơ thể trên mạng", bp("💻")], ["Khám sức khoẻ định kì", bp("🩺")], ["răng chắc khoẻ", bp("🦷")],
+    ["dùng máy tính đúng tư thế", bp("🪑")], ["Người già trong gia đình", bp("👴")], ["Bạn thân khóc", bp("💬")],
+    ["tắm ở bể bơi công cộng", bp("🏊")]
+  ]);
 })();

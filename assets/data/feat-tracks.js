@@ -280,7 +280,7 @@
       desc: "Những câu đố truyền thống quen thuộc của ông cha — đoán đáp án và khám phá cách giải mã hình ảnh ẩn dụ.",
       meta: "Câu đố về đồ vật • con vật • thiên nhiên • cây quả • con người" },
     { id: "lichsu", emoji: "🏯", name: "Tìm hiểu lịch sử",
-      desc: "12 thẻ khám phá theo dòng thời gian cùng ngân hàng câu hỏi từ bảng sự kiện đã kiểm chứng.",
+      desc: "14 thẻ khám phá theo dòng thời gian cùng ngân hàng câu hỏi từ bảng sự kiện đã kiểm chứng.",
       meta: "Từ Hùng Vương dựng nước đến Đại thắng mùa Xuân 1975" },
     { id: "rungchuong", emoji: "🔔", name: "Rung chuông vàng",
       desc: "Thử thách 15 câu từ ngân hàng của lớp em — sai một câu là dừng, có 3 quyền trợ giúp và huy hiệu Chuông đồng, bạc, vàng.",
@@ -289,7 +289,7 @@
       desc: "Đua tốc độ 60 giây với ngân hàng của lớp em — trả lời đúng càng nhanh điểm càng cao, sai không bị trừ điểm.",
       meta: "Đua tốc độ 60 giây • Dành cho Lớp 3–12" },
     { id: "album", emoji: "📖", name: "Album thẻ anh hùng",
-      desc: "Bộ sưu tập 12 thẻ khám phá lịch sử: mở thẻ và đạt bài quiz kèm theo để sưu tập vào album của em.",
+      desc: "Bộ sưu tập 14 thẻ khám phá lịch sử: mở thẻ và đạt bài quiz kèm theo để sưu tập vào album của em.",
       meta: "Sưu tập thẻ • Gắn với Tìm hiểu lịch sử" }
   ];
   function escG(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }

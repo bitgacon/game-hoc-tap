@@ -1186,14 +1186,22 @@ function gtCombo() {
   return ds.map(function (d) { return [d, rand(1, 2)]; });
 }
 function gtComboTotal(combo) { return combo.reduce(function (s, cd) { return s + cd[0] * cd[1]; }, 0); }
+/* Đợt hình Tiểu học (v22): trải tổ hợp tiền thành danh sách tờ để vẽ. */
+function gtComboNotes(combo) { var out = []; combo.forEach(function (cd) { for (var i = 0; i < cd[1]; i++) out.push(cd[0]); }); return out; }
 function gtMoneyStd() {
   var combo = gtCombo(), total = gtComboTotal(combo);
-  return gtMoneyMCQ("Em có " + gtComboText(combo) + ". Em có tất cả bao nhiêu tiền?", total, "Cộng số tiền của các tờ: " + combo.map(function (cd) { return cd[1] + " × " + fmtN(cd[0]); }).join(" + ") + " = " + fmtN(total) + " đồng.");
+  var q = gtMoneyMCQ("Em có " + gtComboText(combo) + ". Em có tất cả bao nhiêu tiền?", total, "Cộng số tiền của các tờ: " + combo.map(function (cd) { return cd[1] + " × " + fmtN(cd[0]); }).join(" + ") + " = " + fmtN(total) + " đồng.");
+  /* Các tờ tiền trong hình là dữ kiện của đề (đề cũng kể bằng lời); tổng
+     tiền cần tìm không in trong hình. */
+  if (Math.random() < 0.92) q.figure = figMoneySVG(gtComboNotes(combo));
+  return q;
 }
 function gtMoneyBlankStd() {
   var combo = gtCombo(), total = gtComboTotal(combo);
   var vals = shuffle([total, total + 1000, total + 2000].filter(function (v, i, a2) { return a2.indexOf(v) === i; }));
-  return { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số tiền còn thiếu:", visual: '<div class="sentence">Em có ' + gtComboText(combo) + ". Em có tất cả " + blankSlot() + " đồng.</div>", blankText: String(total), options: vals.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: vals.indexOf(total), cols: 3, explain: "Tổng số tiền là " + fmtN(total) + " đồng." };
+  var q = { kind: "blank", big: true, badge: "✏️ Điền vào chỗ trống", prompt: "Điền số tiền còn thiếu:", visual: '<div class="sentence">Em có ' + gtComboText(combo) + ". Em có tất cả " + blankSlot() + " đồng.</div>", blankText: String(total), options: vals.map(function (o) { return { html: '<span class="opt-num">' + fmtN(o) + "</span>" }; }), answer: vals.indexOf(total), cols: 3, explain: "Tổng số tiền là " + fmtN(total) + " đồng." };
+  if (Math.random() < 0.92) q.figure = figMoneySVG(gtComboNotes(combo));
+  return q;
 }
 function gtMoneyChange() {
   return function () {
@@ -1562,3 +1570,53 @@ if (typeof window.vnNum4 !== "function") {
      tròn, khẳng định cùng phạm trù) và đo lại nhãn số câu cho khớp. */
   try { nmRebuild3(__nmGtLen); } catch (e) {}
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(3);
+
+/* ================= ĐỢT HÌNH TIỂU HỌC (v22) — Lớp 3 =================
+   Gắn hình theo dữ kiện (figTagFacts của vỏ): hình là dữ kiện/ngữ cảnh của
+   chính câu đó; đáp án không nằm trong hình. */
+(function () {
+  function bp(e) { return '<div class="big-pic">' + e + "</div>"; }
+  /* Hình phẳng mini cho m3-hinh: đoạn thẳng có trung điểm (vạch chia bằng
+     nhau là dữ kiện), góc vuông, đa giác trơn không ghi số. */
+  function segMidSVG() {
+    return figOpen("0 0 240 92", "Đoạn thẳng và trung điểm") +
+      '<line x1="30" y1="46" x2="210" y2="46" stroke="' + FIG_INK + '" stroke-width="3.4"/>' +
+      '<line x1="66" y1="36" x2="78" y2="56" stroke="' + FIG_MEAS + '" stroke-width="2.6"/>' +
+      '<line x1="162" y1="36" x2="174" y2="56" stroke="' + FIG_MEAS + '" stroke-width="2.6"/>' +
+      '<circle cx="30" cy="46" r="5.5" fill="' + FIG_INK + '"/><circle cx="120" cy="46" r="6.5" fill="' + FIG_MEAS + '"/><circle cx="210" cy="46" r="5.5" fill="' + FIG_INK + '"/>' +
+      figText(30, 26, "A", "middle", 15) + figText(120, 26, "M", "middle", 15, FIG_MEAS) + figText(210, 26, "B", "middle", 15) +
+      figText(120, 80, "AM = MB", "middle", 13, FIG_MUT) + "</svg>";
+  }
+  function rightAngleSVG() {
+    return figOpen("0 0 160 130", "Góc vuông") +
+      '<line x1="34" y1="102" x2="140" y2="102" stroke="' + FIG_INK + '" stroke-width="3.6"/>' +
+      '<line x1="34" y1="102" x2="34" y2="18" stroke="' + FIG_INK + '" stroke-width="3.6"/>' +
+      '<path d="M34,76 L60,76 L60,102" fill="none" stroke="' + FIG_MEAS + '" stroke-width="3"/>' +
+      '<circle cx="34" cy="102" r="5" fill="' + FIG_INK + '"/>' + "</svg>";
+  }
+  function polySVG(kind) {
+    var inner;
+    if (kind === "tamgiac") inner = '<polygon points="80,16 138,100 22,100" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.2" stroke-linejoin="round"/>';
+    else if (kind === "tugiac") inner = '<polygon points="38,30 128,18 142,96 24,104" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.2" stroke-linejoin="round"/>';
+    else inner = '<rect x="26" y="26" width="108" height="70" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.2"/>';
+    return figOpen("0 0 160 122", "Hình phẳng") + inner + "</svg>";
+  }
+  function therm(v) { return function () { return figK5ThermSVG(v, 0, 100, 10); }; }
+  function cyl(v) { return function () { return figK5CylSVG(v, 1000, 100); }; }
+  function ruler(cm) { return function () { return figK5RulerSVG(cm); }; }
+  figTagFacts(3, "m3-hinh", { 0: segMidSVG, 1: rightAngleSVG, 2: function () { return polySVG("tamgiac"); }, 3: function () { return polySVG("tugiac"); }, 4: function () { return polySVG("chunhat"); }, 5: function () { return shapeSVG("vuong", "#4dabf7"); }, 6: bp("🧊"), 7: bp("📦"), 8: function () { return figCircleSVG(5, "d"); }, 9: function () { return figCircleSVG(5, "r"); } });
+  /* Sửa kín đáp án (soi mắt 2026-10-20): bốn dữ kiện nhiệt độ là câu HỎI
+     THUỘC (đơn vị đo / điểm tan chảy / điểm sôi / thân nhiệt) — nhiệt kế vẽ
+     sẵn mức 0/100/37 và nhãn "°C" sẽ đọc ra đáp án, nên thay bằng tranh chủ
+     đề 🌡️ trung tính. Ống đong ở [10] in đơn vị ml (đáp án) → thay 🥄. */
+  figTagFacts(3, "m3-donvi", { 0: ruler(1), 1: bp("📏"), 2: bp("⚖️"), 3: cyl(500), 4: bp("🌡️"), 5: bp("🌡️"), 6: bp("🌡️"), 7: ruler(1), 8: bp("⚖️"), 9: bp("🌡️"), 10: bp("🥄") });
+  figTagFacts(3, "tv3-tungu", { 0: bp("🐝"), 1: bp("🐘"), 2: bp("🦁"), 3: bp("↕️"), 4: bp("🌡️"), 5: bp("💡"), 6: bp("🏠"), 7: bp("🌈"), 8: bp("🇻🇳"), 9: bp("🌍") });
+  figTagFacts(3, "tnxh3-giadinh", { 0: bp("👴"), 1: bp("👵"), 2: bp("👨‍👩‍👧"), 3: bp("🔥"), 4: bp("📞"), 5: bp("🔥"), 6: bp("🧹"), 7: bp("💧") });
+  figTagFacts(3, "tnxh3-truonghoc", { 0: bp("🏫"), 1: bp("🏫"), 2: bp("🧹"), 3: bp("🤝"), 4: bp("🤝"), 5: bp("🚶") });
+  figTagFacts(3, "tnxh3-congdong", { 0: bp("🏘️"), 1: bp("🏘️"), 2: bp("🏘️"), 3: bp("🏛️"), 4: bp("🏛️"), 5: bp("🏞️") });
+  figTagFacts(3, "tnxh3-thucvat", { 0: bp("🌱"), 1: bp("🌳"), 2: bp("🍃"), 3: bp("🌸"), 4: bp("💧"), 5: bp("🐟"), 6: bp("🐦"), 7: bp("♻️") });
+  figTagFacts(3, "tnxh3-suckhoe", { 0: bp("🍽️"), 1: bp("🍽️"), 2: bp("🩺"), 3: bp("🩸"), 4: bp("🧠"), 5: bp("🍽️"), 6: bp("🏃"), 7: bp("😴") });
+  figTagFacts(3, "tnxh3-traidat", { 0: bp("🌅"), 1: bp("🌇"), 2: bp("🗺️"), 3: bp("🧭"), 4: bp("☀️"), 5: bp("🧊"), 6: bp("🗺️"), 7: bp("🌍"), 8: bp("🗺️"), 9: bp("🌗"), 10: bp("🌙"), 11: bp("🌍") });
+  figTagFacts(3, "tin3-may", { 0: bp("💡"), 1: bp("🌦️"), 2: bp("💻"), 3: bp("💻"), 4: bp("💻"), 5: bp("🧠"), 6: bp("⌨️"), 7: bp("⌨️"), 8: bp("🪑") });
+  figTagFacts(3, "tin3-trinhchieu", { 0: bp("🎞️"), 1: bp("🎞️"), 2: bp("🖱️"), 3: bp("🖱️"), 4: bp("🖱️"), 5: bp("🖱️") });
+})();

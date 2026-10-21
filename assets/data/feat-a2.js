@@ -54,7 +54,7 @@
     "tc-bronze": "Đúng liên tiếp 5 câu trong một vòng Tia chớp (vòng đúng từ một nửa trở lên)",
     "tc-silver": "Đúng liên tiếp 8 câu trong một vòng Tia chớp (vòng đúng từ một nửa trở lên)",
     "tc-gold": "Đúng liên tiếp 14 câu trong một vòng Tia chớp (vòng đúng từ một nửa trở lên)",
-    "card-collector": "Sưu tập đủ 12 thẻ anh hùng trong Album"
+    "card-collector": "Sưu tập đủ 14 thẻ anh hùng trong Album"
   };
 
   /* ---------------- CSS riêng (tiền tố a2- / ws-) ---------------- */
@@ -301,7 +301,8 @@
         ((r.bells || 0) > 0 ? " • đã rung chuông " + r.bells + " lần" : "");
     } else rcvLine = "🔔 Rung chuông vàng: chưa chơi lượt nào — ghé Góc giải trí thử sức nhé!";
     var nCards = c && c.unlocked ? Object.keys(c.unlocked).length : 0;
-    var cardLine = "📖 Bộ sưu tập thẻ anh hùng: đã sưu tập " + nCards + "/12 thẻ";
+    var totalCards = (window.__GT && window.__GT.cards && window.__GT.cards.length) ? window.__GT.cards.length : 14; /* V22: động khi giaitri.js đã nạp, dự phòng 14 */
+    var cardLine = "📖 Bộ sưu tập thẻ anh hùng: đã sưu tập " + nCards + "/" + totalCards + " thẻ";
     return '<p class="a2-note" style="margin-top:10px">' + esc(rcvLine) + '</p>' +
       '<p class="a2-note" style="margin-top:4px">' + esc(cardLine) + '</p>';
   }

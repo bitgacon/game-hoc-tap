@@ -431,7 +431,11 @@ function g4EventCount() {
 function g4FracConcept() {
   var v = rand(0, 2);
   if (v === 0) { var d = pick([3, 4, 5, 6, 8]), n = rand(1, d - 1);
-    return fracMCQ("Một hình được chia thành " + d + " phần bằng nhau và tô màu " + n + " phần. Phân số chỉ phần đã tô màu là bao nhiêu?", fracBar(n, d), n, d, "Số phần tô màu là tử số (" + n + "), tổng số phần bằng nhau là mẫu số (" + d + "). Phân số là " + n + "/" + d + "."); }
+    var qc = fracMCQ("Một hình được chia thành " + d + " phần bằng nhau và tô màu " + n + " phần. Phân số chỉ phần đã tô màu là bao nhiêu?", "", n, d, "Số phần tô màu là tử số (" + n + "), tổng số phần bằng nhau là mẫu số (" + d + "). Phân số là " + n + "/" + d + ".");
+    /* Đợt hình Tiểu học (v22): hình tròn/thanh chia phần SVG — phần tô là DỮ
+       KIỆN đề (đề cũng nói bằng lời); phân số trả lời không in trong hình. */
+    qc.figure = Math.random() < 0.5 ? figFracPieSVG(n, d) : figFracBarSVG(n, d);
+    return qc; }
   if (v === 1) { var d2 = pick([4, 5, 7, 9]), n2 = rand(1, d2 - 1);
     return mcqQ("Trong phân số " + n2 + "/" + d2 + ", số " + n2 + " (ở trên dấu gạch ngang) gọi là gì?", ["Mẫu số", "Số chia"], "Tử số", "Trong phân số, số viết trên dấu gạch ngang là tử số, số viết dưới là mẫu số."); }
   var dd = pick([3, 4, 5, 6]), opts = [rand(1, dd - 1) + "/" + dd, (dd + 1) + "/" + dd, dd + "/" + dd], ans = opts[0];
@@ -458,9 +462,15 @@ function g4FracCompare() {
   var v = rand(0, 2);
   if (v === 0) { var d = pick([4, 5, 6, 7, 8, 9]), a = rand(1, d - 1), b = rand(1, d - 1); while (b === a) b = rand(1, d - 1);
     var big = Math.max(a, b) + "/" + d;
-    return mcqQ("Trong hai phân số " + a + "/" + d + " và " + b + "/" + d + ", phân số nào LỚN hơn?", [Math.min(a, b) + "/" + d, "Hai phân số bằng nhau"], big, "Hai phân số cùng mẫu số: phân số nào có tử số lớn hơn thì lớn hơn."); }
+    var q0 = mcqQ("Trong hai phân số " + a + "/" + d + " và " + b + "/" + d + ", phân số nào LỚN hơn?", [Math.min(a, b) + "/" + d, "Hai phân số bằng nhau"], big, "Hai phân số cùng mẫu số: phân số nào có tử số lớn hơn thì lớn hơn.");
+    /* Hình tô CẢ HAI phân số được hỏi (đều là dữ kiện đề cho); phán quyết
+       phân số nào lớn hơn không hề được vẽ hay ghi trong hình. */
+    if (Math.random() < 0.8) q0.figure = figFracBars2SVG(a, d, b, d);
+    return q0; }
   if (v === 1) { var n = rand(1, 5), d1 = pick([3, 4, 5, 6]), d2 = pick([7, 8, 9, 10]);
-    return mcqQ("Trong hai phân số " + n + "/" + d1 + " và " + n + "/" + d2 + ", phân số nào LỚN hơn?", [n + "/" + d2, "Hai phân số bằng nhau"], n + "/" + d1, "Hai phân số cùng tử số: phân số nào có mẫu số bé hơn thì lớn hơn."); }
+    var q1 = mcqQ("Trong hai phân số " + n + "/" + d1 + " và " + n + "/" + d2 + ", phân số nào LỚN hơn?", [n + "/" + d2, "Hai phân số bằng nhau"], n + "/" + d1, "Hai phân số cùng tử số: phân số nào có mẫu số bé hơn thì lớn hơn.");
+    if (Math.random() < 0.8) q1.figure = figFracBars2SVG(n, d1, n, d2);
+    return q1; }
   var d3 = pick([3, 4, 5]), a3 = rand(1, d3 * 2);
   var cmp = a3 < d3 ? "bé hơn 1" : a3 === d3 ? "bằng 1" : "lớn hơn 1";
   return mcqQ("Phân số " + a3 + "/" + d3 + " có đặc điểm gì?", ["bé hơn 1", "bằng 1", "lớn hơn 1"].filter(function (x) { return x !== cmp; }), cmp, "Tử số " + a3 + (a3 < d3 ? " nhỏ hơn" : a3 === d3 ? " bằng" : " lớn hơn") + " mẫu số " + d3 + " nên phân số " + cmp + ".");
@@ -472,23 +482,35 @@ function g4FracAddSub(sameDen) {
       var d = pick([4, 5, 6, 7, 8, 9, 10, 12]), a = rand(1, d + 2), b = rand(1, d - 1), n, expr;
       if (add) { n = a + b; expr = opFrac4(a, d) + " + " + opFrac4(b, d); }
       else { if (a <= b) { var t = a; a = b + rand(1, 3); } n = a - b; expr = opFrac4(a, d) + " − " + opFrac4(b, d); }
-      return fracMCQ("Tính: " + expr + " = ?", "", n, d, "Hai phân số cùng mẫu số: giữ nguyên mẫu số, " + (add ? "cộng" : "trừ") + " hai tử số với nhau. Kết quả: " + expr + " = " + n + "/" + d + (gcd4(n, d) > 1 ? " = " + fracStr(n / gcd4(n, d), d / gcd4(n, d)) + " (đã rút gọn)" : "") + ".");
+      var qA = fracMCQ("Tính: " + expr + " = ?", "", n, d, "Hai phân số cùng mẫu số: giữ nguyên mẫu số, " + (add ? "cộng" : "trừ") + " hai tử số với nhau. Kết quả: " + expr + " = " + n + "/" + d + (gcd4(n, d) > 1 ? " = " + fracStr(n / gcd4(n, d), d / gcd4(n, d)) + " (đã rút gọn)" : "") + ".");
+      /* Hai thanh tô đúng hai số hạng (dữ kiện); tổng/hiệu không vẽ. Chỉ gắn
+         khi cả hai tử số không vượt mẫu số để thanh không bị cắt cụt. */
+      if (a <= d && b <= d && Math.random() < 0.75) qA.figure = figFracBars2SVG(a, d, b, d);
+      return qA;
     }
     var b2 = pick([2, 3, 4, 5, 6]), k = pick([2, 3]), d2 = b2 * k, a2 = rand(1, b2 - 1), c = rand(1, d2 - 1), n2, expr2;
     if (add) { n2 = a2 * k + c; expr2 = a2 + "/" + b2 + " + " + c + "/" + d2; }
     else { var t2 = a2 * k; if (t2 <= c) { c = rand(1, t2 - 1); } n2 = t2 - c; expr2 = a2 + "/" + b2 + " − " + c + "/" + d2; }
-    return fracMCQ("Tính: " + expr2 + " = ?", "", n2, d2, "Quy đồng mẫu số: " + a2 + "/" + b2 + " = " + (a2 * k) + "/" + d2 + ". Sau đó " + (add ? "cộng" : "trừ") + " hai tử số, giữ nguyên mẫu số " + d2 + ", rồi rút gọn nếu được.");
+    var qB = fracMCQ("Tính: " + expr2 + " = ?", "", n2, d2, "Quy đồng mẫu số: " + a2 + "/" + b2 + " = " + (a2 * k) + "/" + d2 + ". Sau đó " + (add ? "cộng" : "trừ") + " hai tử số, giữ nguyên mẫu số " + d2 + ", rồi rút gọn nếu được.");
+    if (Math.random() < 0.75) qB.figure = figFracBars2SVG(a2, b2, c, d2);
+    return qB;
   };
 }
 function g4FracWord() {
   var d = pick([4, 5, 8, 10]), a = rand(1, d - 2), b = rand(1, d - a - 1), n = a + b;
-  return fracMCQ("Bạn An ăn " + a + "/" + d + " cái bánh, bạn Bình ăn " + b + "/" + d + " cái bánh đó. Cả hai bạn ăn bao nhiêu phần của cái bánh?", "", n, d, "Cộng hai phân số cùng mẫu số: " + a + "/" + d + " + " + b + "/" + d + " = " + n + "/" + d + ".");
+  var q = fracMCQ("Bạn An ăn " + a + "/" + d + " cái bánh, bạn Bình ăn " + b + "/" + d + " cái bánh đó. Cả hai bạn ăn bao nhiêu phần của cái bánh?", "", n, d, "Cộng hai phân số cùng mẫu số: " + a + "/" + d + " + " + b + "/" + d + " = " + n + "/" + d + ".");
+  if (Math.random() < 0.75) q.figure = figFracBars2SVG(a, d, b, d);
+  return q;
 }
 function g4FracMul() {
   if (Math.random() < 0.5) { var a = rand(1, 5), b = pick([2, 3, 4, 5, 6]), c = rand(1, 5), d = pick([2, 3, 4, 5, 6]);
-    return fracMCQ("Tính: " + opFrac4(a, b) + " × " + opFrac4(c, d) + " = ?", "", a * c, b * d, "Nhân hai phân số: tử số nhân tử số, mẫu số nhân mẫu số: " + opFrac4(a, b) + " × " + opFrac4(c, d) + " = " + (a * c) + "/" + (b * d) + (gcd4(a * c, b * d) > 1 ? " = " + fracStr(a * c / gcd4(a * c, b * d), b * d / gcd4(a * c, b * d)) + " (đã rút gọn)" : "") + "."); }
+    var q1 = fracMCQ("Tính: " + opFrac4(a, b) + " × " + opFrac4(c, d) + " = ?", "", a * c, b * d, "Nhân hai phân số: tử số nhân tử số, mẫu số nhân mẫu số: " + opFrac4(a, b) + " × " + opFrac4(c, d) + " = " + (a * c) + "/" + (b * d) + (gcd4(a * c, b * d) > 1 ? " = " + fracStr(a * c / gcd4(a * c, b * d), b * d / gcd4(a * c, b * d)) + " (đã rút gọn)" : "") + ".");
+    if (a <= b && c <= d && Math.random() < 0.65) q1.figure = figFracBars2SVG(a, b, c, d);
+    return q1; }
   var n = rand(1, 6), dd = pick([2, 3, 4, 5, 6, 8]), k = rand(2, 9);
-  return fracMCQ("Tính: " + opFrac4(n, dd) + " × " + k + " = ?", "", n * k, dd, "Nhân phân số với số tự nhiên: giữ nguyên mẫu số, nhân tử số với số tự nhiên: " + opFrac4(n, dd) + " × " + k + " = " + (n * k) + "/" + dd + ".");
+  var q2 = fracMCQ("Tính: " + opFrac4(n, dd) + " × " + k + " = ?", "", n * k, dd, "Nhân phân số với số tự nhiên: giữ nguyên mẫu số, nhân tử số với số tự nhiên: " + opFrac4(n, dd) + " × " + k + " = " + (n * k) + "/" + dd + ".");
+  if (n <= dd && Math.random() < 0.65) q2.figure = figFracBarSVG(n, dd);
+  return q2;
 }
 function g4FracDivPs() {
   var a = rand(1, 6), b = pick([2, 3, 4, 5]), c = rand(1, 6), d = pick([2, 3, 4, 5]);
@@ -501,7 +523,10 @@ function g4FracOfNum() {
     "Một cuộn dây dài " + total + " m. Người ta đã dùng " + n + "/" + d + " cuộn dây. Hỏi đã dùng bao nhiêu mét dây?",
     "Một vườn có " + total + " cây, trong đó " + n + "/" + d + " là cây cam. Hỏi vườn có bao nhiêu cây cam?"
   ]);
-  return calcMCQ("Tìm phân số của một số", ctx, ans, 0, 200, "Tìm " + n + "/" + d + " của " + total + ": lấy " + total + " : " + d + " = " + unit + ", rồi " + unit + " × " + n + " = " + ans + ".");
+  var q = calcMCQ("Tìm phân số của một số", ctx, ans, 0, 200, "Tìm " + n + "/" + d + " của " + total + ": lấy " + total + " : " + d + " = " + unit + ", rồi " + unit + " × " + n + " = " + ans + ".");
+  /* Thanh tô n/d là phân số đã cho trong đề; số lượng cần tìm không vẽ. */
+  if (Math.random() < 0.75) q.figure = figFracBarSVG(n, d);
+  return q;
 }
 /* ================= TOÁN 4 — chủ đề ================= */
 var MATH4_TOPICS = [
@@ -571,9 +596,9 @@ var MATH4_TOPICS = [
     kp.choose.push(g4BarRead, g4BarRead, g4DataSeries, g4EventCount, g4BarRead);
     kp.blank.push(g4EventCount);
     return kp; })() },
-  { id: "m4-phanso", emoji: "🍕", name: "Phân số", sub: "Bài 53–59 • Khái niệm, tính chất cơ bản, rút gọn, quy đồng, so sánh", pools: { choose: [g4FracConcept, g4FracDiv, g4FracEquiv, g4FracReduce, g4FracCommonDen, g4FracCompare, g4FracConcept, g4FracCompare], blank: [function () { var d = pick([4, 5, 6, 8]), n = rand(1, d - 1); return fracBlank("Điền phân số chỉ phần đã tô màu của hình (tô " + n + " trong " + d + " phần bằng nhau)!", n, d, "Phân số chỉ phần tô màu: tử số là số phần tô màu (" + n + "), mẫu số là tổng số phần (" + d + ")."); }, function () { var d = pick([3, 4, 5]), k = rand(2, 5), n = rand(1, d - 1); return fracBlankRaw("Điền phân số bằng phân số " + n + "/" + d + " sau khi nhân cả tử và mẫu với " + k + "!", n * k, d * k, n + "/" + d + " = " + (n * k) + "/" + (d * k) + "."); }], match: [function () { var ds = shuffle([2, 3, 4, 5, 6, 8]).slice(0, 4); return pairsMatch("Nối phân số với cách đọc đúng nhé!", ds.map(function (d) { return ["1/" + d, "Một phần " + ({ 2: "hai", 3: "ba", 4: "tư", 5: "năm", 6: "sáu", 8: "tám" })[d]]; })); }], games: [factsTF([["Phân số có tử số nhỏ hơn mẫu số thì bé hơn 1", "Đúng", "Sai", null], ["Rút gọn phân số là chia cả tử và mẫu cho cùng một số khác 0", "Đúng", "Sai", null], ["Hai phân số cùng mẫu số, phân số nào có tử số lớn hơn thì bé hơn", "Sai", "Đúng", null], ["Phân số 4/4 bằng 1", "Đúng", "Sai", null]]), function () { var d = pick([4, 5, 6]); var prs = [[1, d], [2, d], [3, d], [d - 1, d]].filter(function (p) { return p[0] < p[1]; }).slice(0, 4); return memQ("Lật thẻ tìm cặp đúng: phân số và hình tô màu!", prs.map(function (p) { return { a: '<span class="mem-expr">' + p[0] + "/" + p[1] + "</span>", b: fracBar(p[0], p[1]) }; })); }] } },
-  { id: "m4-congtrups", emoji: "➕", name: "Cộng, trừ phân số", sub: "Bài 60–62 • Cùng mẫu số và khác mẫu số", pools: { choose: [g4FracAddSub(true), g4FracAddSub(true), g4FracAddSub(false), g4FracWord, g4FracAddSub(false)], blank: [function () { var d = pick([5, 6, 8, 9]), a = rand(1, d - 1), b = rand(1, d - a); return fracBlank("Điền kết quả của phép tính " + a + "/" + d + " + " + b + "/" + d + "!", a + b, d, "Cộng hai phân số cùng mẫu số: cộng hai tử số, giữ nguyên mẫu số."); }], match: [function () { var d = pick([5, 6, 8]); var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 200) { var a = rand(1, d - 1), b = rand(1, d - a); var key = a + "+" + b; if (used[key]) continue; used[key] = 1; prs.push([a + "/" + d + " + " + b + "/" + d, fracStr(a + b, d)]); } return pairsMatch("Nối phép tính với kết quả đúng nhé!", prs); }], games: [factsTF([["Cộng hai phân số cùng mẫu số: cộng hai tử số, giữ nguyên mẫu số", "Đúng", "Sai", null], ["Muốn cộng hai phân số khác mẫu số, trước hết phải quy đồng mẫu số", "Đúng", "Sai", null], ["Khi cộng hai phân số, ta cộng cả tử số và mẫu số với nhau", "Sai", "Đúng", null]]), factsCatch([[ "Tính 1/4 + 2/4 = ?", "3/4", "2/4", "3/8", "Cộng tử số: 1 + 2 = 3, giữ nguyên mẫu số 4."], ["Tính 3/5 − 1/5 = ?", "2/5", "4/5", "2/10", "Trừ tử số: 3 − 1 = 2, giữ nguyên mẫu số 5."]])] } },
-  { id: "m4-nhanchia-ps", emoji: "✖️", name: "Nhân, chia phân số", sub: "Bài 63–66 • Nhân, chia phân số; tìm phân số của một số", pools: { choose: [g4FracMul, g4FracMul, g4FracDivPs, g4FracOfNum, g4FracDivPs, g4FracOfNum], blank: [function () { var a = rand(1, 5), b = pick([2, 3, 4, 5]), k = rand(2, 6); return fracBlank("Điền kết quả của phép tính " + opFrac4(a, b) + " × " + k + "!", a * k, b, "Nhân phân số với số tự nhiên: nhân tử số với số tự nhiên, giữ nguyên mẫu số."); }], match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 200) { var a = rand(1, 4), b = pick([2, 3, 4, 5]), c = rand(1, 4), d = pick([2, 3, 4, 5]); var key = opFrac4(a, b) + " × " + opFrac4(c, d); if (used[key]) continue; used[key] = 1; prs.push([key, fracStr(a * c / gcd4(a * c, b * d), b * d / gcd4(a * c, b * d))]); } return pairsMatch("Nối phép nhân phân số với kết quả đúng nhé!", prs); }], games: [factsTF([["Nhân hai phân số: tử số nhân tử số, mẫu số nhân mẫu số", "Đúng", "Sai", null], ["Chia phân số là nhân với phân số đảo ngược của phân số chia", "Đúng", "Sai", null], ["Phân số đảo ngược của 2/3 là 3/2", "Đúng", "Sai", null], ["Muốn tìm 1/2 của 10, ta lấy 10 × 2", "Sai", "Đúng", null]]), factsCatch([["Tính 1/2 × 1/3 = ?", "1/6", "2/6", "1/5", "Tử nhân tử: 1 × 1 = 1; mẫu nhân mẫu: 2 × 3 = 6."], ["Tính 2/3 : 1/3 = ?", "2", "2/9", "1/2", "2/3 : 1/3 = 2/3 × 3/1 = 2."]])] } }
+  { id: "m4-phanso", emoji: "🍕", name: "Phân số", sub: "Bài 53–59 • Khái niệm, tính chất cơ bản, rút gọn, quy đồng, so sánh", pools: { choose: [g4FracConcept, g4FracDiv, g4FracEquiv, g4FracReduce, g4FracCommonDen, g4FracCompare, g4FracConcept, g4FracCompare], blank: [function () { var d = pick([4, 5, 6, 8]), n = rand(1, d - 1); var qb = fracBlank("Điền phân số chỉ phần đã tô màu của hình (tô " + n + " trong " + d + " phần bằng nhau)!", n, d, "Phân số chỉ phần tô màu: tử số là số phần tô màu (" + n + "), mẫu số là tổng số phần (" + d + ")."); qb.figure = Math.random() < 0.5 ? figFracPieSVG(n, d) : figFracBarSVG(n, d); return qb; }, function () { var d = pick([3, 4, 5]), k = rand(2, 5), n = rand(1, d - 1); return fracBlankRaw("Điền phân số bằng phân số " + n + "/" + d + " sau khi nhân cả tử và mẫu với " + k + "!", n * k, d * k, n + "/" + d + " = " + (n * k) + "/" + (d * k) + "."); }], match: [function () { var ds = shuffle([2, 3, 4, 5, 6, 8]).slice(0, 4); return pairsMatch("Nối phân số với cách đọc đúng nhé!", ds.map(function (d) { return ["1/" + d, "Một phần " + ({ 2: "hai", 3: "ba", 4: "tư", 5: "năm", 6: "sáu", 8: "tám" })[d]]; })); }], games: [factsTF([["Phân số có tử số nhỏ hơn mẫu số thì bé hơn 1", "Đúng", "Sai", null], ["Rút gọn phân số là chia cả tử và mẫu cho cùng một số khác 0", "Đúng", "Sai", null], ["Hai phân số cùng mẫu số, phân số nào có tử số lớn hơn thì bé hơn", "Sai", "Đúng", null], ["Phân số 4/4 bằng 1", "Đúng", "Sai", null]]), function () { var d = pick([4, 5, 6]); var prs = [], seenV = {}; shuffle([1, 2, 3, 4, 5].filter(function (n) { return n < d; })).forEach(function (n) { if (prs.length < 4) { prs.push([n, d]); seenV[n / d] = 1; } }); [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [1, 6], [5, 6]].forEach(function (p) { if (prs.length < 4 && !seenV[p[0] / p[1]]) { seenV[p[0] / p[1]] = 1; prs.push(p); } }); return memQ("Lật thẻ tìm cặp đúng: phân số và hình tô màu!", prs.map(function (p) { return { a: '<span class="mem-expr">' + p[0] + "/" + p[1] + "</span>", b: '<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap">Thanh tô ' + p[0] + " trong " + p[1] + " phần</span>" + fracBar(p[0], p[1]) }; })); }] } },
+  { id: "m4-congtrups", emoji: "➕", name: "Cộng, trừ phân số", sub: "Bài 60–62 • Cùng mẫu số và khác mẫu số", pools: { choose: [g4FracAddSub(true), g4FracAddSub(true), g4FracAddSub(false), g4FracWord, g4FracAddSub(false)], blank: [function () { var d = pick([5, 6, 8, 9]), a = rand(1, d - 1), b = rand(1, d - a); return fracBlank("Điền kết quả của phép tính " + a + "/" + d + " + " + b + "/" + d + "!", a + b, d, "Cộng hai phân số cùng mẫu số: cộng hai tử số, giữ nguyên mẫu số."); }], match: [function () { var d = pick([5, 6, 8]); var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 200) { var a = rand(1, d - 1), b = rand(1, d - a); var key = a + "+" + b; var g = gcd4(a + b, d), rk = ((a + b) / g) + "/" + (d / g); if (used[key] || used["r" + rk]) continue; used[key] = 1; used["r" + rk] = 1; prs.push([a + "/" + d + " + " + b + "/" + d, fracStr(a + b, d)]); } return pairsMatch("Nối phép tính với kết quả đúng nhé!", prs); }], games: [factsTF([["Cộng hai phân số cùng mẫu số: cộng hai tử số, giữ nguyên mẫu số", "Đúng", "Sai", null], ["Muốn cộng hai phân số khác mẫu số, trước hết phải quy đồng mẫu số", "Đúng", "Sai", null], ["Khi cộng hai phân số, ta cộng cả tử số và mẫu số với nhau", "Sai", "Đúng", null]]), factsCatch([[ "Tính 1/4 + 2/4 = ?", "3/4", "2/4", "3/8", "Cộng tử số: 1 + 2 = 3, giữ nguyên mẫu số 4."], ["Tính 3/5 − 1/5 = ?", "2/5", "4/5", "2/10", "Trừ tử số: 3 − 1 = 2, giữ nguyên mẫu số 5."]])] } },
+  { id: "m4-nhanchia-ps", emoji: "✖️", name: "Nhân, chia phân số", sub: "Bài 63–66 • Nhân, chia phân số; tìm phân số của một số", pools: { choose: [g4FracMul, g4FracMul, g4FracDivPs, g4FracOfNum, g4FracDivPs, g4FracOfNum], blank: [function () { var a = rand(1, 5), b = pick([2, 3, 4, 5]), k = rand(2, 6); return fracBlank("Điền kết quả của phép tính " + opFrac4(a, b) + " × " + k + "!", a * k, b, "Nhân phân số với số tự nhiên: nhân tử số với số tự nhiên, giữ nguyên mẫu số."); }], match: [function () { var prs = [], used = {}; var guard = 0; while (prs.length < 4 && guard++ < 200) { var a = rand(1, 4), b = pick([2, 3, 4, 5]), c = rand(1, 4), d = pick([2, 3, 4, 5]); var key = opFrac4(a, b) + " × " + opFrac4(c, d); var gg = gcd4(a * c, b * d), rk = (a * c / gg) + "/" + (b * d / gg); if (used[key] || used["r" + rk]) continue; used[key] = 1; used["r" + rk] = 1; prs.push([key, fracStr(a * c / gg, b * d / gg)]); } return pairsMatch("Nối phép nhân phân số với kết quả đúng nhé!", prs); }], games: [factsTF([["Nhân hai phân số: tử số nhân tử số, mẫu số nhân mẫu số", "Đúng", "Sai", null], ["Chia phân số là nhân với phân số đảo ngược của phân số chia", "Đúng", "Sai", null], ["Phân số đảo ngược của 2/3 là 3/2", "Đúng", "Sai", null], ["Muốn tìm 1/2 của 10, ta lấy 10 × 2", "Sai", "Đúng", null]]), factsCatch([["Tính 1/2 × 1/3 = ?", "1/6", "2/6", "1/5", "Tử nhân tử: 1 × 1 = 1; mẫu nhân mẫu: 2 × 3 = 6."], ["Tính 2/3 : 1/3 = ?", "2", "2/9", "1/2", "2/3 : 1/3 = 2/3 × 3/1 = 2."]])] } }
 ];
 /* ================= TIẾNG VIỆT 4 — theo nhóm kỹ năng ================= */
 var TV4_TOPICS = [
@@ -1416,4 +1441,18 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
   t = findT("kh4-chat"); if (t) { t.pools.choose.push(k1PanelsGen, k1PanelsGen, k3CycleGen); }
   t = findT("kh4-chuoithucan"); if (t) { t.pools.choose.push(k2ChainGen, k2ChainGen, k2ChainGen); }
   t = findT("kh4-nangluong"); if (t) { t.pools.choose.push(k4ShadowGen, k4ShadowGen); }
+})();
+
+/* ================= ĐỢT HÌNH TIỂU HỌC (v22) — Lớp 4 =================
+   Gắn hình minh hoạ theo chỉ số dữ kiện (figTagFacts của vỏ): hình là dữ
+   kiện/ngữ cảnh của chính câu đó — tranh emoji theo chủ đề, lưới 100 ô cho
+   quan hệ đơn vị diện tích; đáp án không nằm trong hình. */
+(function () {
+  function bp(e) { return '<div class="big-pic">' + e + "</div>"; }
+  function grid0() { return figFracGridSVG(0); }
+  figTagFacts(4, "m4-donvi", { 0: bp("⚖️"), 1: bp("⚖️"), 2: bp("⚖️"), 3: bp("⚖️"), 4: grid0, 5: grid0, 6: grid0, 7: bp("🕐"), 8: bp("🕐"), 9: bp("🗓️"), 11: bp("🐘"), 12: bp("🏠") });
+  figTagFacts(4, "tv4-tungu8", { 0: bp("🙂"), 1: bp("🧭"), 2: bp("💡"), 3: bp("🌠"), 4: bp("❤️"), 5: bp("🙏"), 7: bp("🌾"), 8: bp("🕊️"), 9: bp("🌠"), 11: bp("🙂"), 12: bp("🌍") });
+  figTagFacts(4, "kh4-thucvatdongvat", { 0: bp("🌱"), 1: bp("🌱"), 2: bp("🌱"), 3: bp("🐶"), 4: bp("💧"), 5: bp("🐶"), 6: bp("💧"), 7: bp("🌵"), 8: bp("🐠"), 9: bp("♻️"), 10: bp("🐾"), 11: bp("🌱"), 12: bp("🌱") });
+  figTagFacts(4, "kh4-nam", { 0: bp("🍄"), 1: bp("🍄"), 2: bp("🍄"), 3: bp("🍞"), 4: bp("🍞"), 5: bp("🍞"), 6: bp("🍄"), 7: bp("❄️"), 8: bp("🍄"), 9: bp("🍄"), 10: bp("🍚"), 11: bp("🍲"), 12: bp("🍄") });
+  figTagFacts(4, "kh4-suckhoe", { 0: bp("🍚"), 1: bp("🍗"), 2: bp("🥦"), 3: bp("🍽️"), 4: bp("🍬"), 5: bp("🥗"), 6: bp("🦷"), 7: bp("🛒"), 8: bp("🧼"), 9: bp("🍲"), 10: bp("🏊"), 11: bp("🛟"), 12: bp("🛟") });
 })();

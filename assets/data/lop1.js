@@ -198,7 +198,7 @@
       var good = pick(VAN1[v]);
       var others = shuffle(VAN_KEYS.filter(function (x) { return x !== v; })).slice(0, 2).map(function (x) { return pick(VAN1[x]); });
       var opts = shuffle([good].concat(others));
-      return { prompt: "Tiếng nào chứa vần “" + v + "”?", visual: '<div class="big-word">vần ' + v + "</div>",
+      return { prompt: "Tiếng nào chứa vần “" + v + "”?", visual: '<div class="big-word">vần ' + v + "</div>", figure: figLetterCardSVG(v),
         options: opts.map(optWord), answer: opts.indexOf(good), cols: 3 };
     }
     var COMPOSE1 = [["b","an","bàn"],["th","an","than"],["c","ân","cân"],["s","ân","sân"],["t","ay","tay"],["b","ay","bay"],["m","eo","mèo"],["s","ao","sao"],["b","ác","bác"],["g","ác","gác"],["m","ắt","mắt"],["s","ách","sách"],["c","anh","canh"],["h","oa","hoa"],["ng","oan","ngoan"],["ch","uông","chuông"],["đ","uôi","đuôi"],["t","iên","tiên"],["nh","iêu","nhiều"],["b","ơi","bơi"],["ch","ơi","chơi"],["v","oi","voi"],["n","ồi","nồi"],["g","ốc","gốc"],["t","ốt","tốt"],["s","ông","sông"],["kh","ông","không"],["b","iển","biển"],["t","iếp","tiếp"],["l","ăn","lăn"],["ch","ăn","chăn"],["n","ăm","năm"],["c","ầm","cầm"],["l","àm","làm"],["c","on","con"],["ng","on","ngon"],["b","ốn","bốn"],["h","át","hát"],["c","át","cát"],["đ","ọc","đọc"],["ng","ọc","ngọc"],["s","áng","sáng"],["v","àng","vàng"],["n","ắng","nắng"],["tr","ăng","trăng"],["t","rong","trong"],["m","ong","mong"],["y","êu","yêu"],["d","iều","diều"],["ch","uối","chuối"],["m","uốn","muốn"],["l","uôn","luôn"],["kh","oe","khoe"],["x","oắn","xoắn"],["c","ặp","cặp"],["m","ột","một"]];
@@ -214,7 +214,7 @@
       var e = pick(COMPOSE1);
       var opts = shuffle([e[2]].concat(composeDistractors(e, 2)));
       autoVi(e[2]);
-      return { prompt: "Ghép âm đầu với vần thành tiếng nào?", visual: '<div class="expr">' + e[0] + " + " + e[1] + " = ?</div>",
+      return { prompt: "Ghép âm đầu với vần thành tiếng nào?", visual: '<div class="expr">' + e[0] + " + " + e[1] + " = ?</div>", figure: figComposeCardSVG(e[0], e[1]),
         options: opts.map(optWord), answer: opts.indexOf(e[2]), cols: 3 };
     }
     function qBlankVan() {
@@ -222,7 +222,7 @@
       var others = shuffle(VAN_KEYS.filter(function (x) { return x !== e[1]; })).slice(0, 2);
       var opts = shuffle([e[1]].concat(others));
       return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền vần còn thiếu để thành tiếng “" + e[2] + "” nhé!", blankText: e[1],
-        visual: '<div class="big-word">' + e[0] + blankSlot() + "</div>",
+        visual: '<div class="big-word">' + e[0] + blankSlot() + "</div>", figure: figLetterCardSVG(e[2]),
         options: opts.map(optWord), answer: opts.indexOf(e[1]), cols: 3 };
     }
     function qBlankInitial() {
@@ -231,7 +231,7 @@
       var opts = shuffle([e[0]].concat(others.filter(function (x, i) { return others.indexOf(x) === i; })));
       while (opts.length < 3) { var d = pick(["b","c","m","n","t","s","l","h"]); if (opts.indexOf(d) === -1) opts.push(d); }
       return { kind: "blank", badge: "✏️ Điền vào chỗ trống", prompt: "Điền âm đầu còn thiếu để thành tiếng “" + e[2] + "” nhé!", blankText: e[0],
-        visual: '<div class="big-word">' + blankSlot() + e[1] + "</div>",
+        visual: '<div class="big-word">' + blankSlot() + e[1] + "</div>", figure: figLetterCardSVG(e[2]),
         options: opts.map(optWord), answer: opts.indexOf(e[0]), cols: 3 };
     }
     function vanPairs() {
@@ -553,7 +553,8 @@
       else if (type === "cong") inner = '<path d="M10 72 Q50 8 90 72" fill="none"/>';
       else if (type === "gapkhuc") inner = '<polyline points="8,70 30,28 50,70 70,28 92,70" fill="none"/>';
       else if (type === "xoan") inner = '<path d="M50 50 m-3 0 a3 3 0 1 1 3 3 a7 7 0 1 1 -7 -7 a12 12 0 1 1 12 12 a18 18 0 1 1 -18 -18 a25 25 0 1 1 25 25" fill="none"/>';
-      return '<svg class="shape-svg" viewBox="0 0 100 100" role="img" style="color:var(--ink)"><g stroke="currentColor" stroke-width="5" stroke-linecap="round">' + inner + "</g></svg>";
+      var NAMES = { thang: "Nét thẳng", cong: "Nét cong", gapkhuc: "Nét gấp khúc", xoan: "Nét xoắn" };
+      return '<svg class="shape-svg" viewBox="0 0 100 100" role="img" style="color:var(--ink)"><title>' + (NAMES[type] || "") + '</title><g stroke="currentColor" stroke-width="5" stroke-linecap="round">' + inner + "</g></svg>";
     }
     var LINES1 = [{ id: "thang", name: "Nét thẳng" }, { id: "cong", name: "Nét cong" }, { id: "gapkhuc", name: "Nét gấp khúc" }, { id: "xoan", name: "Nét xoắn" }];
     function qLineName() {
@@ -600,7 +601,7 @@
       ["Muốn vẽ đường thẳng đều, em dùng dụng cụ gì giúp?", "Thước kẻ", "Cục tẩy", "Hồ dán", "Thước giúp kẻ nét thẳng."]
     ];
     var MT1_TOPICS = [
-      { id: "mt1-colors", emoji: "🎨", name: "Màu sắc cơ bản", sub: "Chủ đề 1 • Đỏ, vàng, xanh lam; màu của đồ vật", pools: { choose: [qObjectColor, qObjectColor, function () { return factMCQ(pick(MT_FACTS_COLOR.slice(0, 1))); }], blank: [function () { return factBlank(pick(MT_FACTS_COLOR)); }], match: [function () { return matchQ("Nối quả với màu của nó nhé!", shuffle(OBJECT_COLORS.slice()).slice(0, 4).map(function (o) { return { l: '<span class="opt-emoji">' + o[0] + "</span>", r: swatch(colorByName(o[2]).hex, o[2]) }; })); }], games: [gCatchColor, factsTF(MT_FACTS_COLOR)] } },
+      { id: "mt1-colors", emoji: "🎨", name: "Màu sắc cơ bản", sub: "Chủ đề 1 • Đỏ, vàng, xanh lam; màu của đồ vật", pools: { choose: [qObjectColor, qObjectColor, function () { return factMCQ(pick(MT_FACTS_COLOR.slice(0, 1))); }], blank: [function () { return factBlank(pick(MT_FACTS_COLOR)); }], match: [function () { return matchQ("Nối quả với màu của nó nhé!", shuffle(OBJECT_COLORS.slice()).filter(function (o, i, arr) { return arr.findIndex(function (x) { return x[2] === o[2]; }) === i; }).slice(0, 4).map(function (o) { return { l: '<span class="opt-emoji">' + o[0] + "</span>", r: swatch(colorByName(o[2]).hex, o[2]) }; })); }], games: [gCatchColor, factsTF(MT_FACTS_COLOR)] } },
       { id: "mt1-mix", emoji: "🌈", name: "Pha màu vui", sub: "Chủ đề 2 • Pha màu cơ bản", pools: knowledgePools(MT_FACTS_COLOR.slice(1, 4), [["Đỏ + Vàng", "Cam"], ["Vàng + Xanh lam", "Xanh lá"], ["Đỏ + Xanh lam", "Tím"], ["Đỏ + Trắng", "Hồng"]], "Nối phép pha màu với màu tạo thành nhé!") },
       { id: "mt1-lines", emoji: "✏️", name: "Nét vẽ", sub: "Chủ đề 3 • Nét thẳng, nét cong, nét gấp khúc, nét xoắn", pools: { choose: [qLineName, qLinePick, qLineName], blank: [function () { var t = pick(LINES1); return textBlankQ("Điền tên nét vẽ còn thiếu nhé!", lineSVG1(t.id) + '<div class="sentence">Đây là ' + blankSlot() + "</div>", t.name, LINES1.filter(function (x) { return x.id !== t.id; }).slice(0, 2).map(function (x) { return x.name; })); }], match: [function () { return matchQ("Nối nét vẽ với tên của nó nhé!", LINES1.map(function (t) { return { l: lineSVG1(t.id), r: '<span class="match-text">' + t.name + "</span>" }; })); }], games: [function () { return memQ("Lật thẻ tìm cặp: nét vẽ và tên nét!", LINES1.map(function (t) { return { a: lineSVG1(t.id), b: '<span class="mem-text">' + t.name + "</span>" }; })); }, function () { var t = pick(LINES1); return catchQ("Bắt nét! Chạm vào " + t.name.toLowerCase() + " đang rơi nhé!", shuffle(LINES1.slice()).map(function (x) { return { html: lineSVG1(x.id), ok: x.id === t.id }; })); }] } },
       { id: "mt1-shapes", emoji: "🔷", name: "Hình và khối", sub: "Chủ đề 4 • Hình cơ bản, khối cơ bản", pools: knowledgePools([
@@ -611,8 +612,8 @@
           ["Ngôi nhà trong tranh gồm những hình nào?", "Hình vuông, hình tam giác, hình chữ nhật", "Chỉ hình tròn", "Không có hình nào", "Nhà: thân hình vuông/chữ nhật, mái hình tam giác."],
           ["Từ những chấm màu xếp gần nhau, em nhìn thấy gì?", "Thành một hình ảnh", "Chấm biến mất hết", "Chỉ thấy tiếng động", "Chấm màu tạo thành hình."]
         ], [["Quả bóng", "Khối cầu"], ["Hộp quà", "Khối hộp"], ["Lon nước", "Khối trụ"], ["Mặt trời", "Hình tròn"]], "Nối vật với hình/khối của nó nhé!") },
-      { id: "mt1-fruits", emoji: "🍓", name: "Hoa quả quanh em", sub: "Chủ đề 5–6 • Màu sắc hoa quả, người thân, em là học sinh", pools: { choose: [qObjectColor, qObjectColor, qPaintColor], blank: [function () { var o = pick(OBJECT_COLORS); return textBlankQ("Điền màu còn thiếu nhé!", '<div class="big-pic">' + o[0] + '</div><div class="sentence">' + o[1] + " có màu " + blankSlot() + "</div>", o[2], o[3]); }], match: [function () { return matchQ("Nối quả với màu của nó nhé!", shuffle(OBJECT_COLORS.slice()).slice(0, 4).map(function (o) { return { l: '<span class="opt-emoji">' + o[0] + "</span>", r: swatch(colorByName(o[2]).hex, o[2]) }; })); }], games: [gCatchColor, factsTF([["Quả táo chín thường có màu đỏ.", "đỏ", "xanh lam"], ["Quả chuối chín có màu vàng.", "vàng", "tím"]])] } },
-      { id: "mt1-paint", emoji: "🖌️", name: "Tô màu vui", sub: "Chủ đề 7–9 • Chạm màu đúng để tô hình", pools: { choose: [qPaintColor, qPaintColor, qObjectColor], blank: [function () { var o = pick(OBJECT_COLORS); return textBlankQ("Điền màu cần tô nhé!", '<div class="big-pic" style="filter:grayscale(1);opacity:0.75">' + o[0] + '</div><div class="sentence">Tô ' + o[1].toLowerCase() + " màu " + blankSlot() + "</div>", o[2], o[3]); }], match: [function () { return matchQ("Nối đồ vật với màu cần tô nhé!", shuffle(OBJECT_COLORS.slice()).slice(0, 4).map(function (o) { return { l: '<span class="opt-emoji">' + o[0] + "</span>", r: swatch(colorByName(o[2]).hex, o[2]) }; })); }], games: [gCatchColor, gCatchColor, factsTF([["Pha đỏ với vàng được màu cam.", "cam", "tím"], ["Chiếc lá thường có màu xanh lá.", "xanh lá", "đỏ"]])] } }
+      { id: "mt1-fruits", emoji: "🍓", name: "Hoa quả quanh em", sub: "Chủ đề 5–6 • Màu sắc hoa quả, người thân, em là học sinh", pools: { choose: [qObjectColor, qObjectColor, qPaintColor], blank: [function () { var o = pick(OBJECT_COLORS); return textBlankQ("Điền màu còn thiếu nhé!", '<div class="big-pic">' + o[0] + '</div><div class="sentence">' + o[1] + " có màu " + blankSlot() + "</div>", o[2], o[3]); }], match: [function () { return matchQ("Nối quả với màu của nó nhé!", shuffle(OBJECT_COLORS.slice()).filter(function (o, i, arr) { return arr.findIndex(function (x) { return x[2] === o[2]; }) === i; }).slice(0, 4).map(function (o) { return { l: '<span class="opt-emoji">' + o[0] + "</span>", r: swatch(colorByName(o[2]).hex, o[2]) }; })); }], games: [gCatchColor, factsTF([["Quả táo chín thường có màu đỏ.", "đỏ", "xanh lam"], ["Quả chuối chín có màu vàng.", "vàng", "tím"]])] } },
+      { id: "mt1-paint", emoji: "🖌️", name: "Tô màu vui", sub: "Chủ đề 7–9 • Chạm màu đúng để tô hình", pools: { choose: [qPaintColor, qPaintColor, qObjectColor], blank: [function () { var o = pick(OBJECT_COLORS); return textBlankQ("Điền màu cần tô nhé!", '<div class="big-pic" style="filter:grayscale(1);opacity:0.75">' + o[0] + '</div><div class="sentence">Tô ' + o[1].toLowerCase() + " màu " + blankSlot() + "</div>", o[2], o[3]); }], match: [function () { return matchQ("Nối đồ vật với màu cần tô nhé!", shuffle(OBJECT_COLORS.slice()).filter(function (o, i, arr) { return arr.findIndex(function (x) { return x[2] === o[2]; }) === i; }).slice(0, 4).map(function (o) { return { l: '<span class="opt-emoji">' + o[0] + "</span>", r: swatch(colorByName(o[2]).hex, o[2]) }; })); }], games: [gCatchColor, gCatchColor, factsTF([["Pha đỏ với vàng được màu cam.", "cam", "tím"], ["Chiếc lá thường có màu xanh lá.", "xanh lá", "đỏ"]])] } }
     ];
 
     /* ---------- GIÁO DỤC THỂ CHẤT 1 ---------- */
@@ -824,7 +825,10 @@ function g1WordAddSubRaw() {
 }
 function g1TensOnes() {
   var t = rand(2, 9), o = rand(1, 9), n = t * 10 + o;
-  return mcqQ("Số " + n + " gồm mấy chục và mấy đơn vị?", [o + " chục và " + t + " đơn vị", t + " chục và " + o + " chục"], t + " chục và " + o + " đơn vị", "Số " + n + " có chữ số hàng chục là " + t + ", hàng đơn vị là " + o + ".");
+  var q = mcqQ("Số " + n + " gồm mấy chục và mấy đơn vị?", [o + " chục và " + t + " đơn vị", t + " chục và " + o + " chục"], t + " chục và " + o + " đơn vị", "Số " + n + " có chữ số hàng chục là " + t + ", hàng đơn vị là " + o + ".");
+  /* Khối chục–đơn vị dựng số đã cho trong đề thành hình (dữ kiện). */
+  if (Math.random() < 0.88) q.figure = figNumBlocksSVG(n);
+  return q;
 }
 function g1WordAddSub100() {
   var names = ["Lan", "Minh", "Hoa", "Tuấn"], a, b, ans, add = Math.random() < 0.5, guard = 0;
@@ -833,8 +837,11 @@ function g1WordAddSub100() {
   var story = add ? ("Một cửa hàng hôm qua bán được " + a + " cái bút, hôm nay bán tiếp " + b + " cái bút. Hỏi cả hai ngày cửa hàng bán được bao nhiêu cái bút?")
                   : ("Lớp 1A có " + a + " bạn học sinh, trong đó có " + b + " bạn đi tham quan. Hỏi còn lại bao nhiêu bạn ở trường?");
   var opts = numOptions(ans, 1, 99, 3);
-  return { prompt: story, visual: '<div class="expr">' + a + (add ? " + " : " − ") + b + " = ?</div>",
+  var q = { prompt: story, visual: '<div class="expr">' + a + (add ? " + " : " − ") + b + " = ?</div>",
     options: opts.map(function (o) { return { html: '<span class="opt-num">' + o + "</span>" }; }), answer: opts.indexOf(ans), cols: 3 };
+  /* Hai hàng khối chục–đơn vị là hai số đã cho trong đề (dữ kiện). */
+  if (Math.random() < 0.65) q.figure = figAddSubBlocksSVG(a, b, add);
+  return q;
 }
 function g1DayOrder() {
   /* B1-sửa lớp nhỏ (2026-10-15): Lớp 1 chỉ học hôm nay/hôm qua/ngày mai
@@ -1416,4 +1423,40 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
   ];
   if (Array.isArray(t.pools.referenceFacts)) { facts.forEach(function (f) { t.pools.referenceFacts.push(f.slice()); }); }
   else Object.defineProperty(t.pools, "referenceFacts", { value: facts });
+})();
+
+/* ================= ĐỢT HÌNH TIỂU HỌC (v22) — Lớp 1 =================
+   Gắn hình theo dữ kiện (figTagFacts của vỏ): hình là dữ kiện/ngữ cảnh của
+   chính câu đó; câu hỏi nhận diện ("Ai…?", "Đồ dùng nào…?", "Em dùng gì…?")
+   chỉ gắn tranh chủ đề trung tính — vật được hỏi không vẽ trong hình. */
+(function () {
+  function bp(e) { return '<div class="big-pic">' + e + "</div>"; }
+  /* Hai vòng tròn màu cho câu pha màu: hai màu nguồn là dữ kiện đã nêu
+     trong đề; màu pha thành để trống "?". Hai vòng đặt TÁCH nhau, không
+     chồng lấn — bản đầu chồng lấn bán trong suốt khiến vùng giao tự pha
+     thành đúng màu đáp án (đỏ+vàng hiện cam), lộ đáp án (sửa sau soi mắt
+     2026-10-20). */
+  function mixSVG(c1, c2) {
+    return function () {
+      return figOpen("0 0 240 120", "Pha hai màu") +
+        '<circle cx="52" cy="56" r="32" fill="' + c1 + '"/>' +
+        figText(104, 64, "+", "middle", 26, FIG_MUT) +
+        '<circle cx="152" cy="56" r="32" fill="' + c2 + '"/>' +
+        figText(210, 64, "?", "middle", 30, FIG_MEAS) + "</svg>";
+    };
+  }
+  figTagFacts(1, "tn1-family", { 0: bp("🏠"), 1: bp("🧼"), 2: bp("✂️"), 3: bp("🔌"), 4: bp("🌙"), 5: bp("👴"), 6: bp("🍳"), 7: bp("🧹") });
+  figTagFacts(1, "tn1-school", { 0: bp("🏫"), 1: bp("🎒"), 2: bp("📝"), 3: bp("🤝"), 4: bp("🪜"), 5: bp("📚"), 6: bp("🧹") });
+  figTagFacts(1, "tn1-community", { 0: bp("🏘️"), 1: bp("🏘️"), 2: bp("🏘️"), 3: bp("🚸"), 4: bp("🧧"), 5: bp("🚶"), 6: bp("🚦") });
+  figTagFacts(1, "tn1-plants", { 0: bp("🌳"), 1: bp("🐾"), 2: bp("💧"), 3: bp("🐟"), 4: bp("🐦"), 5: bp("🐶"), 6: bp("🌱"), 7: bp("🥚") });
+  figTagFacts(1, "tn1-body", { 0: bp("🧒"), 1: bp("🧒"), 2: bp("🧒"), 3: bp("🧒"), 4: bp("🥗"), 5: bp("🏃"), 6: bp("🚫"), 7: bp("🚿") });
+  figTagFacts(1, "tn1-sky", { 0: bp("☁️"), 1: bp("🌃"), 2: bp("🌧️"), 3: bp("☀️"), 4: bp("❄️"), 5: bp("🌩️"), 6: bp("☀️") });
+  figTagFacts(1, "an1-instruments", { 0: function () { return shapeSVG("tamgiac", "#f2b134"); }, 1: bp("🪵"), 2: bp("🥁"), 3: bp("🥁"), 4: bp("🎵"), 5: bp("🔊") });
+  figTagFacts(1, "mt1-shapes", { 0: bp("⚽"), 1: bp("🎁"), 2: bp("🥫"), 3: bp("☀️"), 4: bp("🏠"), 5: bp("🎨") });
+  figTagFacts(1, "mt1-mix", { 0: mixSVG("#e03131", "#f2c531"), 1: mixSVG("#f2c531", "#3b82c4"), 2: mixSVG("#e03131", "#3b82c4") });
+  figTagFacts(1, "hd1-hello", { 0: bp("👋"), 1: bp("📚"), 2: bp("🤝"), 3: bp("🎒") });
+  figTagFacts(1, "hd1-school", { 0: bp("🙋"), 1: bp("🤝"), 2: bp("🇻🇳"), 3: bp("💐"), 4: bp("🏫") });
+  figTagFacts(1, "hd1-safe", { 0: bp("🛡️"), 1: bp("🏫"), 2: bp("⚠️"), 3: bp("🚫"), 4: bp("🤝") });
+  figTagFacts(1, "hd1-tet", { 0: bp("🧹"), 1: bp("🧧"), 2: bp("🌸"), 3: bp("🧼"), 4: bp("🧣"), 5: bp("🥗") });
+  figTagFacts(1, "hd1-env", { 0: bp("🗑️"), 1: bp("🌸"), 2: bp("💧"), 3: bp("🤝"), 4: bp("🏡"), 5: bp("💧") });
 })();

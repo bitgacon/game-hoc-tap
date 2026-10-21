@@ -191,7 +191,70 @@ var GT_RIDDLES = [
   { g: "Con người & nghề", q: "Mọc trên đầu như rừng nhỏ, đen nhánh, cắt ngắn rồi lại mọc dài ra.", a: "Mái tóc", w: ["Đám cỏ", "Lông mày", "Cái mũ"], ex: "Tóc mọc trên đầu, cắt đi vẫn mọc dài lại; cỏ mọc ở đất chứ không ở trên đầu." },
   { g: "Con người & nghề", q: "Quanh năm chân lấm tay bùn, cày sâu cuốc bẫm cho lúa vàng đầy đồng. Là ai?", a: "Bác nông dân", w: ["Bác thợ mộc", "Cô giáo", "Chú công nhân"], ex: "Nông dân làm ruộng, chân tay lấm bùn đất, cày cuốc để có mùa lúa vàng." },
   { g: "Con người & nghề", q: "Mỗi sáng đến lớp với đàn em nhỏ, dạy chữ, dạy điều hay. Là ai?", a: "Cô giáo", w: ["Cô y tá", "Bác thợ may", "Cô bán hàng"], ex: "Cô giáo (thầy giáo) dạy học ở lớp mỗi ngày, dạy chữ và dạy điều hay cho học sinh." },
-  { g: "Con người & nghề", q: "Tay cầm cưa, búa, đóng bàn đóng ghế cho mọi nhà. Là ai?", a: "Bác thợ mộc", w: ["Bác thợ xây", "Bác nông dân", "Chú thợ điện"], ex: "Thợ mộc làm nghề gỗ: cưa, bào, đóng bàn ghế; thợ xây thì xây nhà bằng gạch, vữa." }
+  { g: "Con người & nghề", q: "Tay cầm cưa, búa, đóng bàn đóng ghế cho mọi nhà. Là ai?", a: "Bác thợ mộc", w: ["Bác thợ xây", "Bác nông dân", "Chú thợ điện"], ex: "Thợ mộc làm nghề gỗ: cưa, bào, đóng bàn ghế; thợ xây thì xây nhà bằng gạch, vữa." },
+  /* ===== BỔ SUNG ĐỢT 1 (v22, 2026-10-20): 60 câu đố dân gian xác thực,
+     mỗi câu đối chiếu ít nhất 2 tuyển tập đã xuất bản — xem nhật ký
+     ~/workspace/game-hoc-tap/bo-sung-v22/NHAT-KY-DO-VUI-LICH-SU-V22.md ===== */
+  { g: "Đồ vật", q: "Đầu đuôi vuông vắn như nhau, thân chia nhiều đốt rất mau rất đều, tính tình chân thực đáng yêu, muốn biết dài ngắn mọi điều có em. Là cái gì?", a: "Cái thước kẻ", w: ["Cái bút chì", "Quyển sách", "Cái bảng đen"], ex: "Thước kẻ thân thẳng, chia đều các vạch số để đo độ dài." },
+  { g: "Đồ vật", q: "Cày trên đồng ruộng trắng phau, khát xuống uống nước giếng sâu đen ngòm. Là cái gì?", a: "Cái bút mực", w: ["Cái bút chì", "Cái cuốc", "Cây kim may"], ex: "Bút mực 'cày' trên trang giấy trắng, 'uống nước' là chấm vào lọ mực đen." },
+  { g: "Đồ vật", q: "Da trắng muốt, ruột trắng tinh, bạn với học sinh, thích cọ đầu vào bảng. Là cái gì?", a: "Viên phấn", w: ["Cái bảng đen", "Quyển sách", "Cái bút chì"], ex: "Viên phấn trắng viết lên bảng, càng viết càng mòn dần." },
+  { g: "Đồ vật", q: "Thân dài lưỡi cứng là ta, hữu thủ vô túc, đố là cái chi. Là cái gì?", a: "Cái cuốc", w: ["Cái cày", "Cái liềm", "Cái bừa"], ex: "Cuốc có lưỡi sắt cứng và cán dài; 'hữu thủ vô túc' nghĩa là có tay cầm mà không có chân." },
+  { g: "Đồ vật", q: "Cái dạng quan anh xấu lạ lùng, khom lưng uốn gối cả đời cong, lưỡi to ra sức mà ăn khoét, đành phải theo đuôi có thẹn không. Là cái gì?", a: "Cái cày", w: ["Cái cuốc", "Cái bừa", "Cái liềm"], ex: "Cái cày cong lưng đi theo sau người và trâu, lưỡi cày xới khoét đất ruộng." },
+  { g: "Đồ vật", q: "Đầu tròn lông lốc, khi thì ném xuống, khi tung lên trời, lúc bị người đấm, lúc bị người đá, trẻ già tíu tít ngoài sân. Là cái gì?", a: "Quả bóng", w: ["Cái diều", "Tàu hỏa", "Cái trống"], ex: "Quả bóng tròn, được đá, ném, tung lên trời trong các trò chơi ngoài sân." },
+  { g: "Đồ vật", q: "Tối ngày lo việc nước, giúp sự sống con người, một thân đơn chiếc quanh đời, vui thời ai biết, buồn thời ai hay. Là cái gì?", a: "Cái gầu múc nước", w: ["Cái ấm nước", "Cái phích nước", "Cái giếng"], ex: "Gầu múc nước giếng lên cho người dùng, lặng lẽ làm việc quanh năm." },
+  { g: "Đồ vật", q: "Một xương sống, một đống xương sườn. Là cái gì?", a: "Cái lược", w: ["Cái chổi", "Cây kim may", "Cái kéo"], ex: "Lược có một sống lưng và nhiều răng xếp đều như xương sườn." },
+  { g: "Đồ vật", q: "Con gì có mũi có lưỡi hẳn hoi, có sống không chết, người đời cầm luôn. Là cái gì?", a: "Con dao", w: ["Cái kéo", "Cái liềm", "Cái cuốc"], ex: "Dao có mũi nhọn, lưỡi sắc và sống dao; chữ 'sống' ở đây là sống dao, không phải sống chết." },
+  { g: "Đồ vật", q: "Dong dỏng ba bốn thước dài, đầu đeo cái mỏ, bụng gài then ngang, bốn chân em đứng sẵn sàng, nằm ra cho chắc để chàng đạp đuôi. Là cái gì?", a: "Cái cối xay gạo", w: ["Cái cày", "Cái thớt", "Cái gầu múc nước"], ex: "Cối xay gạo bằng gỗ có bốn chân, có cần đạp và tay quay để xay thóc thành gạo." },
+  { g: "Đồ vật", q: "Vốn nó thì ở rừng xanh, đem về hạ bạn kết thành một đôi, ra đường kẻ trước người sau, về nhà thì ấp lấy nhau mà nằm. Là gì?", a: "Đôi quang gánh", w: ["Đôi đũa", "Đôi dép", "Cái võng"], ex: "Quang gánh làm từ tre (vốn ở rừng xanh), gồm đòn gánh và đôi quang đựng đồ ở hai đầu." },
+  { g: "Đồ vật", q: "Cây gì tích tịch tình tang, hòa theo tiếng hát rộn vang cả nhà. Là cái gì?", a: "Cây đàn", w: ["Cái trống", "Cái diều", "Cái quạt tay"], ex: "Tiếng đàn 'tích tịch tình tang' đệm theo tiếng hát cho cả nhà thêm vui." },
+  { g: "Đồ vật", q: "Có răng mà chẳng có mồm, nhai cỏ nhồn nhồn, cơm chẳng chịu ăn. Là cái gì?", a: "Cái liềm", w: ["Cái cuốc", "Cái lược", "Cái kéo"], ex: "Liềm có răng cưa sắc, dùng để cắt cỏ, gặt lúa chứ không phải để ăn cơm." },
+  { g: "Đồ vật", q: "Cái gì mắt mũi biến đâu, có mũ đội đầu, lại có hai tai, mình tôi chịu lửa rất tài, đến khi nấu nướng ai ai cũng dùng. Là cái gì?", a: "Cái nồi", w: ["Cái ấm nước", "Cái thớt", "Cái phích nước"], ex: "Nồi có hai quai (tai), đội vung (mũ), ngồi trên lửa để nấu nướng." },
+  { g: "Đồ vật", q: "Đi nhăn răng, về cũng nhăn răng. Là cái gì?", a: "Cái bừa", w: ["Cái cày", "Cái cuốc", "Cái lược"], ex: "Bừa có hàng răng sắt, kéo đi kéo về trên ruộng cho đất tơi xốp." },
+  { g: "Đồ vật", q: "Thân bằng gỗ, mặt bằng da, hễ động đến là kêu la, gọi bạn tới, tiễn bạn về, đứng đầu hè cho người đánh. Là cái gì?", a: "Cái trống", w: ["Cây đàn", "Cái ghế", "Cái cầu"], ex: "Trống thân gỗ, mặt bịt da, đánh vào là kêu vang, gọi mọi người tụ họp." },
+  { g: "Đồ vật", q: "Đến đây hỏi khách tương phùng, con gì mọc cánh dạo cùng nước non. Là cái gì?", a: "Thuyền buồm", w: ["Tàu hỏa", "Cái diều", "Cái cầu"], ex: "Thuyền buồm căng buồm như đôi cánh, lướt trên sông nước nhờ sức gió." },
+  { g: "Đồ vật", q: "Vừa bằng cái nong, cả làng đong chẳng hết. Là cái gì?", a: "Cái giếng", w: ["Cái hố", "Cái gầu múc nước", "Cái ấm nước"], ex: "Giếng làng miệng tròn như cái nong, nước múc cho cả làng dùng mãi không cạn." },
+  { g: "Đồ vật", q: "Cây gì không lá, không hoa, sáng đêm sinh nhật cả nhà vây quanh. Là cái gì?", a: "Cây nến", w: ["Cái đèn dầu", "Cây đàn", "Cái ô"], ex: "Nến sinh nhật không lá không hoa, thắp sáng giữa chiếc bánh cho cả nhà quây quần." },
+  { g: "Đồ vật", q: "Có chân mà chẳng biết đi, quanh năm suốt tháng đứng ì một nơi, bạn bè với chiếc chăn thôi, đỡ người nằm ngủ thảnh thơi đêm ngày. Là cái gì?", a: "Cái giường", w: ["Cái ghế", "Cái võng", "Cái thang"], ex: "Giường có bốn chân đứng yên một chỗ, nâng đỡ người nằm ngủ mỗi đêm." },
+  { g: "Con vật", q: "Bốn cột tứ trụ, người ngự lên trên, gươm bạc hai bên, chầu vua thượng đế. Là con gì?", a: "Con voi", w: ["Con trâu", "Con ngựa", "Con hổ"], ex: "Voi có bốn chân to như cột đình, đôi ngà trắng như gươm bạc, trên lưng chở được người." },
+  { g: "Con vật", q: "Thân em nửa chuột, nửa chim, ngày treo chân ngủ, tối tìm mồi bay, trời cho tai mắt giỏi thay, tối đen tối mịt cứ bay vù vù. Là con gì?", a: "Con dơi", w: ["Con cú mèo", "Con bướm", "Chim én"], ex: "Dơi là thú mà có cánh như chim, ban ngày treo ngược ngủ, ban đêm bay đi bắt mồi." },
+  { g: "Con vật", q: "Con gì đôi cánh mỏng tanh, bay cao bay thấp báo rằng nắng mưa. Là con gì?", a: "Con chuồn chuồn", w: ["Con bướm", "Con ong", "Con dơi"], ex: "Chuồn chuồn bay thấp thường báo trời sắp mưa, bay cao báo nắng." },
+  { g: "Con vật", q: "Vừa bằng que diêm, khi chìm khi nổi. Là con gì?", a: "Con đỉa", w: ["Con muỗi", "Con giun", "Con ốc sên"], ex: "Đỉa nhỏ như que diêm, sống dưới nước, khi chìm khi nổi để tìm mồi." },
+  { g: "Con vật", q: "Con gì không vú mà nuôi con. Là con gì?", a: "Con gà mái", w: ["Con gà trống", "Con vịt", "Con gà con"], ex: "Gà mái không có vú nhưng ấp trứng và dẫn đàn con đi kiếm mồi." },
+  { g: "Con vật", q: "Phục phà phục phịch, chân quỳ tay chống. Là con gì?", a: "Con cóc", w: ["Con ếch", "Con rùa", "Con cua"], ex: "Cóc ngồi phục phịch, chân trước chống xuống đất như đang quỳ." },
+  { g: "Con vật", q: "Không cày mà xới. Là con gì?", a: "Con giun", w: ["Con kiến", "Con đỉa", "Con rắn"], ex: "Giun đất không có cày nhưng đào xới làm đất tơi xốp cho cây trồng." },
+  { g: "Con vật", q: "Một lòng khuya sớm chuyên cần, trách người vô nghĩa, sao chê ngu đần. Là con gì?", a: "Con bò", w: ["Con trâu", "Con ngựa", "Con dê"], ex: "Bò hiền lành, chăm chỉ kéo xe và cho sữa; câu đố trách người hay chê bò là không công bằng." },
+  { g: "Con vật", q: "Cái mỏ xinh xinh, hai chân tí xíu, lông vàng mát dịu, 'Chiếp! Chiếp!' suốt ngày. Là con gì?", a: "Con gà con", w: ["Con vịt", "Con gà mái", "Chim sơn ca"], ex: "Gà con lông vàng óng, kêu 'chiếp chiếp' theo mẹ đi kiếm mồi." },
+  { g: "Con vật", q: "Vừa bằng lục lạc, trong nạc ngoài xương. Là cái gì?", a: "Trứng gà", w: ["Con gà con", "Con ốc sên", "Con cá"], ex: "Trứng gà: vỏ cứng như 'xương' ở ngoài, lòng trắng lòng đỏ như 'nạc' ở trong." },
+  { g: "Con vật", q: "Cổ cao cao, cẳng cao cao, chân đen cánh trắng ra vào đồng xanh, cảnh quê thêm đẹp bức tranh, sao đành chịu tiếng ma lanh nhử mồi. Là con gì?", a: "Con cò", w: ["Con vịt", "Con gà trống", "Con công"], ex: "Cò cổ dài, chân dài, cánh trắng, lội ruộng bắt tép cá; 'ma lanh nhử mồi' là tiếng xưa đùa cò tham ăn." },
+  { g: "Con vật", q: "Vừa bằng hạt đỗ, ăn giỗ cả làng. Là con gì?", a: "Con ruồi", w: ["Con kiến", "Con ong", "Con muỗi"], ex: "Ruồi bé như hạt đỗ nhưng nhà nào có giỗ cũng thấy nó bu vào mâm cơm." },
+  { g: "Con vật", q: "Khổng Minh Gia Cát lập bát quái trận đồ, đứng giữa dinh cơ chờ các trấn đem mình đến nạp. Là con gì?", a: "Con nhện", w: ["Con kiến", "Con ong", "Con mọt"], ex: "Nhện giăng lưới như bày trận bát quái, ngồi giữa chờ côn trùng tự chui vào nộp mạng." },
+  { g: "Con vật", q: "Bằng sợi chỉ, rủ rỉ trong bụi. Là con gì?", a: "Con muỗi", w: ["Con ruồi", "Con kiến", "Con đom đóm"], ex: "Muỗi nhỏ như sợi chỉ, vo ve rủ rỉ trong bụi cây và góc nhà." },
+  { g: "Con vật", q: "Mình bằng hạt gạo, mỏ bằng hạt kê, hỏi đi đâu về, đi làm thợ mộc. Là con gì?", a: "Con mọt", w: ["Con kiến", "Con muỗi", "Con dế"], ex: "Mọt gỗ bé xíu, đục khoét đồ gỗ như người thợ mộc làm nhà." },
+  { g: "Con vật", q: "Con gì vốn rất hiền lành, xưa được cô Tấm dỗ dành nuôi cơm. Là con gì?", a: "Cá bống", w: ["Con cá", "Con tôm", "Con cua"], ex: "Trong truyện Tấm Cám, cô Tấm nuôi cá bống và cho cá ăn cơm mỗi ngày." },
+  { g: "Con vật", q: "Vừa bằng nắm tay, tiếng ca lảnh lót. Là con gì?", a: "Chim sơn ca", w: ["Con vẹt", "Con công", "Chim én"], ex: "Sơn ca nhỏ bằng nắm tay nhưng hót rất hay và lảnh lót." },
+  { g: "Con vật", q: "Lông vằn lông vện mắt xanh, dáng đi uyển chuyển nhe nanh tìm mồi, thỏ nai gặp phải hỡi ôi, muông thú khiếp sợ tôn ngôi chúa rừng. Là con gì?", a: "Con hổ", w: ["Con ngựa", "Con voi", "Con rắn"], ex: "Hổ lông vằn, mắt xanh, là chúa sơn lâm khiến muông thú khiếp sợ." },
+  { g: "Con vật", q: "Chim gì liệng tựa thoi đưa, báo mùa xuân đẹp say sưa giữa trời. Là con gì?", a: "Chim én", w: ["Chim sơn ca", "Con vẹt", "Con cú mèo"], ex: "Én bay liệng nhanh như con thoi đưa, bay về nhiều vào mùa xuân." },
+  { g: "Con vật", q: "Con gì kêu 'be be', đầu có đôi sừng nhỏ, thích ăn nhiều lá cỏ, mang sữa ngọt cho người. Là con gì?", a: "Con dê", w: ["Con bò", "Con thỏ", "Con lợn"], ex: "Dê kêu 'be be', có đôi sừng, thích ăn lá cỏ và cho sữa." },
+  { g: "Cây & quả", q: "Da cóc mà bọc bột lọc, bột lọc mà bọc hòn than. Là quả gì?", a: "Quả nhãn", w: ["Quả vải", "Quả mít", "Quả ổi"], ex: "Nhãn vỏ sần như da cóc, cùi trắng trong (bột lọc) bọc hạt đen (hòn than)." },
+  { g: "Cây & quả", q: "Da cóc mà bọc bột lọc, bột lọc mà bọc hòn son. Là quả gì?", a: "Quả vải", w: ["Quả nhãn", "Quả na", "Quả gấc"], ex: "Vải cũng vỏ sần, cùi trắng bọc hạt, nhưng hạt nâu đỏ như 'hòn son' chứ không đen như nhãn." },
+  { g: "Cây & quả", q: "Hè về áo đỏ như son, hè đi thay lá xanh non mượt mà, bao nhiêu tay toả rộng ra, như vẫy như đón bạn ta đến trường. Là cây gì?", a: "Cây phượng", w: ["Cây lúa", "Hoa đào", "Cây cau"], ex: "Phượng nở hoa đỏ rực mỗi mùa hè ở sân trường, tán lá xoè rộng như tay vẫy." },
+  { g: "Cây & quả", q: "Thân tròn nhiều đốt, lá tựa gươm đao, ruột đặc ngọt ngào. Là cây gì?", a: "Cây mía", w: ["Cây tre", "Cây cau", "Cây lúa"], ex: "Mía thân chia nhiều đốt, lá dài nhọn như gươm, ruột chứa nước ngọt." },
+  { g: "Cây & quả", q: "Ruột chấm vừng đen, ăn vào mà xem, vừa bổ vừa mát. Là quả gì?", a: "Quả thanh long", w: ["Quả dưa hấu", "Quả na", "Quả mít"], ex: "Thanh long ruột trắng (hoặc đỏ) điểm hạt đen li ti như vừng, ăn mát và bổ." },
+  { g: "Cây & quả", q: "Trên mặt đất mẹ vươn mình, đàn con sớm tối ẩn mình đất sâu. Là cây gì?", a: "Cây khoai lang", w: ["Cây lúa", "Cây tre", "Rau sam"], ex: "Dây khoai lang bò trên mặt đất, còn củ (đàn con) nằm sâu trong đất." },
+  { g: "Cây & quả", q: "Củ gì đo đỏ, thỏ rất thích ăn. Là củ gì?", a: "Củ cà rốt", w: ["Quả bí đỏ", "Quả ớt", "Quả sim"], ex: "Cà rốt là củ màu đỏ cam, món ăn thỏ rất thích gặm." },
+  { g: "Cây & quả", q: "Quả gì nho nhỏ, chín đỏ như hoa, tươi đẹp vườn nhà, mà cay xè lưỡi. Là quả gì?", a: "Quả ớt", w: ["Quả sim", "Quả gấc", "Quả thị"], ex: "Ớt quả nhỏ, chín đỏ đẹp nhưng ăn vào cay xè lưỡi." },
+  { g: "Cây & quả", q: "Hoa gì khi nở trên cành, già chui xuống đất để dành nuôi ta. Là hoa gì?", a: "Hoa lạc", w: ["Hoa sen", "Hoa đào", "Quả na"], ex: "Lạc (đậu phộng) ra hoa trên cành, rồi cuống hoa đâm xuống đất kết củ nuôi người." },
+  { g: "Cây & quả", q: "Thân khẳng khiu tóc lơ thơ, nụ cười tươi tắn, đón chờ xuân sang. Là hoa gì?", a: "Hoa đào", w: ["Hoa sen", "Hoa lạc", "Cây phượng"], ex: "Đào thân cành khẳng khiu, nở hoa hồng tươi đón Tết và mùa xuân ở miền Bắc." },
+  { g: "Cây & quả", q: "Quả gì xưa rụng bị bà, hiện ra cô Tấm quét nhà thổi cơm. Là quả gì?", a: "Quả thị", w: ["Quả na", "Quả mít", "Quả cam"], ex: "Trong truyện Tấm Cám, cô Tấm ở trong quả thị, hằng ngày chui ra quét nhà, thổi cơm giúp bà lão." },
+  { g: "Cây & quả", q: "Lá xanh cành đỏ hoa vàng, là là mặt đất, thiếp đố chàng giống ai. Là cây gì?", a: "Rau sam", w: ["Cây lúa", "Cây khoai lang", "Hoa lạc"], ex: "Rau sam thân đỏ, lá xanh, hoa vàng nhỏ, mọc bò sát mặt đất ở ruộng vườn." },
+  { g: "Cây & quả", q: "Vừa bằng đốt tay, thay lay bọng máu, đến mùa tháng sáu, con cháu được ăn. Là quả gì?", a: "Quả sim", w: ["Quả ổi", "Quả thị", "Quả vải"], ex: "Sim quả nhỏ bằng đốt tay, chín tím sẫm vào khoảng tháng sáu, trẻ chăn trâu hay hái ăn." },
+  { g: "Cây & quả", q: "Quả gì nhiều mắt, khi chín nứt ra, ruột trắng nõn nà, hạt đen nhanh nhánh. Là quả gì?", a: "Quả na", w: ["Quả dứa", "Quả mít", "Quả thanh long"], ex: "Na vỏ nhiều múi như mắt, chín thì nứt vỏ, ruột trắng, hạt đen nhánh." },
+  { g: "Cây & quả", q: "Quả gì tròn trục, quanh quả đầy gai, ở trong có hạt đen thui, ruột đỏ chon chót. Là quả gì?", a: "Quả gấc", w: ["Quả mít", "Quả na", "Quả dứa"], ex: "Gấc vỏ có gai mềm, ruột đỏ chót, thường dùng đồ xôi gấc ngày Tết." },
+  { g: "Cây & quả", q: "Cây gì tên sợ người cười, hễ ai chạm phải đang tươi héo liền. Là cây gì?", a: "Cây xấu hổ", w: ["Cây tre", "Cây cau", "Cây lúa"], ex: "Cây xấu hổ (mắc cỡ) hễ bị chạm vào là lá cụp lại như e thẹn." },
+  { g: "Cây & quả", q: "Quả gì có vỏ xanh rì, ruột chia năm múi, nấu canh chua ngon. Là quả gì?", a: "Quả khế", w: ["Quả cam", "Quả na", "Quả thị"], ex: "Khế có năm múi (năm khía), vị chua, thường dùng nấu canh chua cá." },
+  { g: "Thiên nhiên", q: "Hạt gieo tới tấp, rải đều khắp ruộng đồng, nhưng hạt gieo chẳng nảy mầm, để bao hạt khác mừng thầm mọc xanh. Là gì?", a: "Hạt mưa", w: ["Đám mây", "Cầu vồng", "Ngôi sao"], ex: "Hạt mưa rơi xuống ruộng đồng không nảy mầm, nhưng nhờ có mưa mà hạt giống khác nảy mầm xanh tốt." },
+  { g: "Thiên nhiên", q: "Chặt không đứt, bứt không rời, phơi không khô, chụm không đỏ. Là gì?", a: "Nước", w: ["Dòng sông", "Gió", "Biển"], ex: "Nước chặt không đứt, bứt không rời, phơi không khô ngay và đốt không cháy đỏ, vì nước là chất lỏng rất đặc biệt." },
+  { g: "Con người & nghề", q: "Đường ngay thông thống, hai cống hai bên, trên hàng gương, dưới hàng lược. Là gì?", a: "Cái mặt", w: ["Đôi mắt", "Cái mũi", "Mái tóc"], ex: "Mặt người: sống mũi thẳng ('đường ngay'), hai lỗ mũi ('hai cống'), đôi mắt sáng như gương, hàm răng đều như răng lược." }
 ];
 /* ---------- Chủ đề gt-dovui ---------- */
 (function () {
@@ -313,10 +376,25 @@ var GT_EVENTS = [
   /* Vân Đồn: thuyền lương của Trương Văn Hổ bị Trần Khánh Dư diệt TRƯỚC trận Bạch Đằng
      1288 (ở Bạch Đằng bị diệt là thuyền chiến của Ô Mã Nhi). namSo để trống để năm 1288
      vẫn duy nhất cho dòng Trần Hưng Đạo; mã ng "thd" vì thuộc cùng chiến dịch. */
-  { nv: "Trần Khánh Dư", sk: "đánh tan đoàn thuyền lương của Trương Văn Hổ ở Vân Đồn", nam: "năm 1288", namSo: null, noi: "Vân Đồn (nay thuộc Quảng Ninh)", ng: "thd" }
+  { nv: "Trần Khánh Dư", sk: "đánh tan đoàn thuyền lương của Trương Văn Hổ ở Vân Đồn", nam: "năm 1288", namSo: null, noi: "Vân Đồn (nay thuộc Quảng Ninh)", ng: "thd" },
+  /* ===== BỔ SUNG ĐỢT 1 (v22, 2026-10-20): 10 sự kiện/danh nhân THẾ GIỚI.
+     Chuẩn kiểm chứng: Từ điển Bách khoa Việt Nam, kiểm chéo Britannica Kids
+     (từng dòng có 2 nguồn trong nhật ký NHAT-KY-DO-VUI-LICH-SU-V22.md).
+     Mọi namSo đều duy nhất trong bảng để bộ sinh năm không mơ hồ; sk không
+     chứa tên nv (chống rò đáp án); mã ng mới, không trùng chủ thể cũ. ===== */
+  { nv: "Yuri Gagarin", sk: "người đầu tiên bay vào vũ trụ trên tàu Phương Đông 1", nam: "ngày 12 tháng 4 năm 1961", namSo: 1961, noi: "sân bay vũ trụ Baikonur (Kazakhstan)", ng: "gagarin" },
+  { nv: "Neil Armstrong", sk: "người đầu tiên đặt chân lên Mặt Trăng cùng tàu Apollo 11", nam: "ngày 21 tháng 7 năm 1969", namSo: 1969, noi: "Mặt Trăng", ng: "armstrong" },
+  { nv: "Anh em nhà Wright", sk: "thực hiện chuyến bay bằng máy bay đầu tiên trong lịch sử", nam: "ngày 17 tháng 12 năm 1903", namSo: 1903, noi: "Kitty Hawk (Mĩ)", ng: "wright" },
+  { nv: "Alexander Graham Bell", sk: "phát minh ra chiếc điện thoại đầu tiên", nam: "năm 1876", namSo: 1876, noi: "Boston (Mĩ)", ng: "bell" },
+  { nv: "Charles Darwin", sk: "công bố thuyết tiến hóa trong cuốn 'Nguồn gốc các loài'", nam: "năm 1859", namSo: 1859, noi: "Luân Đôn (Anh)", ng: "darwin" },
+  { nv: "Isaac Newton", sk: "công bố định luật vạn vật hấp dẫn trong cuốn Principia", nam: "năm 1687", namSo: 1687, noi: "nước Anh", ng: "newton" },
+  { nv: "Christopher Columbus", sk: "đoàn thám hiểm đến được châu Mỹ, mở ra thời kì khám phá lớn", nam: "ngày 12 tháng 10 năm 1492", namSo: 1492, noi: "đảo San Salvador (vùng biển Caribe)", ng: "columbus" },
+  { nv: null, sk: "Thế vận hội Ô-lim-pích hiện đại đầu tiên được tổ chức", nam: "năm 1896", namSo: 1896, noi: "Athens (Hi Lạp)", ng: null },
+  { nv: null, sk: "khánh thành tháp Eiffel nhân Hội chợ thế giới", nam: "năm 1889", namSo: 1889, noi: "thành phố Pari (Pháp)", ng: null },
+  { nv: "Galileo Galilei", sk: "dùng kính viễn vọng tự chế quan sát Mặt Trăng và bầu trời", nam: "năm 1609", namSo: 1609, noi: "thành phố Padua (Ý)", ng: "galileo" }
 ];
 
-/* ---------- 12 THẺ KHÁM PHÁ (bài kể + hộp sự kiện + câu hỏi gắn thẻ) ---------- */
+/* ---------- 14 THẺ KHÁM PHÁ (bài kể + hộp sự kiện + câu hỏi gắn thẻ; 12 thẻ Việt Nam + 2 thẻ thế giới bổ sung đợt 1 v22) ---------- */
 var GT_CARDS = [
   { id: "gt-the-hungvuong", icon: "👑", title: "Thời Hùng Vương – Âu Lạc: buổi đầu dựng nước",
     nam: "Khoảng thế kỉ VII TCN – năm 208 TCN", noi: "Phong Châu – Cổ Loa", nhanvat: "Các vua Hùng, An Dương Vương",
@@ -428,6 +506,31 @@ GT_CARDS.push(
       { q: "Chiến thắng Bạch Đằng năm 981 do ai chỉ huy?", a: "Lê Hoàn", w: ["Ngô Quyền", "Trần Hưng Đạo", "Lý Thường Kiệt"], ex: "Vua Lê Hoàn (Lê Đại Hành) đánh thắng quân Tống năm 981." },
       { q: "Cả ba lần thắng giặc trên sông Bạch Đằng đều dùng chung kế sách gì?", a: "Đóng cọc ngầm dưới lòng sông", w: ["Đốt thuyền cỏ ban đêm", "Đào hào vây kín thành", "Dùng voi chiến đạp giặc"], ex: "Kế bãi cọc ngầm lợi dụng thủy triều là 'đặc sản' của dòng sông Bạch Đằng lịch sử." },
       { q: "Chiến thắng Bạch Đằng năm 938 mở ra điều gì cho đất nước?", a: "Kết thúc thời Bắc thuộc, mở ra độc lập lâu dài", w: ["Lập ra nhà Lê sơ", "Buộc Pháp kí hiệp định", "Thống nhất hai miền"], ex: "Thắng lợi năm 938 của Ngô Quyền chấm dứt hơn một nghìn năm Bắc thuộc." }
+    ] }
+);
+
+/* ===== BỔ SUNG ĐỢT 1 (v22, 2026-10-20): 2 THẺ THẾ GIỚI — truyện viết mới
+   từ dữ kiện đã kiểm chứng 2 nguồn (Từ điển Bách khoa Việt Nam / Britannica
+   Kids / NASA StarChild), xem nhật ký NHAT-KY-DO-VUI-LICH-SU-V22.md.
+   Tổng thẻ: 12 → 14; các chỗ hiển thị số thẻ tính theo GT_CARDS.length. ===== */
+GT_CARDS.push(
+  { id: "gt-the-gagarin", icon: "🚀", title: "Yuri Gagarin — người đầu tiên bay vào vũ trụ",
+    nam: "Ngày 12 tháng 4 năm 1961", noi: "Sân bay vũ trụ Baikonur (nay thuộc Kazakhstan)", nhanvat: "Yuri Gagarin (Liên Xô)",
+    story: "Yuri Gagarin sinh năm 1934 trong một gia đình thợ mộc ở nước Nga (khi ấy thuộc Liên Xô). Anh học nghề, rồi vào Không quân và trở thành phi công. Nhờ khỏe mạnh, bình tĩnh và học giỏi, Gagarin được chọn vào nhóm nhà du hành vũ trụ đầu tiên của Liên Xô. Sáng ngày 12 tháng 4 năm 1961, tại sân bay vũ trụ Baikonur, con tàu Phương Đông 1 rời bệ phóng, đưa Gagarin bay một vòng quanh Trái Đất trong 108 phút. Từ trên cao, anh là người đầu tiên được nhìn thấy Trái Đất tròn, xanh đẹp từ ngoài vũ trụ. Chuyến bay thành công tốt đẹp: Gagarin trở về an toàn và trở thành ngôi sao nổi tiếng khắp thế giới. Ngày 12 tháng 4 về sau được chọn là Ngày quốc tế du hành vũ trụ, để nhớ mãi chuyến bay đầu tiên của con người lên các vì sao.",
+    qs: [
+      { q: "Chuyến bay lịch sử của Gagarin diễn ra vào ngày nào?", a: "Ngày 12 tháng 4 năm 1961", w: ["Ngày 21 tháng 7 năm 1969", "Ngày 17 tháng 12 năm 1903", "Ngày 3 tháng 2 năm 1930"], ex: "Ngày 12-4-1961; về sau ngày này là Ngày quốc tế du hành vũ trụ." },
+      { q: "Con tàu đưa Gagarin bay vào vũ trụ tên là gì?", a: "Phương Đông 1", w: ["Apollo 11", "Flyer I", "Sputnik 1"], ex: "Tàu Phương Đông 1 (Vostok 1) của Liên Xô, phóng từ sân bay vũ trụ Baikonur." },
+      { q: "Chuyến bay vòng quanh Trái Đất của Gagarin kéo dài khoảng bao lâu?", a: "108 phút", w: ["108 giờ", "12 phút", "24 giờ"], ex: "Chuyến bay kéo dài 108 phút, con tàu bay đúng một vòng quanh Trái Đất." },
+      { q: "Gagarin là nhà du hành vũ trụ của nước nào?", a: "Liên Xô", w: ["Mĩ", "Anh", "Pháp"], ex: "Gagarin là phi công và nhà du hành vũ trụ của Liên Xô." }
+    ] },
+  { id: "gt-the-wright", icon: "✈️", title: "Anh em nhà Wright — chuyến bay đầu tiên trong lịch sử",
+    nam: "Ngày 17 tháng 12 năm 1903", noi: "Kitty Hawk (bang Bắc Carolina, Mĩ)", nhanvat: "Orville Wright và Wilbur Wright",
+    story: "Hai anh em Wilbur và Orville Wright ở nước Mĩ vốn mở tiệm chế tạo và sửa xe đạp, nhưng trong lòng luôn mơ ước bay lên trời như chim. Sau nhiều năm miệt mài thử nghiệm với diều và tàu lượn, hai anh em tự chế tạo chiếc máy bay có động cơ đầu tiên của mình, đặt tên là Flyer I, với khung gỗ và cánh bọc vải. Họ chọn bãi cát Kitty Hawk làm nơi thử vì ở đó gió thổi đều và cát mềm, máy bay rơi xuống cũng đỡ hỏng. Sáng ngày 17 tháng 12 năm 1903, Orville nằm sấp điều khiển Flyer I cất cánh, bay được 12 giây — chuyến bay bằng máy bay đầu tiên thành công của nhân loại. Ngay buổi sáng hôm ấy, hai anh em thay nhau bay thêm ba lần nữa; lần bay cuối cùng của Wilbur kéo dài tới 59 giây. Giấc mơ bay của con người đã thành sự thật.",
+    qs: [
+      { q: "Chuyến bay bằng máy bay đầu tiên thành công diễn ra vào năm nào?", a: "Năm 1903", w: ["Năm 1961", "Năm 1889", "Năm 1876"], ex: "Ngày 17-12-1903 tại bãi cát Kitty Hawk, nước Mĩ." },
+      { q: "Ai là người lái chuyến bay đầu tiên kéo dài 12 giây?", a: "Orville Wright", w: ["Wilbur Wright", "Neil Armstrong", "Yuri Gagarin"], ex: "Orville lái chuyến bay đầu (12 giây); Wilbur lái chuyến cuối trong ngày, dài 59 giây." },
+      { q: "Chiếc máy bay đầu tiên của anh em nhà Wright tên là gì?", a: "Flyer I", w: ["Phương Đông 1", "Apollo 11", "Sputnik 1"], ex: "Flyer I có khung gỗ, cánh bọc vải và động cơ xăng do hai anh em tự chế." },
+      { q: "Trước khi chế tạo máy bay, hai anh em nhà Wright làm nghề gì?", a: "Chế tạo và sửa xe đạp", w: ["Lái tàu hỏa", "Đóng thuyền", "May quần áo"], ex: "Tiệm xe đạp giúp hai anh em có tay nghề cơ khí và dành dụm tiền cho thí nghiệm bay." }
     ] }
 );
 
@@ -664,8 +767,8 @@ function gtRenderLichSu() {
   var nUnlocked = Object.keys(cState.unlocked || {}).length;
   var html = '<div class="topbar"><div><h2>🏯 Tìm hiểu lịch sử</h2><p>Đọc các câu chuyện theo dòng thời gian rồi thử sức với ngân hàng câu hỏi từ bảng sự kiện đã kiểm chứng.</p></div></div>';
   window.__GT_TOPICS.forEach(function (t) { if (t.id === "gt-lichsu") html += gtTopicCardHtml(t); });
-  html += '<div class="btn-row" style="margin:10px 0"><button class="btn ghost" id="gt-open-album">📖 Album thẻ anh hùng — Đã sưu tập ' + nUnlocked + '/12</button></div>';
-  html += '<h3 class="gt-cards-title">🗺️ Hành trình lịch sử qua 12 thẻ khám phá</h3><div class="gt-card-grid">';
+  html += '<div class="btn-row" style="margin:10px 0"><button class="btn ghost" id="gt-open-album">📖 Album thẻ anh hùng — Đã sưu tập ' + nUnlocked + '/' + GT_CARDS.length + '</button></div>';
+  html += '<h3 class="gt-cards-title">🗺️ Hành trình lịch sử qua ' + GT_CARDS.length + ' thẻ khám phá</h3><div class="gt-card-grid">';
   GT_CARDS.forEach(function (c, i) {
     var mark = cState.unlocked[c.id] ? ' <span class="gt-card-mark">🃏 Đã sưu tập</span>' : (cState.viewed[c.id] ? ' <span class="gt-card-mark">👁 Đã mở</span>' : "");
     html += '<button class="gt-explore-card" data-gt-card="' + gtEsc(c.id) + '"><span class="gt-explore-ic">' + c.icon + '</span><span class="gt-explore-tx"><b>' + (i + 1) + ". " + gtEsc(c.title) + '</b><small>' + gtEsc(c.nam) + " · " + gtEsc(c.noi) + "</small>" + mark + "</span></button>";
@@ -914,7 +1017,7 @@ function gtRenderAlbum() {
   var c = cardsLoad();
   var n = Object.keys(c.unlocked).length;
   var html = '<div class="topbar"><div><h2>📖 Album thẻ anh hùng</h2><p>Mở một thẻ khám phá trong mục Tìm hiểu lịch sử và đạt bài quiz kèm theo (ít nhất 3/4 câu đúng ngay lần đầu) để sưu tập thẻ vào album.</p></div></div>';
-  html += '<p class="gt-cards-title" style="margin-top:4px">Đã sưu tập ' + n + '/12 thẻ' + (n === 12 ? " — đủ bộ rồi, giỏi quá! 🃏" : "") + "</p>";
+  html += '<p class="gt-cards-title" style="margin-top:4px">Đã sưu tập ' + n + '/' + GT_CARDS.length + ' thẻ' + (n === GT_CARDS.length ? " — đủ bộ rồi, giỏi quá! 🃏" : "") + "</p>";
   html += '<div class="album-grid">';
   GT_CARDS.forEach(function (cd, i) {
     if (c.unlocked[cd.id]) {

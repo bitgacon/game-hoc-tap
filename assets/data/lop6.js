@@ -217,7 +217,8 @@ function shape6SVG(kind) {
     "thangcan": '<polygon points="65,45 135,45 165,125 35,125" ' + st + "/>",
     "tron": '<circle cx="100" cy="85" r="58" ' + st + "/>"
   };
-  return '<svg viewBox="0 0 200 170" style="width:min(240px,70vw)">' + (shapes[kind] || shapes.tron) + "</svg>";
+  var NAMES6 = { "tamgiacdeu": "Tam giác đều", "tamgiac": "Tam giác thường", "vuong": "Hình vuông", "chunhat": "Hình chữ nhật", "lucgiac": "Lục giác đều", "ngugiac": "Ngũ giác đều", "thoi": "Hình thoi", "binhhanh": "Hình bình hành", "thangcan": "Hình thang cân", "tron": "Hình tròn" };
+  return '<svg viewBox="0 0 200 170" style="width:min(240px,70vw)"><title>' + (NAMES6[kind] || "") + "</title>" + (shapes[kind] || shapes.tron) + "</svg>";
 }
 var SHAPES6 = [
   ["tamgiacdeu", "Tam giác đều"], ["vuong", "Hình vuông"], ["lucgiac", "Lục giác đều"], ["chunhat", "Hình chữ nhật"],

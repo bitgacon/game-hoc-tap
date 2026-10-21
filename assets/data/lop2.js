@@ -8,13 +8,19 @@
     function g2PreSucc(){
       var n = rand(12, 98), before = Math.random()<0.5;
       var ans = before? n-1 : n+1;
-      return calcMCQ(before? "Số liền trước của "+n+" là số nào?" : "Số liền sau của "+n+" là số nào?", n, ans, 0, 100, (before?"Số liền trước nhỏ hơn 1 đơn vị: ":"Số liền sau lớn hơn 1 đơn vị: ")+n+(before?" − 1 = ":" + 1 = ")+ans);
+      var q = calcMCQ(before? "Số liền trước của "+n+" là số nào?" : "Số liền sau của "+n+" là số nào?", n, ans, 0, 100, (before?"Số liền trước nhỏ hơn 1 đơn vị: ":"Số liền sau lớn hơn 1 đơn vị: ")+n+(before?" − 1 = ":" + 1 = ")+ans);
+      /* Tia số chỉ khoanh và ghi số n đã cho trong đề; hai số kề bên để
+         trống — số liền trước/sau cần tìm không ghi trong hình. */
+      if (Math.random() < 0.8) { var lab = {}; lab[n] = String(n); q.figure = figNumLineSVG(n-2, n+2, { labels: lab, hl: [n] }); }
+      return q;
     }
     function g2TiaSo(){
-      var start = rand(0, 96); var seq=[start,start+1,start+2,start+3]; var miss = pick([1,2]); var ans = seq[miss]; var row="";
-      seq.forEach(function(x,i){ row += i===miss? blankSlot() : '<span class="seq-num">'+x+"</span>"; });
+      var start = rand(0, 96); var seq=[start,start+1,start+2,start+3]; var miss = pick([1,2]); var ans = seq[miss];
       var opts = numOptions(ans, 0, 100, 3);
-      return { kind:"blank", badge:"✏️ Điền vào chỗ trống", prompt:"Điền số còn thiếu trên tia số!", visual:'<div class="seq-row">'+row+"</div>", blankText:String(ans), options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(ans), cols:3 };
+      /* Đợt hình Tiểu học (v22): tia số SVG thật thay hàng số chữ — các số
+         đã cho là dữ kiện, ô thiếu hiện "?" (đúng điều đề hỏi). */
+      var lab = {}; seq.forEach(function(x,i){ lab[x] = i===miss? "?" : String(x); });
+      return { kind:"blank", badge:"✏️ Điền vào chỗ trống", prompt:"Điền số còn thiếu trên tia số!", visual:"", figure: figNumLineSVG(start, start+3, { labels: lab }), blankText:String(ans), options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(ans), cols:3 };
     }
     function g2ThanhPhan(){
       var a = rand(11,60), b = rand(11,30); var sum=a+b;
@@ -25,7 +31,11 @@
       /* B1-sửa lớp nhỏ (2026-10-15): giữ cả hai số trong phạm vi 100 của
          chủ đề (bản cũ a+d có thể tới 115 — "111 hơn 89" lọt vào m2-so100). */
       var a = rand(15,85), d = rand(3,15); var b = a+d;
-      return calcMCQ(b+" hơn "+a+" bao nhiêu đơn vị?", b+" − "+a, d, 0, 40, "Muốn biết hơn nhau bao nhiêu, lấy số lớn trừ số bé: "+b+" − "+a+" = "+d+".");
+      var q = calcMCQ(b+" hơn "+a+" bao nhiêu đơn vị?", b+" − "+a, d, 0, 40, "Muốn biết hơn nhau bao nhiêu, lấy số lớn trừ số bé: "+b+" − "+a+" = "+d+".");
+      /* Tia số ghi hai số đã cho và ngoặc khoảng giữa chúng (dữ kiện);
+         độ dài khoảng (đáp án) không ghi số. Chỉ vẽ khi khoảng đủ hẹp. */
+      if (d <= 10 && Math.random() < 0.7) { var lab = {}; lab[a] = String(a); lab[b] = String(b); q.figure = figNumLineSVG(a-1, b+1, { labels: lab, bracket: [a, b] }); }
+      return q;
     }
     function g2Qua10(add){
       return function(){
@@ -45,9 +55,11 @@
     }
     function g2NhanChia(mul){
       return function(){
-        var table = pick([2,5]); var k = rand(2,9);
-        if (mul) return calcMCQ("Bảng nhân "+table, table+" × "+k+" = ?", table*k, 0, 50, table+" × "+k+" = "+(table*k)+".");
-        var prod = table*k; return calcMCQ("Bảng chia "+table, prod+" : "+table+" = ?", k, 0, 10, "Vì "+table+" × "+k+" = "+prod+" nên "+prod+" : "+table+" = "+k+".");
+        var table = pick([2,5]); var k = rand(2,9), q;
+        /* Đợt hình Tiểu học (v22): mảng chấm / đĩa chia đều là mô hình trực
+           quan của phép nhân, chia (dữ kiện); tích, thương không in. */
+        if (mul) { q = calcMCQ("Bảng nhân "+table, table+" × "+k+" = ?", table*k, 0, 50, table+" × "+k+" = "+(table*k)+"."); if (Math.random() < 0.88) q.figure = figArraySVG(table, k); return q; }
+        var prod = table*k; q = calcMCQ("Bảng chia "+table, prod+" : "+table+" = ?", k, 0, 10, "Vì "+table+" × "+k+" = "+prod+" nên "+prod+" : "+table+" = "+k+"."); if (Math.random() < 0.88) q.figure = figDivGroupsSVG(prod, table); return q;
       };
     }
     function g2So1000Read(){
@@ -55,11 +67,17 @@
       var opts = shuffle([n, hun*100+one*10+ten, ten*100+hun*10+one, n+10]);
       opts = opts.filter(function(x,i){return opts.indexOf(x)===i;});
       while(opts.length<4){ var d=rand(101,999); if(opts.indexOf(d)===-1) opts.push(d); }
-      return { prompt:"Số gồm "+hun+" trăm, "+ten+" chục và "+one+" đơn vị là số nào?", visual:'<div class="expr">'+hun+" trăm "+ten+" chục "+one+" đơn vị</div>", options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(n), cols:4, explain: hun+" trăm = "+(hun*100)+", "+ten+" chục = "+(ten*10)+", cộng thêm "+one+" đơn vị được "+n+"." };
+      var q = { prompt:"Số gồm "+hun+" trăm, "+ten+" chục và "+one+" đơn vị là số nào?", visual:'<div class="expr">'+hun+" trăm "+ten+" chục "+one+" đơn vị</div>", options: opts.map(function(o){return {html:'<span class="opt-num">'+o+"</span>"};}), answer: opts.indexOf(n), cols:4, explain: hun+" trăm = "+(hun*100)+", "+ten+" chục = "+(ten*10)+", cộng thêm "+one+" đơn vị được "+n+"." };
+      /* Khối trăm–chục–đơn vị là cách viết đã cho trong đề dựng thành hình
+         (dữ kiện); số viết bằng chữ số không in trong hình. */
+      if (Math.random() < 0.88) q.figure = figNumBlocksSVG(n);
+      return q;
     }
     function g2TongTram(){
       var hun = rand(1,9), ten = rand(1,9), one = rand(1,9); var n = hun*100+ten*10+one;
-      return mcqQ("Viết số "+n+" thành tổng các trăm, chục, đơn vị:", [hun*100+" + "+one+" + "+ten, ten*100+" + "+hun*10+" + "+one], hun*100+" + "+(ten*10)+" + "+one, n+" = "+(hun*100)+" + "+(ten*10)+" + "+one+".");
+      var q = mcqQ("Viết số "+n+" thành tổng các trăm, chục, đơn vị:", [hun*100+" + "+one+" + "+ten, ten*100+" + "+hun*10+" + "+one], hun*100+" + "+(ten*10)+" + "+one, n+" = "+(hun*100)+" + "+(ten*10)+" + "+one+".");
+      if (Math.random() < 0.75) q.figure = figNumBlocksSVG(n);
+      return q;
     }
     function g2SoSanh1000(){
       var a = rand(120, 980), b = rand(120, 980); while(b===a) b=rand(120,980);
@@ -819,3 +837,69 @@ Object.assign(window.__MATH_KNOWLEDGE_NOTES, {
   if (typeof __labelGrade127 === "function") __labelGrade127(2);
   if (typeof window.__phaseBProcessGrade === "function") window.__phaseBProcessGrade(2);
   if (typeof window.__phaseCompleteGrade === "function") window.__phaseCompleteGrade(2);
+
+/* ================= ĐỢT HÌNH TIỂU HỌC (v22) — Lớp 2 =================
+   Gắn hình theo dữ kiện (figTagFacts của vỏ): hình là dữ kiện/ngữ cảnh của
+   chính câu đó; đáp án không nằm trong hình. */
+(function () {
+  function bp(e) { return '<div class="big-pic">' + e + "</div>"; }
+  function cyl(v) { return function () { return figK5CylSVG(v, 1000, 250); }; }
+  function money(list) { return function () { return figMoneySVG(list); }; }
+  function solid(k) { return function () { return figSolidSVG(k); }; }
+  function solidsRow(list) { return function () { return figSolidsRowSVG(list); }; }
+  /* Hình phẳng mini cho m2-hinh (dữ kiện hình học cơ bản, không ghi đáp án). */
+  function seg2SVG() {
+    return figOpen("0 0 220 84", "Đoạn thẳng") +
+      '<line x1="36" y1="44" x2="184" y2="44" stroke="' + FIG_INK + '" stroke-width="3.6"/>' +
+      '<circle cx="36" cy="44" r="6" fill="' + FIG_MEAS + '"/><circle cx="184" cy="44" r="6" fill="' + FIG_MEAS + '"/>' +
+      figText(36, 24, "A", "middle", 15) + figText(184, 24, "B", "middle", 15) + "</svg>";
+  }
+  function quad2SVG() {
+    return figOpen("0 0 200 120", "Hình tứ giác") +
+      '<polygon points="46,26 156,38 138,98 30,88" fill="' + FIG_FILL + '" stroke="' + FIG_ACC + '" stroke-width="3.2" stroke-linejoin="round"/>' + "</svg>";
+  }
+  function polyline2SVG(labels) {
+    var pts = [[24, 88], [84, 34], [140, 76], [196, 28]], s = figOpen("0 0 220 116", "Đường gấp khúc");
+    s += '<polyline points="' + pts.map(function (p) { return p[0] + "," + p[1]; }).join(" ") + '" fill="none" stroke="' + FIG_INK + '" stroke-width="3.4" stroke-linejoin="round"/>';
+    pts.forEach(function (p) { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" fill="' + FIG_MEAS + '"/>'; });
+    if (labels) for (var i = 0; i < 3; i++) s += figText((pts[i][0] + pts[i + 1][0]) / 2, Math.min(pts[i][1], pts[i + 1][1]) - 8, labels[i], "middle", 13.5, FIG_ACC);
+    return s + "</svg>";
+  }
+  function pointsLine2SVG() {
+    return figOpen("0 0 220 84", "Ba điểm thẳng hàng") +
+      '<line x1="22" y1="46" x2="198" y2="46" stroke="' + FIG_MUT + '" stroke-width="2.6"/>' +
+      '<circle cx="52" cy="46" r="6" fill="' + FIG_MEAS + '"/><circle cx="110" cy="46" r="6" fill="' + FIG_MEAS + '"/><circle cx="168" cy="46" r="6" fill="' + FIG_MEAS + '"/>' +
+      figText(52, 24, "A", "middle", 15) + figText(110, 24, "B", "middle", 15) + figText(168, 24, "C", "middle", 15) + "</svg>";
+  }
+  function pointLetter2SVG() {
+    return figOpen("0 0 160 100", "Điểm") +
+      '<circle cx="80" cy="52" r="7" fill="' + FIG_MEAS + '"/>' + figText(80, 30, "A", "middle", 19) + "</svg>";
+  }
+  /* Sửa M2 (2026-10-20): điểm KHÔNG ghi chữ — dùng cho dữ kiện hỏi "Điểm
+     thường được kí hiệu bằng gì?" để hình không tự lộ quy ước đáp án. */
+  function point2SVG() {
+    return figOpen("0 0 160 100", "Điểm") +
+      '<circle cx="80" cy="52" r="7" fill="' + FIG_MEAS + '"/>' + "</svg>";
+  }
+  function lineArrows2SVG() {
+    return figOpen("0 0 220 84", "Đường thẳng") +
+      '<line x1="18" y1="44" x2="202" y2="44" stroke="' + FIG_INK + '" stroke-width="3.4"/>' +
+      '<path d="M18,44 l12,-5.5 v11 z" fill="' + FIG_INK + '"/><path d="M202,44 l-12,-5.5 v11 z" fill="' + FIG_INK + '"/>' + "</svg>";
+  }
+  /* Sửa kín đáp án (soi mắt 2026-10-20): [2] hỏi đơn vị dung tích (đáp án
+     "lít") — ống đong in thang ml gây nhiễu; [7] ống đong mức 500 ml đọc
+     thẳng ra đáp án "500 ml" — thay bằng tranh chủ đề không in đơn vị/mức. */
+  figTagFacts(2, "m2-kg-lit", { 0: bp("⚖️"), 1: bp("⚖️"), 2: bp("🪣"), 3: bp("💧"), 4: bp("🌾"), 5: bp("⚖️"), 6: bp("⚖️"), 7: bp("🍶"), 8: bp("⚖️"), 9: bp("💧") });
+  figTagFacts(2, "m2-hinh", { 0: seg2SVG, 1: quad2SVG, 2: function () { return polyline2SVG(null); }, 3: pointsLine2SVG, 4: quad2SVG, 5: point2SVG, 6: lineArrows2SVG, 7: function () { return polyline2SVG(["2 cm", "3 cm", "4 cm"]); }, 8: function () { return shapeSVG("vuong", "#4dabf7"); }, 9: seg2SVG });
+  figTagFacts(2, "m2-khoi", { 0: solid("cau"), 1: solid("tru"), 2: solid("tru"), 3: solid("cau"), 4: solidsRow(["tru", "cau", "non"]), 5: bp("🥛"), 6: solidsRow(["tru", "cau"]), 7: bp("🪙") });
+  /* Sửa M1 (2026-10-20): dữ kiện 9 "Khối trụ đặt nằm ngang…" KHÔNG gắn hình
+     nữa — họ hình chỉ vẽ trụ ĐỨNG, gắn vào sẽ mâu thuẫn trạng thái đề nêu. */
+  figTagFacts(2, "m2-dodai-tien", { 0: bp("📏"), 1: bp("📏"), 2: bp("🛣️"), 3: bp("🛣️"), 4: money([1000, 2000, 5000]), 5: money([5000]), 6: money([1000, 1000, 2000]), 7: bp("📏"), 8: bp("📏"), 9: money([5000, 5000]) });
+  figTagFacts(2, "tv2-tungu", { 0: bp("🏠"), 1: bp("🎒"), 2: bp("🗓️"), 3: bp("🏫"), 4: bp("🍊"), 5: bp("🍉"), 6: bp("🌳"), 7: bp("🐢"), 8: bp("🎈"), 9: bp("🌸") });
+  figTagFacts(2, "tn-giadinh", { 0: bp("👨‍👩‍👧"), 1: bp("🏠"), 2: bp("🚪"), 3: bp("⚠️"), 4: bp("🧹"), 5: bp("👨‍👩‍👧"), 6: bp("✂️"), 7: bp("👨‍👩‍👧"), 8: bp("⚠️"), 9: bp("🧹") });
+  figTagFacts(2, "tn-truong", { 0: bp("🎉"), 1: bp("📚"), 2: bp("⚠️"), 3: bp("🧹"), 4: bp("🤝"), 5: bp("📚"), 6: bp("🏠"), 7: bp("🧹"), 8: bp("🤝"), 9: bp("🇻🇳") });
+  figTagFacts(2, "tn-congdong", { 0: bp("🛒"), 1: bp("🛒"), 2: bp("🚦"), 3: bp("🚶"), 4: bp("🚲"), 5: bp("👀"), 6: bp("🛒"), 7: bp("🪧"), 8: bp("🏍️"), 9: bp("🏷️") });
+  figTagFacts(2, "tn-thucdong", { 0: bp("🌾"), 1: bp("🐟"), 2: bp("🌵"), 3: bp("♻️"), 4: bp("🐧"), 5: bp("🌿"), 6: bp("🌱"), 7: bp("🪺"), 8: bp("🐼"), 9: bp("🌳") });
+  figTagFacts(2, "tn-suckhoe", { 0: bp("💪"), 1: bp("🏃"), 2: bp("🌬️"), 3: bp("🌬️"), 4: bp("💧"), 5: bp("💧"), 6: bp("🩹"), 7: bp("🌬️"), 8: bp("🏃"), 9: bp("💧") });
+  figTagFacts(2, "tn-traidat", { 0: bp("🗓️"), 1: bp("🌦️"), 2: bp("⚠️"), 3: bp("🌀"), 4: bp("🌡️"), 5: bp("⛈️"), 6: bp("🌡️"), 7: bp("🌸"), 8: bp("🌀"), 9: bp("🌦️") });
+})();

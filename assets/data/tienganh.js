@@ -3011,6 +3011,66 @@ function enTag(q, fam, v) { if (q) { q.__fam = fam; q.__var = v; } return q; }
         { sent: "Passengers must order dinner ___ the train leaves.", ans: "before", wrong: ["after", "when", "while"], ex: "Đoạn văn: “must order it before the train leaves”." },
         { sent: "At night, most passengers choose a bed in a ___ car.", ans: "sleeping", wrong: ["kitchen", "dining", "soft"], ex: "Đoạn văn dùng cụm “a sleeping car” (toa giường nằm)." }
       ]
+    },
+    {
+      title: "Bees in the City",
+      text: "In the last ten years, keeping bees has become popular in many large cities. In our city, the first rooftop hives appeared in 2016, on top of a hotel in the city centre. Today, there are more than three hundred hives on roofs, in parks and in private gardens. Beekeepers say city bees are often healthier than bees in the countryside, because city parks contain many different flowers and no farm chemicals are sprayed there. The city council pays for free training courses for new beekeepers every spring. Last year, the city's hives produced nearly two tonnes of honey, most of which was sold in local shops.",
+      stmts: [
+        { stmt: "The first rooftop hives in the city appeared in 2016.", verdict: "True", ev: "Đoạn văn viết: “the first rooftop hives appeared in 2016”.", ex: "True — tổ ong trên mái đầu tiên xuất hiện năm 2016." },
+        { stmt: "City bees are often healthier than bees in the countryside.", verdict: "True", ev: "Đoạn văn viết: “city bees are often healthier than bees in the countryside”.", ex: "True — ong thành phố thường khoẻ hơn ong nông thôn." },
+        { stmt: "The city council charges new beekeepers for its training courses.", verdict: "False", ev: "Đoạn văn viết hội đồng “pays for free training courses” — khoá học MIỄN PHÍ, hội đồng không thu tiền.", ex: "False — các khoá đào tạo nuôi ong miễn phí." },
+        { stmt: "Last year, the city's hives produced nearly twenty tonnes of honey.", verdict: "False", ev: "Đoạn văn viết sản lượng là “nearly two tonnes” — gần hai tấn, không phải hai mươi tấn.", ex: "False — sản lượng gần HAI tấn mật ong." },
+        { stmt: "Most of the city's rooftop hives belong to hotels.", verdict: "Not Given", ev: "Đoạn văn chỉ nhắc một khách sạn là nơi có tổ ong đầu tiên; không nói phần lớn tổ ong thuộc về các khách sạn.", ex: "Not Given — không có thông tin về chủ sở hữu của phần lớn tổ ong." }
+      ],
+      detail: [
+        { q: "How many hives are there in the city today?", ans: "More than three hundred", wrong: ["About one hundred", "Nearly two thousand", "Exactly fifty"], ex: "Đoạn văn: “more than three hundred hives”." },
+        { q: "When does the city council hold free training courses?", ans: "Every spring", wrong: ["Every autumn", "Twice a month", "Only in 2016"], ex: "Đoạn văn: khoá học mở “every spring”." }
+      ],
+      purpose: { ans: "Why beekeeping has become popular in one city", wrong: ["How to build a beehive", "The history of honey production", "Why bees are disappearing"] },
+      blanks: [
+        { sent: "The first rooftop hives appeared on top of a ___ in the city centre.", ans: "hotel", wrong: ["school", "library", "station"], ex: "Đoạn văn: “on top of a hotel in the city centre”." },
+        { sent: "Last year, the city's hives produced nearly ___ tonnes of honey.", ans: "two", wrong: ["ten", "twenty", "five"], ex: "Đoạn văn ghi “nearly two tonnes of honey”." }
+      ]
+    },
+    {
+      title: "The Return of the Tram",
+      text: "Trams were once the main form of public transport in our city, but they disappeared in the 1960s, when buses became cheaper to run. In 2019, the city opened its first new tram line, running from the railway station to the university. The line carries about fifteen thousand passengers a day. A second line, to the airport, is now being built and will open next year. Trams are slower than the metro, but they are cheaper to build, and passengers say they enjoy seeing the streets from the large windows. A ticket for the tram costs the same as a bus ticket.",
+      stmts: [
+        { stmt: "Trams disappeared from the city in the 1960s.", verdict: "True", ev: "Đoạn văn viết: “they disappeared in the 1960s”.", ex: "True — tàu điện biến mất khỏi thành phố vào thập niên 1960." },
+        { stmt: "The first new tram line opened in 2019.", verdict: "True", ev: "Đoạn văn viết: “In 2019, the city opened its first new tram line”.", ex: "True — tuyến tàu điện mới đầu tiên mở năm 2019." },
+        { stmt: "The tram line to the airport is already open.", verdict: "False", ev: "Đoạn văn viết tuyến đi sân bay “is now being built and will open next year” — đang xây, năm sau mới mở.", ex: "False — tuyến sân bay chưa mở, đang được xây." },
+        { stmt: "Most passengers on the new tram line are university students.", verdict: "Not Given", ev: "Đoạn văn nói tuyến chạy tới trường đại học, nhưng không cho biết hành khách chủ yếu là ai.", ex: "Not Given — không có thông tin về thành phần hành khách." },
+        { stmt: "The city is planning a third tram line.", verdict: "Not Given", ev: "Đoạn văn chỉ nhắc tuyến thứ hai đang xây; không nhắc kế hoạch tuyến thứ ba.", ex: "Not Given — không có thông tin về tuyến tàu điện thứ ba." }
+      ],
+      detail: [
+        { q: "How many passengers does the first tram line carry each day?", ans: "About fifteen thousand", wrong: ["About five thousand", "About fifty thousand", "About fifteen hundred"], ex: "Đoạn văn: “carries about fifteen thousand passengers a day”." },
+        { q: "Why did trams disappear in the 1960s?", ans: "Because buses were cheaper to run", wrong: ["Because the streets were too narrow", "Because passengers disliked trams", "Because the metro opened"], ex: "Đoạn văn: “when buses became cheaper to run”." }
+      ],
+      purpose: { ans: "The return of trams to one city", wrong: ["How trams work", "The history of the metro", "Building an airport railway"] },
+      blanks: [
+        { sent: "The first new tram line runs from the railway station to the ___.", ans: "university", wrong: ["airport", "city centre", "harbour"], ex: "Đoạn văn: “running from the railway station to the university”." },
+        { sent: "A tram ticket costs the same as a ___ ticket.", ans: "bus", wrong: ["metro", "train", "plane"], ex: "Đoạn văn: “costs the same as a bus ticket”." }
+      ]
+    },
+    {
+      title: "Learning Music as an Adult",
+      text: "Many adults believe they are too old to learn a musical instrument, but teachers at the City Music School disagree. The school offers evening classes for adults, and the number of adult students has doubled in five years. The oldest beginner at the school is eighty-two years old. Teachers say adults learn more slowly than children at first, but they practise more regularly. The most popular instrument among adult beginners is the piano, followed by the guitar. Students can borrow instruments from the school for the first three months, so they do not need to buy one immediately.",
+      stmts: [
+        { stmt: "The number of adult students at the school has doubled in five years.", verdict: "True", ev: "Đoạn văn viết: “the number of adult students has doubled in five years”.", ex: "True — số học viên người lớn tăng gấp đôi trong năm năm." },
+        { stmt: "The oldest beginner at the school is seventy-two years old.", verdict: "False", ev: "Đoạn văn viết người bắt đầu học lớn tuổi nhất “is eighty-two years old” — 82 tuổi, không phải 72.", ex: "False — người học lớn tuổi nhất 82 tuổi." },
+        { stmt: "Teachers say children practise more regularly than adults.", verdict: "False", ev: "Đoạn văn viết người lớn “practise more regularly” — chính người lớn mới tập đều hơn.", ex: "False — giáo viên nói người lớn tập luyện đều đặn hơn trẻ em." },
+        { stmt: "Evening classes for adults cost more than children's classes.", verdict: "Not Given", ev: "Đoạn văn không hề nhắc tới học phí của bất kỳ lớp nào.", ex: "Not Given — không có thông tin về học phí." },
+        { stmt: "Some adult students later join the school orchestra.", verdict: "Not Given", ev: "Đoạn văn không nhắc tới dàn nhạc của trường hay việc học viên tham gia dàn nhạc.", ex: "Not Given — không có thông tin về dàn nhạc của trường." }
+      ],
+      detail: [
+        { q: "What is the most popular instrument among adult beginners?", ans: "The piano", wrong: ["The guitar", "The violin", "The drums"], ex: "Đoạn văn: “The most popular instrument … is the piano”." },
+        { q: "How long can new students borrow instruments from the school?", ans: "For the first three months", wrong: ["For one year", "For the first month", "For five years"], ex: "Đoạn văn: “borrow instruments … for the first three months”." }
+      ],
+      purpose: { ans: "Adults learning musical instruments at a music school", wrong: ["How children learn music", "The history of the piano", "Choosing an instrument to buy"] },
+      blanks: [
+        { sent: "The school offers ___ classes for adults.", ans: "evening", wrong: ["morning", "weekend", "online"], ex: "Đoạn văn: “offers evening classes for adults”." },
+        { sent: "The most popular instrument among adult beginners is the ___.", ans: "piano", wrong: ["guitar", "violin", "drums"], ex: "Đoạn văn: “The most popular instrument … is the piano”." }
+      ]
     }
   ];
   function fBTFNG() {
@@ -3151,6 +3211,116 @@ function enTag(q, fam, v) { if (q) { q.__fam = fam; q.__var = v; } return q; }
       t: "Người đàn ông mua hai vé tàu đi Huế.", exT: "Đúng. Anh ấy mua “two train tickets to Hue”.",
       f: ["Chuyến tàu chín giờ đã bị huỷ.", "Người đàn ông đi tàu vào sáng Chủ nhật."],
       exF: ["Sai. Chuyến chín giờ chỉ HẾT CHỖ (full), không bị huỷ.", "Sai. Chuyến đi vào sáng thứ Bảy (Saturday morning)."]
+    },
+    {
+      transcript: "A: Good afternoon, City Hotel. How can I help you? B: Hello, I booked a double room for this Friday, but I need to change it to Saturday. A: That is fine. The price is the same. Would you like breakfast included? B: Yes, please, for two people.",
+      qs: [
+        { q: "What does the guest want to change?", ans: "The day of the booking", wrong: ["The size of the room", "The price of the room", "The name on the booking"], ex: "Khách đã đặt phòng cho thứ Sáu nhưng cần đổi sang thứ Bảy: “I need to change it to Saturday”." },
+        { q: "What will the guest have at the hotel?", ans: "Breakfast for two people", wrong: ["Dinner for two people", "Breakfast for one person", "A room with a sea view"], ex: "Khách đồng ý thêm bữa sáng: “Yes, please, for two people”." },
+        { q: "What is NOT mentioned in the conversation?", ans: "How the guest will pay", wrong: ["The day of the booking", "The price of the room", "Breakfast at the hotel"], ex: "Hội thoại nhắc ngày đặt phòng, giá phòng (không đổi) và bữa sáng; cách thanh toán không được nhắc." }
+      ],
+      t: "Khách đổi ngày đặt phòng từ thứ Sáu sang thứ Bảy.", exT: "Đúng. Khách đổi đặt phòng “to Saturday”.",
+      f: ["Khách đặt một phòng đơn cho một người.", "Giá phòng vào thứ Bảy cao hơn thứ Sáu."],
+      exF: ["Sai. Khách đặt phòng ĐÔI (double room) cho hai người.", "Sai. Giá không đổi: “The price is the same.”"]
+    },
+    {
+      transcript: "A: Attention, please. The train to Hai Phong, planned for platform 2, will now leave from platform 4. The departure time is unchanged: six forty-five. We are sorry for the change.",
+      qs: [
+        { q: "Which platform will the train leave from now?", ans: "Platform 4", wrong: ["Platform 2", "Platform 6", "Platform 1"], ex: "Thông báo đổi sân ga: “will now leave from platform 4”." },
+        { q: "What time does the train leave?", ans: "At six forty-five", wrong: ["At six fifteen", "At seven forty-five", "At six thirty"], ex: "Giờ khởi hành không đổi: “six forty-five”." },
+        { q: "What is NOT mentioned in the announcement?", ans: "The reason for the platform change", wrong: ["The new platform", "The destination", "The departure time"], ex: "Thông báo có sân ga mới, điểm đến (Hai Phong) và giờ đi; lý do đổi sân ga không được nói." }
+      ],
+      t: "Tàu đi Hải Phòng đổi sang sân ga số 4.", exT: "Đúng. Tàu rời ga từ “platform 4”.",
+      f: ["Tàu đi Hải Phòng bị hoãn một giờ.", "Tàu sẽ rời ga lúc sáu giờ mười lăm."],
+      exF: ["Sai. Tàu chỉ đổi sân ga, giờ đi KHÔNG đổi.", "Sai. Tàu đi lúc sáu giờ bốn mươi lăm (six forty-five)."]
+    },
+    {
+      transcript: "A: There will be a fire drill on Friday at ten o'clock. B: Do we need to bring anything? A: No, just leave your bags in the office and use the stairs, not the lift.",
+      qs: [
+        { q: "When is the fire drill?", ans: "On Friday at ten o'clock", wrong: ["On Friday at two o'clock", "On Thursday at ten o'clock", "Next Monday morning"], ex: "Buổi diễn tập diễn ra “on Friday at ten o'clock”." },
+        { q: "What must staff NOT use during the drill?", ans: "The lift", wrong: ["The stairs", "The main door", "The fire alarm"], ex: "Hướng dẫn nói rõ: “use the stairs, not the lift” — dùng thang bộ, không dùng thang máy." },
+        { q: "Where should staff leave their bags?", ans: "In the office", wrong: ["By the stairs", "In the lift", "At the entrance"], ex: "Nhân viên được dặn “leave your bags in the office” — để túi lại trong văn phòng." }
+      ],
+      t: "Buổi diễn tập phòng cháy diễn ra thứ Sáu lúc mười giờ.", exT: "Đúng. Diễn tập “on Friday at ten o'clock”.",
+      f: ["Nhân viên phải mang theo túi khi sơ tán.", "Nhân viên nên dùng thang máy để xuống nhanh hơn."],
+      exF: ["Sai. Túi phải để LẠI trong văn phòng.", "Sai. Phải dùng thang BỘ (the stairs), không dùng thang máy."]
+    },
+    {
+      transcript: "A: Welcome to the City Museum. Today's guided tour starts in ten minutes, at eleven o'clock, by the main entrance. The tour is free for students with a student card. Please note that photography is not allowed in the painting rooms.",
+      qs: [
+        { q: "Where does the tour start?", ans: "By the main entrance", wrong: ["In the painting rooms", "At the ticket office", "In the museum garden"], ex: "Chuyến tham quan bắt đầu “by the main entrance” — cạnh cổng chính." },
+        { q: "Who can join the tour for free?", ans: "Students with a student card", wrong: ["All visitors", "Children under ten", "Teachers only"], ex: "Thông báo: tour “free for students with a student card” — miễn phí cho sinh viên có thẻ." },
+        { q: "What is NOT allowed in the painting rooms?", ans: "Taking photographs", wrong: ["Talking quietly", "Carrying small bags", "Walking in groups"], ex: "Thông báo cấm chụp ảnh trong phòng tranh: “photography is not allowed”." }
+      ],
+      t: "Chuyến tham quan có hướng dẫn bắt đầu lúc mười một giờ.", exT: "Đúng. Tour bắt đầu “at eleven o'clock”.",
+      f: ["Chuyến tham quan bắt đầu ở phòng tranh.", "Mọi du khách đều được tham quan miễn phí."],
+      exF: ["Sai. Điểm bắt đầu là cổng chính (main entrance).", "Sai. Chỉ sinh viên có thẻ sinh viên mới được miễn phí."]
+    },
+    {
+      transcript: "A: Hello, this is Green Garden Shop. Your order of five rose bushes is ready for collection. We are open until eight in the evening. Please collect your order before Saturday, as we cannot keep the plants after that.",
+      qs: [
+        { q: "What is ready for collection?", ans: "Five rose bushes", wrong: ["Five apple trees", "Fifty rose bushes", "A garden table"], ex: "Tin nhắn nói “your order of five rose bushes is ready” — năm bụi hoa hồng đã sẵn sàng." },
+        { q: "Until what time is the shop open?", ans: "Until eight in the evening", wrong: ["Until six in the evening", "Until eight in the morning", "Until nine in the evening"], ex: "Cửa hàng mở “until eight in the evening” — đến tám giờ tối." },
+        { q: "By when must the customer collect the order?", ans: "Before Saturday", wrong: ["After Saturday", "Next Monday", "Any time next week"], ex: "Khách phải lấy hàng “before Saturday” — trước thứ Bảy, vì tiệm không giữ cây sau đó." }
+      ],
+      t: "Đơn hàng năm bụi hoa hồng đã sẵn sàng để khách đến lấy.", exT: "Đúng. “Your order of five rose bushes is ready for collection.”",
+      f: ["Cửa hàng mở cửa đến chín giờ tối.", "Khách có thể lấy hàng vào tuần sau."],
+      exF: ["Sai. Cửa hàng mở đến TÁM giờ tối.", "Sai. Phải lấy TRƯỚC thứ Bảy; cửa hàng không giữ cây sau ngày đó."]
+    },
+    {
+      transcript: "A: Great news for cyclists! Our bike shop's spring sale starts tomorrow. All bicycles are reduced by twenty-five percent until the end of the month. During the sale, the shop will also open on Sunday mornings.",
+      qs: [
+        { q: "What is reduced by twenty-five percent?", ans: "All bicycles", wrong: ["All helmets", "All sports clothes", "All bike locks"], ex: "Thông báo: “All bicycles are reduced by twenty-five percent” — toàn bộ xe đạp giảm 25%." },
+        { q: "How long does the sale last?", ans: "Until the end of the month", wrong: ["For one week", "Until tomorrow", "For three days"], ex: "Đợt giảm giá kéo dài “until the end of the month” — đến cuối tháng." },
+        { q: "What changes during the sale?", ans: "The shop opens on Sunday mornings", wrong: ["The shop closes earlier", "The shop moves to a new street", "Prices go up on Sundays"], ex: "Trong đợt giảm giá, cửa hàng “will also open on Sunday mornings” — mở thêm sáng Chủ nhật." }
+      ],
+      t: "Xe đạp được giảm giá hai mươi lăm phần trăm đến cuối tháng.", exT: "Đúng. Xe đạp giảm 25% “until the end of the month”.",
+      f: ["Đợt giảm giá bắt đầu từ hôm nay.", "Trong đợt giảm giá, cửa hàng đóng cửa vào Chủ nhật."],
+      exF: ["Sai. Giảm giá bắt đầu NGÀY MAI (starts tomorrow).", "Sai. Cửa hàng MỞ cửa sáng Chủ nhật trong đợt giảm giá."]
+    },
+    {
+      transcript: "A: I would like to join the evening English course. B: The next course begins on the first of September and lasts twelve weeks. A: How much is it? B: It is two million dong, and you can pay in two parts.",
+      qs: [
+        { q: "When does the next course begin?", ans: "On the first of September", wrong: ["On the first of October", "Next week", "On the twelfth of September"], ex: "Khoá tới bắt đầu “on the first of September” — ngày 1 tháng 9." },
+        { q: "How long is the course?", ans: "Twelve weeks", wrong: ["Ten weeks", "Twelve months", "Two months"], ex: "Khoá học kéo dài “twelve weeks” — mười hai tuần." },
+        { q: "How can the student pay for the course?", ans: "In two parts", wrong: ["By card only", "All at once only", "After the course ends"], ex: "Học viên “can pay in two parts” — có thể đóng học phí làm hai đợt." }
+      ],
+      t: "Khoá tiếng Anh buổi tối khai giảng ngày một tháng Chín.", exT: "Đúng. Khoá bắt đầu “on the first of September”.",
+      f: ["Khoá học kéo dài mười hai tháng.", "Học viên phải đóng toàn bộ học phí trong một lần."],
+      exF: ["Sai. Khoá kéo dài mười hai TUẦN (twelve weeks).", "Sai. Học phí có thể đóng làm hai đợt (in two parts)."]
+    },
+    {
+      transcript: "A: Here is the traffic news. The bridge on River Road is closed this morning because of an accident. Buses to the airport are using Lake Street instead. Drivers should expect delays of about twenty minutes.",
+      qs: [
+        { q: "Why is the bridge closed?", ans: "Because of an accident", wrong: ["Because of road works", "Because of the weather", "Because of a sports event"], ex: "Bản tin nói cầu đóng “because of an accident” — vì một vụ tai nạn." },
+        { q: "Which street are airport buses using?", ans: "Lake Street", wrong: ["River Road", "Bridge Street", "Station Road"], ex: "Xe buýt đi sân bay chuyển sang “Lake Street”." },
+        { q: "How long are the delays?", ans: "About twenty minutes", wrong: ["About ten minutes", "About two hours", "There are no delays"], ex: "Tài xế nên dự trù chậm “about twenty minutes” — khoảng hai mươi phút." }
+      ],
+      t: "Cây cầu trên đường River Road đóng cửa sáng nay vì tai nạn.", exT: "Đúng. Cầu đóng “because of an accident”.",
+      f: ["Xe buýt đi sân bay vẫn đi qua cầu như thường lệ.", "Tài xế nên dự trù chậm khoảng hai giờ."],
+      exF: ["Sai. Xe buýt chuyển sang đường Lake Street.", "Sai. Thời gian chậm chỉ khoảng hai mươi phút."]
+    },
+    {
+      transcript: "A: Excuse me, I ordered the chicken soup, but this is tomato soup. B: I am very sorry. I will bring the chicken soup right away. A: Thank you. And could I have some more bread, please? B: Of course.",
+      qs: [
+        { q: "What is the problem with the order?", ans: "The wrong soup was served", wrong: ["The soup is cold", "The soup is too salty", "The bill is wrong"], ex: "Khách gọi súp gà nhưng nhà hàng mang súp cà chua: “I ordered the chicken soup, but this is tomato soup”." },
+        { q: "What else does the customer ask for?", ans: "Some more bread", wrong: ["A glass of water", "The bill", "A spoon"], ex: "Khách xin thêm bánh mì: “could I have some more bread, please?”." },
+        { q: "What is NOT mentioned in the conversation?", ans: "The price of the soup", wrong: ["The wrong dish", "The extra bread", "The waiter's apology"], ex: "Hội thoại nhắc món mang nhầm, bánh mì xin thêm và lời xin lỗi của phục vụ; giá món súp không được nhắc." }
+      ],
+      t: "Nhà hàng mang nhầm món súp cho khách.", exT: "Đúng. Khách gọi súp gà nhưng nhận súp cà chua.",
+      f: ["Khách xin thêm một ly nước.", "Khách yêu cầu tính tiền ngay."],
+      exF: ["Sai. Khách xin thêm BÁNH MÌ (some more bread).", "Sai. Khách không hề nhắc tới hoá đơn."]
+    },
+    {
+      transcript: "A: The yoga class on Wednesday evening has a new teacher. B: Is it at the same time? A: Yes, from six to seven, in Studio B. Please remember to book your place online before Tuesday.",
+      qs: [
+        { q: "What is new about the Wednesday yoga class?", ans: "It has a new teacher", wrong: ["It has a new time", "It is in a new studio", "It is free this week"], ex: "Thông tin mới là lớp “has a new teacher” — có giáo viên mới." },
+        { q: "Where is the class held?", ans: "In Studio B", wrong: ["In Studio A", "In the main hall", "Online at home"], ex: "Lớp học diễn ra “in Studio B”." },
+        { q: "By when must students book a place?", ans: "Before Tuesday", wrong: ["Before Wednesday", "On Monday morning", "At the class itself"], ex: "Học viên phải đặt chỗ trực tuyến “before Tuesday” — trước thứ Ba." }
+      ],
+      t: "Lớp yoga tối thứ Tư có giáo viên mới.", exT: "Đúng. Lớp “has a new teacher”.",
+      f: ["Lớp yoga chuyển sang Studio A.", "Học viên đặt chỗ trực tiếp tại lớp vào thứ Tư."],
+      exF: ["Sai. Lớp vẫn học ở Studio B.", "Sai. Phải đặt chỗ TRỰC TUYẾN trước thứ Ba."]
     }
   ];
   function fBListenScript() {
