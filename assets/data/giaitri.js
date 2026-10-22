@@ -948,6 +948,7 @@ function gtToast(msg) {
     ".rcv-ritem .ro.bad{color:#a33307}",
     ".rcv-ritem .re{font-size:16px;font-weight:600;color:#4c463c;margin-top:5px;line-height:1.45}",
     ".rcv-speak-btn{font-family:inherit;font-size:14px;font-weight:800;padding:7px 12px;border-radius:11px;border:2px solid var(--line,#f0dfba);background:#fffdf6;color:#33302a;cursor:pointer;margin-top:8px}",
+    ".rcv-report-btn{font-family:inherit;font-size:14px;font-weight:800;padding:7px 12px;border-radius:11px;border:2px solid var(--line,#f0dfba);background:#fff6f0;color:#8a4b12;cursor:pointer;margin-top:8px;margin-left:8px}",
     ".rcv-ritem .rcv-meta{color:#5a5344}",
     ".rcv-end-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:stretch}",
     "#rcv-again,#rcv-to-dir{font-family:inherit;font-size:19px;font-weight:800;padding:15px 24px;min-height:56px;border-radius:18px;cursor:pointer;line-height:1.25}",
@@ -1527,7 +1528,30 @@ function rcvEndRun(won, reason) {
   } catch (e) {}
   rcvRenderEnd(won, reason, RCV.badgeBefore, rec.badge);
 }
+/* V23 — Việc D: ngữ cảnh báo lỗi cho một câu ở màn XEM LẠI của RCV/Tia
+   chớp (trong lúc chơi hai chế độ này KHÔNG có nút báo lỗi theo đặc tả). */
+function gtReportCtx(it, mode, sess) {
+  var R = window.__reportQ; if (!R || !it) return null;
+  var visText = R.textOf(it.visual);
+  var de = String(it.prompt || "");
+  if (visText && de.indexOf(visText) === -1) de = de ? de + " | " + visText : visText;
+  var opts = (it.options || []).map(function (o) { return R.textOf(o); });
+  return { lop: it.grade, mon: it.subjName || "", maChuDe: it.topicId || "", tenChuDe: it.topicName || "", mode: mode,
+    loaiCau: it.type === "tf" ? "Đúng/Sai" : it.type === "blank" ? "Điền đáp án" : "Trắc nghiệm",
+    de: de, coHinh: !!(it.figure || (it.visual && /<svg|<img/i.test(it.visual))),
+    luaChon: opts, dapAn: typeof it.answer === "number" ? (opts[it.answer] || "") : "", tf: null, sess: sess };
+}
+function gtWireReportBtns(container, history, mode, sess) {
+  container.querySelectorAll(".rcv-report-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var h = history[parseInt(b.getAttribute("data-rrep"), 10)];
+      var ctx = h ? gtReportCtx(h.item, mode, sess) : null;
+      if (ctx) window.__reportQ.open(ctx);
+    });
+  });
+}
 function rcvRenderEnd(won, reason, badgeBefore, badgeAfter) {
+  var repSess = window.__reportQ ? window.__reportQ.newSession() : "";
   var rec = rcvLoadRec();
   var failRung = won ? 0 : RCV.rung;
   var title = won ? "🔔 RUNG ĐƯỢC CHUÔNG VÀNG!" : ("Dừng lại ở nấc " + RCV.rung);
@@ -1564,6 +1588,7 @@ function rcvRenderEnd(won, reason, badgeBefore, badgeAfter) {
     /* v18: nút nghe lại ở màn XEM LẠI sau lượt (trong lượt chạy không có
        nút nghe — đua với đồng hồ; giữ nguyên đặc tả RCV). */
     html += '<button type="button" class="rcv-speak-btn" data-rspk="' + hi + '">🔊 Nghe lại câu này</button>';
+    html += '<button type="button" class="rcv-report-btn" data-rrep="' + hi + '">🚩 Báo lỗi câu này</button>';
     html += "</div>";
   });
   html += "</div>";
@@ -1575,6 +1600,7 @@ function rcvRenderEnd(won, reason, badgeBefore, badgeAfter) {
         window.__readQuestionVi({ prompt: h.item.prompt, options: h.item.options, explain: h.item.explain });
       }
     });
+  if (window.__reportQ) gtWireReportBtns(document.getElementById("gt-body"), RCV.history, "Xem lại Rung chuông vàng", repSess);
   });
   var ag = document.getElementById("rcv-again");
   if (ag) ag.addEventListener("click", function () { rcvStart(); });
@@ -2015,6 +2041,7 @@ function tcEndRun(reason) {
   tcRenderEnd(reason, newBest, rec, tcNewBadges);
 }
 function tcRenderEnd(reason, newBest, rec, newBadges) {
+  var repSess = window.__reportQ ? window.__reportQ.newSession() : "";
   var acc = TC.answered ? Math.round(100 * TC.correct / TC.answered) : 0;
   var title = reason === "time" ? "⏰ Hết giờ!" : "⚡ Tia chớp — Hết vòng";
   var html = '<div class="topbar"><div><h2>⚡ Tia chớp — Kết quả</h2></div></div>' +
@@ -2047,10 +2074,12 @@ function tcRenderEnd(reason, newBest, rec, newBadges) {
     if (it.explain) html += '<div class="re"><b>Giải thích:</b> ' + it.explain + "</div>";
     /* Không nút nghe lại ở màn xem lại — toàn chế độ không có đọc
        câu hỏi (chốt của anh vu, khác RCV ở điểm này). */
+    html += '<button type="button" class="rcv-report-btn" data-rrep="' + hi + '">🚩 Báo lỗi câu này</button>';
     html += "</div>";
   });
   html += "</div>";
   document.getElementById("gt-body").innerHTML = html;
+  if (window.__reportQ) gtWireReportBtns(document.getElementById("gt-body"), TC.history, "Xem lại Tia chớp", repSess);
   var ag = document.getElementById("tc-again");
   if (ag) ag.addEventListener("click", function () { tcStart(); });
   var td = document.getElementById("tc-to-dir");

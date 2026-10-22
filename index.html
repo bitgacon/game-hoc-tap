@@ -415,6 +415,16 @@
           <div class="sound-note voice-warn" id="voice-warn" hidden>⚠️ Thiết bị này chưa có giọng nói hệ thống; câu khen thu sẵn vẫn phát bình thường — phần đọc câu hỏi và nghe tiếng Anh cần máy có sẵn giọng đọc.</div>
           <div class="sound-note">Câu khen dùng giọng nữ thu sẵn ngay trong game — máy nào cũng nghe giống nhau, không cần cài thêm giọng cho máy. Bố mẹ có thể tắt từng loại âm thanh ở đây, lựa chọn được nhớ cho lần chơi sau.</div>
         </div>
+        <div class="sound-panel" id="report-panel-home">
+          <div class="sound-head">
+            <span class="sound-title">🚩 Báo lỗi câu hỏi</span>
+          </div>
+          <div class="sound-note">Đã ghi <b id="report-count">0</b> báo lỗi trên máy này. Khi gặp câu hỏi thiếu dữ kiện, đáp án có vẻ sai hoặc khó hiểu, em bấm nút 🚩 Báo lỗi ngay trên màn câu hỏi nhé. Báo lỗi chỉ lưu trên máy này, không tự gửi đi đâu.</div>
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <button class="sound-master" id="btn-report-export" type="button">📄 Xuất danh sách</button>
+            <button class="sound-master" id="btn-report-clear" type="button">🗑 Xoá hết</button>
+          </div>
+        </div>
         <div class="hello">
           <span class="mascot" aria-hidden="true">🦉</span>
           <h1>Hôm nay học gì nào?</h1>
@@ -502,6 +512,7 @@
           <div class="q-badge" id="q-badge"></div>
           <p class="q-prompt" id="q-prompt"></p>
           <button id="q-speak-btn" class="q-speak-btn" type="button">🔊 Nghe câu hỏi</button>
+          <button id="q-report-btn" class="q-report-btn" type="button" title="Báo câu hỏi có vấn đề">🚩 Báo lỗi</button>
           <div class="q-visual" id="q-visual"></div>
           <div class="options" id="q-options"></div>
           <div class="feedback" id="q-feedback" role="status"></div>
@@ -2417,7 +2428,7 @@ function valueKeyOf(html) {
     }
     function identifyRoundFact(q, text) { q.roundIdentity = { type: "fact", facts: [text] }; return q; }
     function startGame(title, pools) {
-      game = { title: title, pools: pools, playlist: buildPlaylist(pools), idx: 0, stars: 0, tried: false, locked: false, current: null, tf: null };
+      game = { title: title, pools: pools, playlist: buildPlaylist(pools), idx: 0, stars: 0, tried: false, locked: false, current: null, tf: null, ctxKey: (typeof currentTopicKey !== "undefined" ? currentTopicKey : null), inRetry: false, retryAdvance: null };
       show("scr-game");
       nextQuestion();
     }
@@ -2427,6 +2438,12 @@ function valueKeyOf(html) {
       var q = game.playlist[game.idx]();
       if (!q) { game.noMoreQuestions = true; showResult(); return; }
       game.current = q;
+      renderCurrentQuestion();
+    }
+    /* V23 — Việc E: phần vẽ một câu hỏi ra màn q-card được tách riêng để
+       câu THỬ LẠI dùng lại đúng đường vẽ của câu thường. */
+    function renderCurrentQuestion() {
+      var q = game.current;
       el("q-counter").textContent = "Câu " + (game.idx + 1) + "/" + ROUND_LEN;
       el("stars-now").textContent = game.stars;
       el("progress-fill").style.width = (game.idx / ROUND_LEN * 100) + "%";
@@ -2478,6 +2495,7 @@ function valueKeyOf(html) {
     function finishScreen(star) {
       if (game.locked) return;
       game.locked = true;
+      if (star && game.inRetry) star = false; /* V23-E: câu thử lại không tính sao */
       if (star) { game.stars++; el("stars-now").textContent = game.stars; }
       soundGood();
       var fb = el("q-feedback");
@@ -2497,10 +2515,96 @@ function valueKeyOf(html) {
       var completedGame = game;
       var advance = function () {
         if (game !== completedGame || !el("scr-game").classList.contains("on")) return;
+        if (completedGame.inRetry) { var ra = completedGame.retryAdvance; completedGame.inRetry = false; completedGame.retryAdvance = null; if (ra) ra(); return; }
         afterKnowledge(function () { game.idx++; nextQuestion(); });
       };
-      if (game.hadWrong) pauseAdvance(ex.classList.contains("show") ? ex : fb, advance);
+      if (game.hadWrong) { var pauseBox = ex.classList.contains("show") ? ex : fb; pauseAdvance(pauseBox, advance); maybeOfferRetry(pauseBox, advance); }
       else setTimeout(advance, delay);
+    }
+    /* ===== V23 — Việc E: THỬ LẠI CÂU TƯƠNG TỰ =====
+       Chỉ ở các vòng có luật dừng đọc lời giải (màn này): sau câu SAI, cạnh
+       nút "Đã hiểu" hiện thêm nút "🔁 Thử câu tương tự" — bấm thì sinh MỘT
+       câu MỚI cùng chủ đề, ưu tiên cùng dạng câu, khác dữ kiện câu gốc.
+       Câu thử lại là câu PHỤ: không sao (finishScreen tự triệt sao khi
+       game.inRetry), sai không ghi sổ câu sai (feat-a1 bỏ qua khi inRetry),
+       và không hiện tiếp nút thử lại (maybeOfferRetry tự chặn khi inRetry)
+       — tối đa 1 câu thử lại cho mỗi câu gốc. Sinh không được thì không
+       hiện nút. Kiểm tra/RCV/Tia chớp không dùng vòng lặp này nên không
+       bao giờ có nút. */
+    function retryKindOf(q) {
+      if (!q) return "";
+      if (q.rounds) return "tf";
+      if (q.kind) return q.kind;
+      if (q.options) return "options";
+      return "";
+    }
+    function retryTextOf(html) {
+      if (html == null) return "";
+      var d = document.createElement("div");
+      d.innerHTML = String(html);
+      var t = (d.textContent || "").replace(/\s+/g, " ").trim();
+      return t;
+    }
+    function retryIdentity(q) {
+      var k = retryKindOf(q);
+      if (k === "tf") return "tf|" + (q.rounds || []).map(function (r) { return retryTextOf(r.visual); }).join("~");
+      return k + "|" + String(q.prompt || "") + "|" + retryTextOf(q.visual);
+    }
+    function genSimilarQuestion(originQ) {
+      try {
+        var pools = null;
+        if (originQ && originQ.__topicRef && window.__topics) {
+          var ctx = null;
+          try { ctx = window.__topics.resolve(originQ.__topicRef); } catch (e) {}
+          if (ctx && ctx.topic && ctx.topic.pools) pools = ctx.topic.pools;
+        }
+        if (!pools && game && game.pools) pools = game.pools;
+        if (!pools) return null;
+        var okind = retryKindOf(originQ);
+        var ocat = (okind === "tf" || okind === "catch") ? "game" : "mcq";
+        var oKey = retryIdentity(originQ);
+        var passes = [ocat, ocat === "game" ? "mcq" : "game"];
+        for (var pi = 0; pi < passes.length; pi++) {
+          var cats = passes[pi] === "game" ? ["games"] : ["choose", "blank"];
+          for (var ci = 0; ci < cats.length; ci++) {
+            var arr = pools[cats[ci]] || [];
+            if (!arr.length) continue;
+            for (var d = 0; d < 10; d++) {
+              var gen = arr[Math.floor(Math.random() * arr.length)];
+              var q2 = null;
+              try { q2 = gen(); } catch (e) {}
+              if (!q2) continue;
+              var k2 = retryKindOf(q2);
+              if (["options", "blank", "tf", "catch"].indexOf(k2) === -1) continue;
+              if (pi === 0) { var c2 = (k2 === "tf" || k2 === "catch") ? "game" : "mcq"; if (c2 !== ocat) continue; }
+              if (retryIdentity(q2) === oKey) continue;
+              return q2;
+            }
+          }
+        }
+        return null;
+      } catch (e) { return null; }
+    }
+    function maybeOfferRetry(container, advance) {
+      if (!game || game.inRetry) return;
+      var rq = genSimilarQuestion(game.current);
+      if (!rq) return;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn-understood btn-retry23";
+      b.textContent = "🔁 Thử câu tương tự";
+      b.addEventListener("click", function () {
+        container.querySelectorAll(".btn-understood").forEach(function (x) { if (x.parentNode) x.parentNode.removeChild(x); });
+        startRetryQuestion(rq, advance);
+      });
+      container.appendChild(b);
+    }
+    function startRetryQuestion(rq, advance) {
+      game.inRetry = true;
+      game.retryAdvance = advance;
+      game.current = rq;
+      game.tried = false; game.locked = false; game.tf = null; game.hadWrong = false;
+      renderCurrentQuestion();
     }
     function afterKnowledge(action) {
       var owner = game;
@@ -2811,7 +2915,7 @@ function valueKeyOf(html) {
          ký hiệu viết tắt) không hạ chữ cái đầu — tránh khẳng định méo dạng
          kiểu "là vII" trong màn đúng/sai. */
       if (/^[A-ZÀ-Ỹ]{2,}$/.test(w[0])) return s;
-      if (w[0] === "Ngày" || w[0] === "Tháng" || w[0] === "Năm") return w[0].toLowerCase() + s.slice(w[0].length);
+      if (w[0] === "Ngày" || w[0] === "Tháng" || w[0] === "Năm" || w[0] === "Thứ") return w[0].toLowerCase() + s.slice(w[0].length);
       if (w.length >= 2) { var c1 = w[1].charAt(0); if (c1 && c1 !== c1.toLowerCase() && c1 === c1.toUpperCase()) return s; }
       return c0.toLowerCase() + s.slice(1);
     }
@@ -2842,6 +2946,105 @@ function valueKeyOf(html) {
       if ((m = /^(.+?)\s+vào thời gian nào\??$/.exec(q))) return qaStmtJoin(m[1], "vào", a);
       if ((m = /^(.+?)\s+vào ngày nào\??$/.exec(q))) return qaStmtJoin(m[1], "vào", a);
       if ((m = /^(.+?)\s+năm nào\??$/.exec(q))) return qaStmtJoin(m[1], "năm", a);
+      /* ===== V23 (2026-10-21) — Việc B: bổ sung họ chuyển đổi để mệnh đề
+         Đúng/Sai là khẳng định tự nhiên thay vì dạng "câu hỏi: đáp án" ===== */
+      /* "…là ngày nào?" (không có "vào"): nối bằng "là" nếu thân đã kết bằng
+         "là", ngược lại nối "vào" như mẫu trên. */
+      if ((m = /^(.+?)\s+ngày nào\??$/.exec(q))) {
+        if (/là$/.test(m[1])) return qaCap(m[1]) + " " + qaDecap(a.replace(/\.+$/, "")) + ".";
+        return qaStmtJoin(m[1], "vào", a);
+      }
+      /* "…thứ mấy?": lấy thứ tự thật từ đáp án ("thứ hai", "thứ mười"…). */
+      if ((m = /^(.+?)\s+thứ mấy\??$/.exec(q))) {
+        var ordM = /(thứ\s+[\wÀ-ỹ]+)/i.exec(a);
+        if (ordM) return qaCap(m[1]) + " " + ordM[1].toLowerCase() + ".";
+      }
+      /* "X có (tất cả) bao nhiêu <đơn vị>?": đáp án số + đúng đơn vị đó →
+         "X có <đáp án>." (cùng mẫu d5BuildStmts đã dùng cho khẳng định văn xuôi). */
+      if ((m = /^(.+?) có (?:tất cả )?bao nhiêu ([^?]+?)\??$/.exec(q))) {
+        var aCl = a.replace(/\.+$/, "");
+        if (/^\d[\d.,]*\s+/.test(aCl) && aCl.split(/\s+/).pop() === m[2].trim()) return qaCap(m[1]) + " có " + aCl + ".";
+      }
+      /* "Đồng hồ chỉ mấy giờ?" và các câu "…mấy giờ?" */
+      if ((m = /^(.+?)\s+mấy giờ\??$/.exec(q))) return qaCap(m[1]) + " " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      /* "…là tác phẩm của ai?" (cặp tác phẩm — tác giả) */
+      if ((m = /^(.+?)\s+là tác phẩm của ai\??$/.exec(q))) return qaStmtJoin(m[1], "là tác phẩm của", a);
+      /* ===== V23 — Việc A: các khuôn hỏi thẳng theo loại cặp (pairQBuild
+         sinh ra) phải có mẫu chuyển đổi tương ứng ở đây ===== */
+      if ((m = /^Từ tiếng Anh nào có nghĩa là “(.+?)”\??$/.exec(q))) return "Từ “" + a.replace(/\.+$/, "") + "” có nghĩa là “" + m[1] + "”.";
+      if ((m = /^Khi “(.+?)”, em nên làm gì\??$/.exec(q))) return "Khi “" + m[1] + "”, em nên " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” — em nên làm gì\??$/.exec(q))) return "Khi “" + m[1] + "”, em nên " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Gặp tình huống “(.+?)”, em nên làm gì\??$/.exec(q))) return "Khi “" + m[1] + "”, em nên " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Khi nào em nên (.+?)\??$/.exec(q))) return "Khi " + qaDecap(a.replace(/\.+$/, "")) + ", em nên " + m[1] + ".";
+      if ((m = /^Việc “(.+?)” nên làm khi nào\??$/.exec(q))) return "Việc “" + m[1] + "” nên làm khi " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” thể hiện cảm xúc nào\??$/.exec(q))) return "“" + m[1] + "” thể hiện cảm xúc " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Điều nào thể hiện cảm xúc “(.+?)”\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” thể hiện cảm xúc “" + m[1] + "”.";
+      if ((m = /^“(.+?)” dùng để làm gì\??$/.exec(q))) return "“" + m[1] + "” dùng để " + qaDecap(a.replace(/\.+$/, "").replace(/^Để\s+/, "")) + ".";
+      if ((m = /^Vật nào dùng để (.+?)\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” dùng để " + m[1] + ".";
+      if ((m = /^Khái niệm nào được mô tả là “(.+?)”\??$/.exec(q))) return "Khái niệm “" + a.replace(/\.+$/, "") + "” được mô tả là “" + m[1] + "”.";
+      if ((m = /^Nội dung “(.+?)” thuộc về khái niệm nào\??$/.exec(q))) return "Nội dung “" + m[1] + "” thuộc về khái niệm “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” là mô tả của khái niệm nào\??$/.exec(q))) return "“" + m[1] + "” là mô tả của khái niệm “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Vào “(.+?)”, sự kiện nào đã diễn ra\??$/.exec(q))) return "Vào “" + m[1] + "”, sự kiện “" + a.replace(/\.+$/, "") + "” đã diễn ra.";
+      if ((m = /^Sự kiện nào diễn ra vào “(.+?)”\??$/.exec(q))) return "Sự kiện “" + a.replace(/\.+$/, "") + "” diễn ra vào “" + m[1] + "”.";
+      if ((m = /^“(.+?)” là giá trị của khái niệm nào\??$/.exec(q))) return "“" + m[1] + "” là giá trị của khái niệm “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Lượng nào có giá trị bằng “(.+?)”\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” có giá trị bằng “" + m[1] + "”.";
+      if ((m = /^“(.+?)” là tác giả của tác phẩm nào\??$/.exec(q))) return "“" + m[1] + "” là tác giả của tác phẩm “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” có đặc điểm gì\??$/.exec(q))) return "“" + m[1] + "” có đặc điểm là " + qaDecap(a.replace(/\.+$/, "").replace(/^Có\s+/, "")) + ".";
+      if ((m = /^Trộn “(.+?)” sẽ được màu nào\??$/.exec(q))) return "Trộn “" + m[1] + "” sẽ được màu " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Màu “(.+?)” là kết quả trộn của những màu nào\??$/.exec(q))) return "Màu “" + m[1] + "” là kết quả trộn của " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” có dạng khối nào\??$/.exec(q))) return "“" + m[1] + "” có dạng " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Đồ vật nào có dạng “(.+?)”\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” có dạng “" + m[1] + "”.";
+      if ((m = /^Ví dụ nào thuộc “(.+?)”\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” thuộc “" + m[1] + "”.";
+      if ((m = /^“(.+?)” thuộc nhóm nào\??$/.exec(q))) return "“" + m[1] + "” thuộc nhóm “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” là công thức của đại lượng nào\??$/.exec(q))) return "“" + m[1] + "” là công thức của đại lượng “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” được kí hiệu là gì\??$/.exec(q))) return "“" + m[1] + "” được kí hiệu là “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” là kí hiệu của chất nào\??$/.exec(q))) return "“" + m[1] + "” là kí hiệu của chất “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” là mô tả của nhân vật nào\??$/.exec(q))) return "“" + m[1] + "” là mô tả của nhân vật “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Việc “(.+?)” có ý nghĩa gì\??$/.exec(q))) return "Việc “" + m[1] + "” có ý nghĩa là " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Việc làm nào thể hiện “(.+?)”\??$/.exec(q))) return "Việc “" + a.replace(/\.+$/, "") + "” thể hiện “" + m[1] + "”.";
+      if ((m = /^Khái niệm nào có đặc điểm “(.+?)”\??$/.exec(q))) return "Khái niệm “" + a.replace(/\.+$/, "") + "” có đặc điểm “" + m[1] + "”.";
+      if ((m = /^Bài hát “(.+?)” nói về điều gì\??$/.exec(q))) return "Bài hát “" + m[1] + "” nói về " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Bài hát nào nói về “(.+?)”\??$/.exec(q))) return "Bài hát “" + a.replace(/\.+$/, "") + "” nói về “" + m[1] + "”.";
+      if ((m = /^Đối tượng nào dùng để (.+?)\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” dùng để " + m[1] + ".";
+      if ((m = /^Lệnh nào dùng để (.+?)\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” dùng để " + m[1] + ".";
+      if ((m = /^Ngày “(.+?)” là ngày gì\??$/.exec(q))) return "Ngày “" + m[1] + "” là " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” là ngày nào\??$/.exec(q))) return "“" + m[1] + "” là ngày " + a.replace(/\.+$/, "") + ".";
+      if ((m = /^“(.+?)” diễn ra vào ngày nào\??$/.exec(q))) return "“" + m[1] + "” diễn ra vào ngày " + a.replace(/\.+$/, "") + ".";
+      /* ===== VÁ SAU QA (2026-10-21): mẫu chuyển đổi cho các khuôn mới của
+         pairQBuild (numread, phone, emotion-advice, calm-action, proverb,
+         value-list, safety, spelling, command, story, role, judge, rev
+         tình huống mới, behavior-value "thể hiện điều gì") ===== */
+      if ((m = /^Số “(.+?)” đọc là gì\??$/.exec(q))) return "Số “" + m[1] + "” đọc là “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” là cách đọc của số nào\??$/.exec(q))) return "“" + m[1] + "” là cách đọc của số “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Số điện thoại của “(.+?)” là số nào\??$/.exec(q))) return "Số điện thoại của “" + m[1] + "” là " + a.replace(/\.+$/, "") + ".";
+      if ((m = /^“(.+?)” là số điện thoại nào\??$/.exec(q))) return "“" + m[1] + "” là số điện thoại " + a.replace(/\.+$/, "") + ".";
+      if ((m = /^Số “(.+?)” là số điện thoại của ai\??$/.exec(q))) return "Số “" + m[1] + "” là số điện thoại của “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Khi “(.+?)”, em cần làm gì\??$/.exec(q))) return "Khi “" + m[1] + "”, em cần " + qaDecap(a.replace(/\.+$/, "").replace(/^(Cần|Nên)\s+/i, "")) + ".";
+      if ((m = /^Khi nào em cần (.+?)\??$/.exec(q))) return "Khi " + qaDecap(a.replace(/\.+$/, "")) + ", em cần " + m[1] + ".";
+      if ((m = /^“(.+?)” giúp em đạt điều gì\??$/.exec(q))) return "“" + m[1] + "” giúp em " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Muốn “(.+?)”, em nên làm gì\??$/.exec(q))) return "Muốn “" + m[1] + "”, em nên " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Em nên “(.+?)” trong trường hợp nào\??$/.exec(q))) return "Trong trường hợp “" + a.replace(/\.+$/, "") + "”, em nên " + qaDecap(m[1]) + ".";
+      if ((m = /^Câu nói “(.+?)” có ý nghĩa gì\??$/.exec(q))) return "Câu nói “" + m[1] + "” có ý nghĩa là " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Câu nói nào có ý nghĩa “(.+?)”\??$/.exec(q))) return "Câu nói “" + a.replace(/\.+$/, "") + "” có ý nghĩa “" + m[1] + "”.";
+      if ((m = /^“(.+?)” gồm những nội dung nào\??$/.exec(q))) return "“" + m[1] + "” gồm " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” là nội dung của khái niệm nào\??$/.exec(q))) return "“" + m[1] + "” là nội dung của khái niệm “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” — em cần lưu ý điều gì\??$/.exec(q))) return "Với “" + m[1] + "”, em cần lưu ý " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Khi gặp “(.+?)”, em cần lưu ý điều gì\??$/.exec(q))) return "Khi gặp “" + m[1] + "”, em cần lưu ý " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Em cần “(.+?)” khi gặp điều gì\??$/.exec(q))) return "Khi gặp “" + a.replace(/\.+$/, "") + "”, em cần " + m[1] + ".";
+      if ((m = /^“(.+?)” viết thế nào cho đúng chính tả\??$/.exec(q))) return "“" + m[1] + "” được viết như sau: " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” được viết theo quy tắc nào\??$/.exec(q))) return "“" + m[1] + "” được viết theo quy tắc: " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^“(.+?)” là quy tắc viết cho trường hợp nào\??$/.exec(q))) return "“" + m[1] + "” là quy tắc viết cho “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Khi nghe hiệu lệnh “(.+?)”, em làm gì\??$/.exec(q))) return "Khi nghe hiệu lệnh “" + m[1] + "”, em " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Em “(.+?)” khi nghe hiệu lệnh nào\??$/.exec(q))) return "Em " + m[1] + " khi nghe hiệu lệnh “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^Truyện “(.+?)” kể về điều gì\??$/.exec(q))) return "Truyện “" + m[1] + "” kể về " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Truyện nào kể về “(.+?)”\??$/.exec(q))) return "Truyện “" + a.replace(/\.+$/, "") + "” kể về “" + m[1] + "”.";
+      if ((m = /^“(.+?)” làm công việc gì\??$/.exec(q))) return "“" + m[1] + "” làm công việc " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Ai làm công việc “(.+?)”\??$/.exec(q))) return "“" + a.replace(/\.+$/, "") + "” làm công việc “" + m[1] + "”.";
+      if ((m = /^Việc “(.+?)” có nên làm không\??$/.exec(q))) return "Việc “" + m[1] + "” " + qaDecap(a.replace(/\.+$/, "")) + " làm.";
+      if ((m = /^Việc làm nào được nhận xét là “(.+?)”\??$/.exec(q))) return "Việc “" + a.replace(/\.+$/, "") + "” được nhận xét là “" + m[1] + "”.";
+      if ((m = /^Việc “(.+?)” thể hiện điều gì\??$/.exec(q))) return "Việc “" + m[1] + "” thể hiện " + qaDecap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^Câu tục ngữ bắt đầu bằng “(.+?)” được nói đầy đủ thế nào\??$/.exec(q))) return "Câu tục ngữ bắt đầu bằng “" + m[1] + "” được nói đầy đủ là “" + a.replace(/\.+$/, "") + "”.";
+      if ((m = /^“(.+?)” là phần tiếp theo của câu tục ngữ nào\??$/.exec(q))) return "“" + m[1] + "” là phần tiếp theo của câu tục ngữ “" + a.replace(/\.+$/, "") + "”.";
       /* ===== B6 — lớp lớn (2026-10-15): mở rộng chuyển đổi để vòng Đúng/Sai là
          khẳng định trực tiếp thay vì dạng bọc "Đáp án đúng cho câu hỏi… là…".
          Mọi chuyển đổi dưới đây là hàm thuần của (câu hỏi, giá trị HIỂN THỊ):
@@ -2851,7 +3054,9 @@ function valueKeyOf(html) {
          ở đó đáp án đúng là một khẳng định trọn vẹn, tách khỏi câu hỏi sẽ làm
          vòng hiển thị giá trị sai (một khẳng định ĐÚNG) bị chấm là SAI. */
       /* Cặp nối chế thành dữ kiện ('“X” ứng với ý nào đúng?'): khẳng định nối trực tiếp. */
-      if ((m = /^“(.+?)” ứng với/.exec(q))) return qaCap("“" + m[1] + "” ứng với " + qaDecap(a.replace(/[.\s]+$/, ""))) + ".";
+      /* V23: khuôn “X” ứng với … đã xoá khỏi mọi đường sinh (pairQBuild,
+         Việc A) nên không còn mẫu nối “ứng với” ở đây; dữ kiện sót khuôn
+         cũ sẽ rơi xuống null và bị bỏ qua như dữ kiện không chuyển được. */
       var isSelectStmt = /(sau đây|dưới đây)/.test(q) || /^Đâu là/.test(q) || /^(Câu|Phát biểu|Khẳng định|Nhận định|Mệnh đề) nào/.test(q) || /nào (đúng|sai)\?\s*$/.test(q);
       function qaColon(head) { return qaCap(String(head).replace(/\?\s*$/, "").replace(/[:;,]$/, "")) + ": " + qaCap(a.replace(/\.+$/, "")) + "."; }
       /* "…(bao gồm|gồm|chứa) … nào?" → nối bằng "gồm" */
@@ -2876,15 +3081,54 @@ function valueKeyOf(html) {
       }
       if (!isSelectStmt) {
         /* "…bằng cách nào/theo cách nào?" và "…nào?/…bao nhiêu?" còn lại: bỏ từ hỏi, dạng hai chấm */
-        if ((m = /^(.+?)\s+(?:bằng cách nào|theo cách nào|thế nào)\??$/i.exec(q))) return qaColon(m[1]);
-        if ((m = /^(.+?)\s+(?:nào|bao nhiêu)\??$/i.exec(q))) return qaColon(m[1]);
+        if ((m = /^(.+?)\s+(?:bằng cách nào|theo cách nào|thế nào)\??$/i.exec(q))) return null; /* V23-B: bỏ qua dữ kiện, không nối hai chấm */
+        if ((m = /^(.+?)\s+(?:nào|bao nhiêu)\??$/i.exec(q))) return null; /* V23-B: bỏ qua dữ kiện, không nối hai chấm */
       }
       /* Dạng "…gì? / …thế nào?" còn lại: mệnh đề dạng "Đầu câu: nội dung." */
-      if ((m = /^(.+?)\s+(?:gì|như thế nào|thế nào)\??$/.exec(q))) return qaCap(m[1].replace(/[:;,]$/, "")) + ": " + qaCap(a.replace(/\.+$/, "")) + ".";
+      if ((m = /^(.+?)\s+(?:gì|như thế nào|thế nào)\??$/.exec(q))) return null; /* V23-B: bỏ qua thay cho mệnh đề hai chấm */
       if (isSelectStmt) return "Đáp án đúng cho câu hỏi “" + q.replace(/\?$/, "") + "” là “" + a.replace(/\.+$/, "") + "”.";
       /* Mọi câu hỏi còn lại (không thuộc nhóm chọn khẳng định): dạng hai chấm
          trực tiếp thay cho dạng bọc. */
-      return qaColon(q);
+      return null; /* V23-B: không chuyển được → bỏ qua */
+    }
+    /* V23 — Việc B: hiển thị mệnh đề Đ/S an toàn. qaToStmt nay có thể trả
+       null ("không chuyển đổi được → bỏ qua dữ kiện"). Mọi điểm HIỂN THỊ
+       mệnh đề đều đi qua đây: ưu tiên mệnh đề đã chuyển; khi giá trị hiển
+       thị cụ thể không chuyển được (kể cả giá trị SAI do bộ chọn ghép vào)
+       thì dùng dạng bọc trung tính luôn đúng ngữ nghĩa ("Đáp án đúng cho
+       câu hỏi … là [giá trị hiển thị]"). Không bao giờ hiện "null" và
+       phán quyết của vòng không đổi. */
+    function qaStmtShow(q, a) {
+      var s = qaToStmt(q, a);
+      if (s != null) return s;
+      return "Đáp án đúng cho câu hỏi “" + String(q == null ? "" : q).replace(/\?\s*$/, "") + "” là “" + String(a == null ? "" : a).replace(/\.+$/, "") + "”.";
+    }
+    /* V23 — Việc B, vá cổng trùng giá trị (dupsim tự kiểm phát hiện 14 màn
+       Đ/S ở 6 chủ đề TN&XH lớp 1 có hai vòng trùng hệt mệnh đề): hai dữ kiện
+       KHÁC nhau có thể chuyển thành CÙNG một khẳng định tự nhiên (khuôn hai
+       chấm cũ giữ chúng khác nhau nhờ nguyên văn câu hỏi), nên chọn dữ kiện
+       theo chỉ số là chưa đủ. Hàm dưới chọn tham lam: đặt trước khoá đã
+       chuẩn hoá của MỌI mệnh đề có thể hiện của mỗi dữ kiện (dạng đúng +
+       dạng sai do tfBalanceItems có thể lật tới); dữ kiện nào tự trùng
+       (dạng sai chỉ khác dạng đúng ở hoa/thường) hoặc đụng khoá đã đặt thì
+       bỏ qua. */
+    function tfStmtKey23(t) {
+      return String(t == null ? "" : t).toLowerCase().normalize("NFD")
+        .replace(/[\u0300-\u0337\u0339-\u036f]/g, "").replace(/đ/g, "d")
+        .replace(/\s+/g, " ").trim();
+    }
+    function tfPickDistinct23(list, n, keysOf) {
+      var used = Object.create(null), out = [];
+      for (var i = 0; i < list.length && out.length < n; i++) {
+        var ks = keysOf(list[i]);
+        if (!ks || !ks.length) continue;
+        var bad = false, mine = Object.create(null);
+        for (var j = 0; j < ks.length; j++) { if (mine[ks[j]] || used[ks[j]]) { bad = true; break; } mine[ks[j]] = 1; }
+        if (bad) continue;
+        for (var k = 0; k < ks.length; k++) used[ks[k]] = 1;
+        out.push(list[i]);
+      }
+      return out;
     }
     /* Cân bằng phán quyết một màn Đúng/Sai: nếu MỌI vòng cùng một phán quyết
        (màn có >=2 vòng) thì lật đúng MỘT vòng bằng cách đổi nội dung hiển thị
@@ -2986,9 +3230,19 @@ function valueKeyOf(html) {
            định dựng từ chúng <=90 ký tự khi chọn vòng đúng/sai (một vòng một
            ý ngắn, vừa sức đọc tiểu học); dữ kiện dài chỉ dùng khi không đủ
            3 dữ kiện ngắn — không loại bỏ dữ kiện nào khỏi ngân hàng. */
-        var shortF = facts.filter(function (f) { return qaToStmt(f[0], f[1]).length <= 90; });
-        var ordered = shortF.length >= 3 ? shuffle(shortF.slice()).concat(shuffle(facts.filter(function (f) { return shortF.indexOf(f) === -1; }))) : shuffle(facts.slice());
-        var selectedFacts = ordered.slice(0, 3);
+        /* V23 — Việc B: chỉ dùng dữ kiện CHUYỂN ĐƯỢC thành khẳng định
+           (qaToStmt khác null). Không còn dữ kiện nào chuyển được → đổi
+           sang câu "bắt đáp án" trên cùng ngân hàng thay vì màn Đ/S rỗng. */
+        var convF = facts.filter(function (f) { return qaToStmt(f[0], f[1]) !== null; });
+        if (!convF.length) return factsCatch(facts)();
+        var shortF = convF.filter(function (f) { return qaToStmt(f[0], f[1]).length <= 90; });
+        var ordered = shortF.length >= 3 ? shuffle(shortF.slice()).concat(shuffle(convF.filter(function (f) { return shortF.indexOf(f) === -1; }))) : shuffle(convF.slice());
+        var selectedFacts = tfPickDistinct23(ordered, 3, function (f) {
+          var ks = [tfStmtKey23(qaStmtShow(f[0], f[1]))];
+          if (f[2] != null && f[2] !== f[1]) ks.push(tfStmtKey23(qaStmtShow(f[0], f[2])));
+          return ks;
+        });
+        if (!selectedFacts.length) selectedFacts = ordered.slice(0, 1);
         var items = [];
         for (var k=0;k<3;k++){
           var f = selectedFacts[k]; if (!f) break; var truth = Math.random()<0.5;
@@ -2998,7 +3252,7 @@ function valueKeyOf(html) {
            cặp hỏi–đáp, và cân bằng phán quyết cho cả màn. */
         tfBalanceItems(items, function (it) { return it.f[2]; });
         var rounds = items.map(function (it) {
-          return { visual: kpFactVis(it.f) + '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">'+qaToStmt(it.f[0], it.shown)+"</div>", truth: it.truth, explain: "Đáp án đúng: "+it.f[1] };
+          return { visual: kpFactVis(it.f) + '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">'+qaStmtShow(it.f[0], it.shown)+"</div>", truth: it.truth, explain: "Đáp án đúng: "+it.f[1] };
         });
         var q = tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
         q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f[0]; }) }; return q;
@@ -4476,7 +4730,555 @@ function figWrapGen(gen, rate, figFn) {
     return q;
   };
 }
-function deriveFromPairs127(t) {
+/* ===== V23 — Việc A: BỘ DỰNG CÂU HỎI THEO LOẠI CẶP (pairQBuild) =====
+   Các điểm sinh từng chế MỌI cặp nối thành một khuôn máy móc duy nhất
+   "“X” ứng với ý nào đúng?" (deriveFromPairs127 ở đây, nhánh strict1 của
+   processTopicStd, và nguồn pairmeta trong collectFacts) nay đều hỏi
+   THẲNG theo LOẠI CẶP: từ vựng, tình huống–ứng xử, sự kiện–thời gian,
+   tác phẩm–tác giả, người–mô tả, vật–công dụng, khái niệm–đặc điểm,
+   công thức/kí hiệu/giá trị, bài hát–chủ đề, màu trộn, khối hình...
+   Mỗi loại có 1–3 biến thể, chọn cố định theo hàm băm của cặp (không
+   nhảy khuôn giữa hai lần mở). Cặp không phân loại được rơi về loại
+   "concept" — khuôn trung tính đầy đủ ("…là gì?" / các khuôn mô tả) —
+   KHÔNG bao giờ quay lại "ứng với ý nào/nội dung nào". Mọi khuôn ở đây
+   đều có mẫu chuyển đổi mệnh đề Đ/S tương ứng trong qaToStmt (khối C).
+   ctx = { subjId, topicId, grade }. Trả { kind, fwd, rev }: fwd hỏi về
+   vế trái (đáp án = vế phải), rev hỏi về vế phải (đáp án = vế trái). */
+function pairDecap(s) { s = String(s || "").trim(); return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+function pairHash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+function pairVar(vars, seed) { return vars[pairHash(seed) % vars.length]; }
+function pairW(s) { return String(s || "").trim().split(/\s+/).filter(Boolean); }
+function pairFirst(s) { var w = pairW(s); return w.length ? w[0].toLowerCase() : ""; }
+function pairIn(set, w) { return set.indexOf(w) !== -1; }
+var PAIR_EMOTIONS = ["vui", "vui vẻ", "buồn", "buồn bã", "giận", "tức giận", "sợ", "sợ hãi", "lo lắng", "bình tĩnh", "tự hào", "xấu hổ", "hồi hộp", "ngạc nhiên", "hạnh phúc", "căng thẳng", "yên tâm", "lo âu"];
+var PAIR_CIRC = ["bị", "được", "khi", "đến", "trước", "sau", "gặp", "thấy", "nghe", "mượn", "nói", "sống", "đi", "qua", "giờ", "buổi", "tối", "sáng", "trưa", "chiều", "đêm", "lúc", "hôm", "có"];
+var PAIR_PRON = ["bạn", "em", "bà", "mẹ", "bố", "ông", "cô", "thầy", "bé", "mình"];
+var PAIR_ACTION = ["đỡ", "an", "hỏi", "rửa", "nhờ", "giữ", "bỏ", "mời", "dỗ", "chào", "quạt", "giúp", "chuẩn", "chăm", "tôn", "tự", "không", "nói", "biết", "xin", "cảm", "đưa", "dắt", "pha", "rót", "xếp", "dọn", "lau", "ngồi", "đứng"];
+var PAIR_FUNC = ["để", "dùng", "làm", "giúp", "bảo", "lưu", "gõ", "điều", "sửa", "ghép", "lọc", "xét", "đựng", "chứa", "tạo", "cung", "ngăn", "phát", "thu", "trồng", "sản", "kiểm", "ổn", "hiển", "thực", "cho", "kết", "truyền", "biến", "đo", "tính", "in", "mở", "đóng", "nguồn"];
+var PAIR_PERSON = ["kẻ", "người", "nhân", "ông", "bà", "anh", "chị", "nữ", "vị", "tên"];
+var PAIR_PROP = ["bằng", "đều", "luôn", "chỉ", "đúng", "sai", "to", "nhỏ", "lớn", "dài", "ngắn", "cao", "thấp", "mạnh", "yếu", "nhanh", "chậm", "nóng", "lạnh", "sáng", "tối", "trầm", "vang", "trong", "đục", "nặng", "nhẹ", "sâu", "nông", "rộng", "hẹp", "đẹp", "xấu", "tốt", "thuộc", "không"];
+
+function pairArithSide(s) {
+  /* VÁ VÒNG 2 (2026-10-21): vế chứa phép tính (22 × 48, 3 + 4…) không
+     bao giờ là mốc thời gian/năm — dù kết quả rơi vào khoảng 1000–2100 */
+  s = String(s || "");
+  return /[×·÷]/.test(s) || /\d\s*[+]\s*\d/.test(s);
+}
+function pairIsTimeSide(s, subj) {
+  s = String(s || "").trim();
+  if (pairArithSide(s)) return false;
+  /* VÁ SAU QA (2026-10-21): số trần 3 chữ số KHÔNG bao giờ tự nó là "năm"
+     (111/113/114/115 là số điện thoại khẩn cấp; 908 là số để đọc). "Năm"
+     chỉ khi: có chữ "năm" đi kèm, hoặc số trần 4 chữ số trong khoảng năm
+     thật 1000–2100, hoặc số 3 chữ số trong môn lịch sử (938, 968, 981). */
+  if (/^năm\s+\d{3,4}(\s*(trước công nguyên|TCN))?$/i.test(s) || /^năm\s+\d{3,4}\b/.test(s)) return true;
+  if (/^\d{4}$/.test(s)) { var ny = parseInt(s, 10); if (ny >= 1000 && ny <= 2100) return true; }
+  if (/^\d{3}$/.test(s) && /(^|-)ls$|lsdl/.test(subj || "")) return true;
+  /* vế chữ "Ngày/Tháng ..." chỉ là thời gian ở môn lịch sử/địa lí/đạo đức
+     hoặc khi có con số; tránh bắt nhầm tên tác phẩm ("Tháng Giêng" — Ngữ văn) */
+  if (/^(ngày|tháng|thế kỉ|thế kỷ)\s+\S+/i.test(s) && (/\d/.test(s) || /(^|-)ls$|lsdl|(^|-)dl$|(^|-)dd$|gdcd/.test(subj || ""))) return true;
+  return false;
+}
+function pairIsDateSide(s) { return /^\d{1,2}\/\d{1,2}(\/\d{2,4})?$/.test(String(s || "").trim()) || /^\d{1,2}\s*tháng\s*\d{1,2}$/i.test(String(s || "").trim()) || /^ngày\s+\d{1,2}\s+tháng\s+\d{1,2}/i.test(String(s || "").trim()); }
+/* ===== VÁ SAU QA (2026-10-21) — các hàm nhận diện bổ sung cho pairQBuild.
+   QA độc lập phát hiện bộ phân loại chọn nhầm quan hệ cho 5 họ cặp thật:
+   số khẩn cấp bị hỏi như năm sự kiện; tình huống/hành động bị hỏi "có
+   nghĩa là gì"; cặp cảm xúc lẫn hành động điều tiết; giá trị GDCD bị hỏi
+   như tình huống/thời điểm; hướng dẫn an toàn bị hỏi như đặc điểm. Các
+   hàm dưới đây nhận diện: mệnh lệnh/hướng dẫn an toàn, cụm hành động,
+   mệnh đề giá trị (quyền/nghĩa vụ), cặp đọc số, số điện thoại khẩn cấp,
+   ca dao/ngạn ngữ, tình huống có căn cứ ở vế trái. ===== */
+var PAIR_VERBS = PAIR_ACTION.concat(["đọc", "viết", "chơi", "ăn", "uống", "học", "làm", "chạy", "hát", "mua", "bán", "trồng", "nuôi", "nằm", "bò", "hô", "ném", "lăn", "tìm", "gọi", "báo", "sờ", "chạm", "bấm", "đăng", "lấy", "đánh", "nấu", "vẽ", "cắt", "mở", "đóng", "xây", "bắt", "cứu", "kéo", "đẩy", "mang", "đeo", "đội", "mặc", "quét", "tưới", "gieo", "hái", "chăn", "nhặt", "xem", "kể", "nghe", "biết", "hít", "thở", "khóc", "cười", "để", "nhận", "trả", "cất", "gửi", "đi", "ở", "dừng"]);
+var PAIR_IMPVERB = ["sờ", "chạm", "bấm", "đăng", "mở", "chia", "gặp", "làm", "đi", "chạy", "chơi", "ăn", "uống", "lấy", "đưa", "nói", "dùng", "giữ", "quên", "lãng", "xả", "vứt", "chen", "đẩy", "trêu", "đánh", "bỏ", "để", "đeo", "đội", "cầm", "ngồi", "đứng", "hát", "đọc", "viết", "học", "mua", "bán", "cho", "mượn", "trả", "kể", "nghe", "xem", "gọi", "hỏi"];
+var PAIR_VIRTUEFW = ["trung", "tự", "siêng", "tôn", "kiên", "bản", "thật", "chăm"];
+var PAIR_OBJHINT = /(điện|nồi|bếp|dao|link|đường|đồ của|sân|thang|thông tin|mật khẩu|bệnh viện|riêng tư|cá nhân)/i;
+var PAIR_CONDUCTFW = ["hứa", "giấu", "bỏ", "quên", "nói", "chê", "trêu", "đánh", "mắng", "lấy", "mượn", "làm", "học", "chơi", "ăn"];
+function pairImperative(s) {
+  var x = String(s || "").trim();
+  var m = /^(không|đừng|hãy)\s+(tự ý\s+)?([a-zà-ỹ]+)/i.exec(x);
+  if (m) {
+    var head = m[1].toLowerCase();
+    if (head === "hãy" || head === "đừng") return true;
+    return PAIR_IMPVERB.indexOf(m[3].toLowerCase()) !== -1;
+  }
+  if (/^nhờ\s+\S+/i.test(x)) return true;
+  var m2 = /,\s*không\s+([a-zà-ỹ]+)/i.exec(x);
+  if (m2 && PAIR_IMPVERB.indexOf(m2[1].toLowerCase()) !== -1) return true;
+  return false;
+}
+function pairMannerR(s) {
+  return /^(đi|chạy|ngồi|đứng|nằm|hát)\s+(nhẹ|chậm|khẽ|trật tự|an toàn|cẩn thận|thẳng|nghiêm)/i.test(String(s || "").trim());
+}
+function pairAdviceR(s) { return /^(hỏi|báo|gọi|nhờ)\s/i.test(String(s || "").trim()); }
+function pairActionLike(s) {
+  s = String(s || "").trim();
+  if (!s) return false;
+  if (pairImperative(s)) return true;
+  if (PAIR_VERBS.indexOf(pairFirst(s)) === -1) return false;
+  if (pairW(s).length > 9) return false;
+  return true;
+}
+function pairValueStmt(r) {
+  return /(quyền|nghĩa vụ|vừa là|bắt buộc phải|lợi ích hợp pháp|được hưởng|phải thực hiện)/i.test(String(r || ""));
+}
+function pairNumWordSide(s) {
+  s = String(s || "").trim();
+  if (/\d/.test(s)) return false;
+  if (!/^(một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười|mươi|mốt|tư|linh|lẻ|trăm|nghìn|ngàn|triệu|tỷ)(\s|$)/i.test(s)) return false;
+  if (pairW(s).length > 8) return false;
+  return /(trăm|mươi|mười|nghìn|ngàn|linh|triệu|tỷ)/i.test(s) || pairW(s).length <= 2;
+}
+function pairBareNumSide(s) { return /^\d{1,4}$/.test(String(s || "").trim()); }
+var PAIR_EMERG = ["111", "112", "113", "114", "115"];
+function pairPhoneSide(numSide, otherSide, ctx) {
+  var n = String(numSide || "").trim();
+  if (PAIR_EMERG.indexOf(n) === -1) return false;
+  var o = String(otherSide || "").toLowerCase();
+  if (/(công an|cứu hoả|cứu hỏa|cấp cứu|tổng đài|số gọi|khẩn cấp|y tế|bảo vệ trẻ em)/.test(o)) return true;
+  if (ctx && /hotro/.test(ctx.topicId || "")) return true;
+  if (ctx && /(^|-)dd$|gdcd/.test(ctx.subjId || "")) return true;
+  return false;
+}
+var PAIR_PROVERBS = ["uống nước nhớ nguồn", "lá lành đùm lá rách", "ăn quả nhớ kẻ trồng cây", "ăn quả nhớ người trồng cây", "gần mực thì đen", "gần đèn thì sáng", "học thầy không tày học bạn", "đi một ngày đàng học một sàng khôn", "tích tiểu thành đại", "đền ơn đáp nghĩa", "giấy rách phải giữ lấy lề", "một cây làm chẳng nên non", "ba cây chụm lại nên hòn núi cao", "thương người như thể thương thân", "nhiễu điều phủ lấy giá gương", "bầu ơi thương lấy bí cùng", "chị ngã em nâng", "môi hở răng lạnh", "không thầy đố mày làm nên", "muốn sang thì bắc cầu kiều", "con hơn cha là nhà có phúc", "kính lão đắc thọ", "học ăn học nói học gói học mở"];
+function pairNormTxt(s) { return String(s || "").toLowerCase().replace(/[.,;:!?“”"']/g, "").replace(/\s+/g, " ").trim(); }
+function pairProverbPair(l, r, subj) {
+  /* Nhận diện ca dao/tục ngữ/thành ngữ bằng từ điển câu nói quen thuộc
+     trong SGK — KHÔNG suy đoán theo độ dài vế (cách suy đoán theo độ dài
+     bắt nhầm hàng loạt cặp hành vi/tác phẩm; QA chỉ yêu cầu các cặp ca
+     dao thật đừng bị hỏi như tình huống). */
+  if (!/(^|-)dd$|hdtn|gdcd|(^|-)nv$/.test(subj || "")) return false;
+  if (pairImperative(r) || pairValueStmt(r)) return false;
+  var nl = pairNormTxt(l);
+  for (var i = 0; i < PAIR_PROVERBS.length; i++) if (nl.indexOf(PAIR_PROVERBS[i]) !== -1) return true;
+  if (nl.indexOf("có công mài sắt") !== -1 && nl.indexOf("nên kim") !== -1) return true;
+  return false;
+}
+function pairSayingFragment(l) {
+  var nl = pairNormTxt(l);
+  return nl.indexOf("có công mài sắt") !== -1 && nl.indexOf("nên kim") === -1;
+}
+var PAIR_PLACEHINT = /(trường|lớp học|sân|thư viện|bệnh viện|công viên|bể bơi|rạp|chợ|nơi công cộng)/i;
+function pairSafetyPair(l, r, ctx) {
+  var subj = (ctx && ctx.subjId) || "", topic = (ctx && ctx.topicId) || "";
+  if (/(^|-)kh$|khtn|(^|-)sh$/.test(subj)) return false;
+  if (pairValueStmt(r)) return false;
+  if (PAIR_VIRTUEFW.indexOf(pairFirst(l)) !== -1) return false;
+  /* vế trái mở đầu bằng từ hoàn cảnh (Bị bắt nạt…) thì nhánh tình huống
+     đúng quan hệ hơn — không giành sang safety */
+  if (["bị", "khi", "gặp", "thấy"].indexOf(pairFirst(l)) !== -1) return false;
+  /* vế phải là hành động gọi số khẩn cấp (Cứu hoả → Gọi 114) */
+  if (/gọi\s*11[1-5]/i.test(String(r || ""))) return true;
+  /* chủ đề môi trường (HĐTN): việc phải làm với vật/việc trong bài */
+  if (/(^|-)hdtn/.test(subj) && /env/.test(topic) && pairActionLike(r) && (/(rác|thùng|vứt|bỏ|xả)/i.test(r) || pairImperative(r))) return true;
+  /* chủ đề bảo vệ/bản quyền (Tin học): vế phải là cách xử lí phải làm
+     (Mật khẩu → Giữ bí mật) — khuôn lưu ý, không phải công dụng */
+  if (/(^|-)tin$/.test(subj) && /baove|banquyen/.test(topic) && pairActionLike(r)) return true;
+  var trig = pairImperative(r) || pairMannerR(r) || (pairAdviceR(r) && /safe|antoan|baove|internet/.test(topic));
+  if (trig) {
+    if (/safe|antoan/.test(topic)) return true;
+    if (/(^|-)tin$/.test(subj) && /baove|banquyen|internet/.test(topic)) return true;
+    if (PAIR_OBJHINT.test(l)) return true;
+    if (pairW(l).length <= 3 && /(^|-)dd$|hdtn|gdcd/.test(subj)) return true;
+    return false;
+  }
+  /* quy tắc ứng xử ở nơi công cộng/lớp học (môn hành vi): vế trái là nơi
+     chốn, vế phải là việc phải làm ở đó (Thư viện → Giữ im lặng) */
+  if (/(^|-)dd$|hdtn/.test(subj) && pairActionLike(r) && PAIR_PLACEHINT.test(l)) return true;
+  return false;
+}
+var PAIR_ANYPRON = ["bạn", "em", "mình", "người", "cô", "thầy", "chú", "bác"];
+function pairOutcomeR(r) { return /^(mở rộng|giúp|để|làm đẹp|làm phiền)/i.test(String(r || "").trim()); }
+function pairSitSupport(l, r, ctx) {
+  if (pairValueStmt(r)) return false;
+  /* vế phải mở đầu bằng "Để …" là mệnh đề mục đích (Để kẻ thẳng, Để dành
+     tiền) — không phải hành động đáp lại tình huống */
+  if (/^để\s/i.test(String(r || "").trim())) return false;
+  var subj = (ctx && ctx.subjId) || "";
+  var fwL = pairFirst(l), wL = pairW(l).length;
+  var words = pairW(String(l).toLowerCase());
+  var anyPron = false;
+  for (var i = 0; i < words.length; i++) if (PAIR_ANYPRON.indexOf(words[i]) !== -1) { anyPron = true; break; }
+  if (PAIR_PRON.indexOf(fwL) !== -1 || anyPron) return true;
+  if (/!$/.test(l)) return true;
+  /* môn văn/lịch sử/địa lí/kinh tế-pháp luật: chỉ nhận căn cứ đại từ ở
+     trên — tránh bắt nhầm cặp định nghĩa mở đầu bằng động từ (Nói mỉa) */
+  if (/(^|-)nv$|lsdl|(^|-)ls$|(^|-)dl$|ktpl/.test(subj)) return false;
+  if (PAIR_CIRC.indexOf(fwL) !== -1) return true;
+  /* cảnh thời tiết + việc phải làm khi trời như vậy (Trời mưa → Mang ô) */
+  if (/(mưa|nắng|lạnh|nóng)/i.test(l) && wL <= 3 && ["mang", "đội", "mặc", "cầm", "đeo", "che", "tránh"].indexOf(pairFirst(r)) !== -1) return true;
+  /* tín hiệu/biển báo giao thông → việc phải làm (Đèn đỏ → Dừng lại) */
+  if (/^(đèn|biển báo)\s/i.test(l)) return true;
+  if (ctx && /(^|-)dd$|hdtn|gdcd/.test(subj) && wL >= 3) return true;
+  /* môn hành vi: vế trái là một hoạt động/việc đang diễn ra (Học xong,
+     Mua vé) cũng là hoàn cảnh khi vế phải là hành động đáp lại — trừ khi
+     vế trái là từ đức tính (Tự lập, Tôn trọng) hoặc vế phải là kết quả/
+     lợi ích chứ không phải hành động (Đọc sách → Mở rộng hiểu biết) */
+  if (ctx && /(^|-)dd$|hdtn|gdcd/.test(subj) && wL >= 2 && PAIR_VERBS.indexOf(fwL) !== -1 && PAIR_VIRTUEFW.indexOf(fwL) === -1 && !pairOutcomeR(r)) return true;
+  return false;
+}
+function pairConductL(l) { return pairW(l).length >= 3 && PAIR_CONDUCTFW.indexOf(pairFirst(l)) !== -1; }
+function pairEmoStart(s) {
+  var x = String(s || "").trim().toLowerCase();
+  for (var i = 0; i < PAIR_EMOTIONS.length; i++) if (x === PAIR_EMOTIONS[i] || x.indexOf(PAIR_EMOTIONS[i] + " ") === 0) return true;
+  return false;
+}
+function pairSitRev(r, seed) {
+  if (pairActionLike(r) && pairW(r).length <= 7) return pairVar(["Khi nào em nên " + pairDecap(r) + "?", "Việc “" + r + "” nên làm khi nào?"], seed);
+  return "Em nên “" + r + "” trong trường hợp nào?";
+}
+/* ===== VÁ VÒNG 2 (2026-10-21) — CỔNG HAI PHÍA cho kind "situation".
+   QA phúc thẩm vòng 2 (Mục R2.2): ở tầng knowledge.pairs, nhánh tình
+   huống còn hỏi sai quan hệ cho ~16 cặp GDCD Lớp 7–9 và vài cặp lẻ ở
+   tv/tnxh — vế trái là NHÃN khái niệm/đức tính/quyền/từ để hỏi/quan hệ
+   họ hàng/vai trò người (không phải hoàn cảnh), hoặc vế phải là ĐỊNH
+   NGHĨA/BIỂU HIỆN/LỢI ÍCH (không phải hành động đáp lại). Một phần do
+   chính bản vá vòng 1 kéo nhầm (nhánh chỉ cần căn cứ một phía), phần
+   còn lại là tồn dư vòng 1 ở tầng knowledge. pairSitBlocked là CHỐT
+   TRUNG TÂM ở cuối pairQBuild: cặp nào đã rơi vào "situation" mà
+   trượt điều kiện hai phía sẽ rơi về behavior-value (môn hành vi + vế
+   trái là việc làm) hoặc concept — đúng phân loại vòng 1. ===== */
+var PAIR_RESPFW = ["dạy", "quan", "vâng", "đến", "có", "chúc"];
+function pairQuestionL(l) {
+  /* vế trái là một TỪ ĐỂ HỎI ("Khi nào?" → "Hỏi về thời gian") — cặp từ
+     vựng/ngữ pháp, không bao giờ là hoàn cảnh; vòng 1 bị khuôn tình
+     huống nuốt chỉ vì "khi" nằm trong tập từ hoàn cảnh */
+  if (!/\?\s*$/.test(String(l || ""))) return false;
+  var q = String(l || "").replace(/\?\s*$/, "").trim().toLowerCase();
+  return ["ai", "gì", "cái gì", "làm gì", "khi nào", "bao giờ", "ở đâu", "thế nào", "vì sao", "tại sao", "làm sao", "bao nhiêu", "mấy"].indexOf(q) !== -1;
+}
+function pairRespAction(r) {
+  /* vế phải có phải HÀNH ĐỘNG học sinh đáp lại được không: động từ đứng
+     đầu (kể cả các động từ đáp ứng chưa có trong PAIR_VERBS như "quan
+     tâm", "vâng lời", "đến đúng giờ", "chúc mừng"), mệnh lệnh, cách làm.
+     Cụm hành động dài vẫn là hành động ("Nói không để bảo vệ bản thân
+     và xã hội" — 10 từ, vượt trần 9 từ của pairActionLike) */
+  if (pairActionLike(r) || pairImperative(r) || pairMannerR(r)) return true;
+  if (PAIR_RESPFW.indexOf(pairFirst(r)) !== -1) return true;
+  return PAIR_VERBS.indexOf(pairFirst(r)) !== -1 && pairW(r).length <= 14;
+}
+function pairSitBlocked(l, r, ctx) {
+  ctx = ctx || {};
+  var subj = ctx.subjId || "", topic = ctx.topicId || "";
+  var fwL = pairFirst(l);
+  var wL = pairW(l).length;
+  var ll = String(l || "").toLowerCase();
+  /* --- chốt chung mọi môn --- */
+  if (pairQuestionL(l)) return true;
+  if (/^bố mẹ của (bố|mẹ)/i.test(r) || /^(ông bà|ông|bà)\s+(nội|ngoại)\b/i.test(l)) return true; /* định nghĩa họ hàng → concept */
+  if (/^bạn bè(\s|$)/i.test(l)) return true; /* danh từ nhóm bạn, không phải hoàn cảnh */
+  if (wL === 1) return true; /* nhãn khái niệm một từ (Sáng tạo) */
+  if (/^(bạo lực|xâm hại|lạm dụng)\b/i.test(r)) return true; /* vế phải là NHÃN hiện tượng (vd "Bạo lực về tinh thần") */
+  if (/^không\s/i.test(r) && !pairImperative(r)) return true; /* "Không + tính chất" là định nghĩa phủ định (Không thiên vị, Không phải khoan dung), không phải hành động đáp lại */
+  if (/(nghĩa vụ|bổn phận)/i.test(l) || pairValueStmt(l)) return true; /* vế trái là nhãn quyền/nghĩa vụ */
+  if (/^(bạo lực|xâm hại|lạm dụng|tệ nạn|tham nhũng)\b/i.test(l)) return true; /* vế trái là khái niệm hiện tượng xã hội (Bạo lực thể chất → định nghĩa) */
+  if (/^chưa\s/i.test(r) && !pairImperative(r)) return true; /* vế phải là nhận xét/đánh giá (Chưa quý trọng thời gian) */
+  if (/nhanhoa/.test(topic) || /nhân hoá/i.test(r)) return true; /* cặp nhân hoá hỏi như khái niệm (Ông mặt trời) */
+  if (/^ông\s+.+,\s*bà\s+/i.test(l)) return true; /* cặp tên nhân vật (Ông Đùng, bà Đùng) */
+  if ((/(^|-)tv$|(^|-)nv$/.test(subj)) && !pairRespAction(r)) return true; /* môn văn: vế phải không phải hành động thì không phải tình huống */
+  /* --- chốt riêng GDCD: điều kiện HAI PHÍA --- */
+  if (/gdcd/.test(subj)) {
+    if (PAIR_VIRTUEFW.indexOf(fwL) !== -1) return true; /* đức tính đứng một mình (Tôn trọng…, Tự…) không phải hoàn cảnh */
+    if (/đúng (hẹn|giờ)/i.test(l)) return true; /* việc làm đúng hẹn → vế phải là giá trị thể hiện, không phải hành động đáp lại */
+    if (pairOutcomeR(r) || pairEmoStart(r) || pairValueStmt(r)) return true; /* vế phải là lợi ích/cảm xúc/mệnh đề giá trị */
+    if (/^tìm cách\s/i.test(r) || /^học tập\s+(có|tự)\s/i.test(r)) return true; /* vế phải là cách diễn giải/nhãn phẩm chất học tập */
+    if (!pairRespAction(r)) return true; /* vế phải không phải hành động đáp lại được (vd "Tiêu dùng thân thiện…") */
+    /* vế trái phải có CĂN CỨ hoàn cảnh: từ hoàn cảnh, đại từ trong một
+       cảnh, danh từ cảnh huống/khẩn cấp, cảnh thời tiết/giao thông,
+       hoặc động từ mở đầu (việc đang xảy ra) — nhãn khái niệm trượt hết */
+    var pronScan = ll.replace(/người thân/g, " ");
+    var words = pairW(pronScan);
+    var anyPron = false;
+    for (var i = 0; i < words.length; i++) if (["bạn", "em", "mình", "người", "cô", "thầy", "chú", "bác", "bố", "mẹ", "ông", "bà", "bé"].indexOf(words[i]) !== -1) { anyPron = true; break; }
+    var ev = PAIR_CIRC.indexOf(fwL) !== -1 || anyPron
+      || /(cháy|lửa|khói|lũ|sét|đuối|bom|mìn|vật lạ|hàng giả|hàng nhái|bắt nạt|bạo lực)/i.test(l)
+      || /^(đèn|biển báo)\s/i.test(l)
+      || (/(mưa|nắng|lạnh|nóng)/i.test(l) && wL <= 4)
+      || (PAIR_VERBS.indexOf(fwL) !== -1 && PAIR_VIRTUEFW.indexOf(fwL) === -1);
+    if (!ev) return true;
+  }
+  return false;
+}
+function pairSideKind(s) {
+  s = String(s || "").trim();
+  /* công thức: có dấu = hoặc chứa chữ số dưới chân trong một khối không dấu cách */
+  if (/=/.test(s) && /[\dA-Za-zÀ-ỹ]/.test(s)) return "formula";
+  if (/[₀₁₂₃₄₅₆₇₈₉]/.test(s) && !/\s/.test(s)) return "formula";
+  if (/^\d+([.,]\d+)?\s*(cm|mm|dm|km|m|kg|g|mg|l|ml|°|%|đồng|phút|giây|giờ|tuổi|tuần|tháng|năm|cái|con|quả|bông|trang|bài)?$/.test(s)) return "quantity";
+  /* kí hiệu hoá học: CHỈ chữ Latin/digit/chữ dưới chân, không dấu tiếng Việt, không dấu cách */
+  if (/^[A-Za-z0-9₀₁₂₃₄₅₆₇₈₉]+$/.test(s) && s.length <= 7 && (/\d/.test(s) || /[₀-₉]/.test(s) || s.length <= 2)) return "symbol";
+  return "";
+}
+function pairNameLike(s) {
+  var w = pairW(s);
+  if (w.length < 2 || w.length > 4) return false;
+  if (/\d/.test(s)) return false;
+  for (var i = 0; i < w.length; i++) {
+    var c = w[i].charAt(0);
+    if (c === c.toLowerCase() && c !== c.toUpperCase()) return false;
+  }
+  return true;
+}
+function pairQBuild(L, R, ctx) {
+  ctx = ctx || {};
+  var subj = ctx.subjId || "", topic = ctx.topicId || "";
+  var l = String(L || "").trim(), r = String(R || "").trim();
+  var seed = l + "|" + r;
+  var kind, fwd, rev;
+  var rl = r.toLowerCase();
+  var fwL = pairFirst(l), fwR = pairFirst(r);
+  var wL = pairW(l).length, wR = pairW(r).length;
+  var behaviorSubj = /(^|-)dd$|hdtn|gdcd/.test(subj);
+  var techSubj = /(^|-)tin$|(^|-)cn$|(^|-)kh$|tnxh|(^|-)math$/.test(subj);
+  var proseSubj = /(^|-)nv$|lsdl|(^|-)ls$|(^|-)dl$|ktpl/.test(subj);
+
+  if (/eng/.test(subj) || /^e\d+-u/.test(topic)) {
+    kind = "vocab";
+    fwd = pairVar(["Từ “" + l + "” có nghĩa là gì?", "“" + l + "” có nghĩa là gì?"], seed);
+    rev = "Từ tiếng Anh nào có nghĩa là “" + r + "”?";
+  } else if (/!$/.test(l) && pairActionLike(r)) {
+    /* hiệu lệnh (Thể dục): vế trái là lệnh hô, vế phải là động tác đáp lại */
+    kind = "command";
+    fwd = "Khi nghe hiệu lệnh “" + l + "”, em làm gì?";
+    rev = "Em “" + pairDecap(r) + "” khi nghe hiệu lệnh nào?";
+  } else if (PAIR_EMOTIONS.indexOf(rl) !== -1) {
+    kind = "emotion";
+    fwd = "“" + l + "” thể hiện cảm xúc nào?";
+    rev = "Điều nào thể hiện cảm xúc “" + r + "”?";
+  } else if (/camxuc/.test(topic)) {
+    /* VÁ SAU QA: chủ đề cảm xúc — "emotion" chỉ khi cả hai vế đều là trạng
+       thái cảm xúc. Vế phải là lời khuyên/kiềm chế → khuôn cần-làm-gì; vế
+       trái là hành động điều tiết (hít thở sâu) → khuôn việc-làm/thể hiện;
+       vế phải mở đầu bằng trạng thái (Bình tĩnh lại) → khuôn giúp-đạt. */
+    if (/^(cần|nên)\s/i.test(r)) {
+      kind = "emotion-advice";
+      var advR = r.replace(/^(Cần|Nên)\s+/i, "");
+      fwd = "Khi “" + l + "”, em cần làm gì?";
+      rev = "Khi nào em cần " + pairDecap(advR) + "?";
+    } else if (pairActionLike(l) && pairEmoStart(r) && pairW(r).length <= 2) {
+      kind = "emotion";
+      fwd = "“" + l + "” thể hiện cảm xúc nào?";
+      rev = "Điều nào thể hiện cảm xúc “" + r + "”?";
+    } else if (pairActionLike(l) && pairEmoStart(r)) {
+      kind = "calm-action";
+      fwd = "“" + l + "” giúp em đạt điều gì?";
+      rev = "Muốn “" + r + "”, em nên làm gì?";
+    } else if (pairActionLike(l)) {
+      kind = "behavior-value";
+      fwd = "Việc “" + l + "” có ý nghĩa gì?";
+      rev = "Việc làm nào thể hiện “" + r + "”?";
+    } else {
+      kind = "emotion";
+      fwd = "“" + l + "” thể hiện cảm xúc nào?";
+      rev = "Điều nào thể hiện cảm xúc “" + r + "”?";
+    }
+  } else if (pairIsDateSide(l) && /^ngày\s/i.test(r)) {
+    kind = "date";
+    fwd = "Ngày “" + l + "” là ngày gì?";
+    rev = "“" + r + "” là ngày nào?";
+  } else if (pairIsDateSide(r) && /^ngày\s/i.test(l)) {
+    kind = "date";
+    fwd = "“" + l + "” là ngày nào?";
+    /* VÁ VÒNG 2: vế ngày viết đầy đủ ("Ngày 5 tháng 6 hằng năm") không
+       lồng thêm chữ "Ngày" ở ngoài (cặp ngày kỉ niệm — gd8-b5) */
+    rev = /^ngày\s/i.test(r) ? ("“" + r + "” là ngày gì?") : ("Ngày “" + r + "” là ngày gì?");
+  } else if (pairBareNumSide(l) && pairNumWordSide(r)) {
+    /* VÁ SAU QA: cặp đọc số (908 ↔ chín trăm linh tám) — hỏi cách đọc,
+       không phải sự kiện/năm */
+    kind = "numread";
+    fwd = "Số “" + l + "” đọc là gì?";
+    rev = "“" + r + "” là cách đọc của số nào?";
+  } else if (pairBareNumSide(r) && pairNumWordSide(l)) {
+    kind = "numread";
+    fwd = "“" + l + "” là cách đọc của số nào?";
+    rev = "Số “" + r + "” đọc là gì?";
+  } else if (pairPhoneSide(r, l, ctx)) {
+    /* VÁ SAU QA: số điện thoại khẩn cấp 111–115 — hỏi số điện thoại,
+       không phải năm sự kiện */
+    kind = "phone";
+    fwd = /^số\s/i.test(l) ? ("“" + l + "” là số điện thoại nào?") : ("Số điện thoại của “" + l + "” là số nào?");
+    rev = "Số “" + r + "” là số điện thoại của ai?";
+  } else if (pairPhoneSide(l, r, ctx)) {
+    kind = "phone";
+    fwd = "Số “" + l + "” là số điện thoại của ai?";
+    rev = /^số\s/i.test(r) ? ("“" + r + "” là số điện thoại nào?") : ("Số điện thoại của “" + r + "” là số nào?");
+  } else if (pairIsTimeSide(l, subj) && !pairArithSide(l) && !pairArithSide(r)) {
+    kind = "event";
+    fwd = pairVar(["Vào “" + l + "”, sự kiện nào đã diễn ra?", "Sự kiện nào diễn ra vào “" + l + "”?"], seed);
+    rev = (/^năm\s/i.test(l) || /^\d{3,4}$/.test(l)) ? ("Sự kiện “" + r + "” diễn ra vào năm nào?") : ("Sự kiện “" + r + "” diễn ra vào thời gian nào?");
+  } else if (pairIsTimeSide(r, subj) && !pairArithSide(l) && !pairArithSide(r)) {
+    kind = "event";
+    fwd = (/^năm\s/i.test(r) || /^\d{3,4}$/.test(r)) ? ("Sự kiện “" + l + "” diễn ra vào năm nào?") : (/^ngày\s+\d/i.test(r) ? ("Sự kiện “" + l + "” diễn ra vào ngày nào?") : ("Sự kiện “" + l + "” diễn ra vào thời gian nào?"));
+    rev = pairVar(["Vào “" + r + "”, sự kiện nào đã diễn ra?", "Sự kiện nào diễn ra vào “" + r + "”?"], seed);
+  } else if (/\+/.test(l) && /(^|-)mt$/.test(subj)) {
+    kind = "mix";
+    fwd = "Trộn “" + l + "” sẽ được màu nào?";
+    rev = "Màu “" + r + "” là kết quả trộn của những màu nào?";
+  } else if (/^khối\s/i.test(r)) {
+    kind = "shape";
+    fwd = "“" + l + "” có dạng khối nào?";
+    rev = "Đồ vật nào có dạng “" + r + "”?";
+  } else if (/^màu\s/i.test(l) && (ctx.grade || 9) <= 3 && !/dùng cho|là hệ|hệ màu/.test(rl)) {
+    kind = "example";
+    fwd = "Ví dụ nào thuộc “" + l + "”?";
+    rev = "“" + r + "” thuộc nhóm nào?";
+  } else if (pairSideKind(r) === "formula") {
+    kind = "value-formula";
+    fwd = "Công thức của “" + l + "” là gì?";
+    rev = "“" + r + "” là công thức của đại lượng nào?";
+  } else if (pairSideKind(l) === "formula" || pairSideKind(l) === "symbol") {
+    kind = "value-formula";
+    fwd = "“" + l + "” là gì?";
+    rev = "“" + r + "” được kí hiệu là gì?";
+  } else if (pairSideKind(r) === "symbol") {
+    kind = "value-symbol";
+    fwd = "Kí hiệu của “" + l + "” là gì?";
+    rev = "“" + r + "” là kí hiệu của chất nào?";
+  } else if (pairSideKind(r) === "quantity") {
+    kind = "value-quantity";
+    fwd = pairVar(["“" + l + "” bằng bao nhiêu?", "“" + l + "” có giá trị bằng bao nhiêu?"], seed);
+    rev = pairVar(["“" + r + "” là giá trị của khái niệm nào?", "Lượng nào có giá trị bằng “" + r + "”?"], seed);
+  } else if (PAIR_PERSON.indexOf(fwR) !== -1 && (/(^|-)nv$/.test(subj) || fwR === "kẻ")) {
+    kind = "person";
+    fwd = "“" + l + "” là ai?";
+    rev = "“" + r + "” là mô tả của nhân vật nào?";
+  } else if (/(^|-)nv$/.test(subj) && pairNameLike(r) && !pairNameLike(l)) {
+    kind = "author";
+    fwd = "“" + l + "” là tác phẩm của ai?";
+    rev = "“" + r + "” là tác giả của tác phẩm nào?";
+  } else if (/(^|-)nv$/.test(subj) && pairNameLike(l) && !pairNameLike(r)) {
+    kind = "author";
+    fwd = "“" + l + "” là tác giả của tác phẩm nào?";
+    rev = "“" + r + "” là tác phẩm của ai?";
+  } else if (/(^|-)nv$/.test(subj) && wL <= 5 && ["ăn", "kể", "cứu", "tìm", "gặp", "sống", "mở", "lấy"].indexOf(fwR) !== -1 && !/^truyện\s+(tranh|ngắn|cổ|thơ|cười|ngụ|dân gian)/i.test(l)) {
+    /* truyện/tác phẩm mà vế phải là tóm tắt tình tiết (Cây khế → Ăn khế trả vàng) */
+    kind = "story";
+    fwd = "Truyện “" + l + "” kể về điều gì?";
+    rev = "Truyện nào kể về “" + r + "”?";
+  } else if (/(quyền|nghĩa vụ|bổn phận)/i.test(l) && /,/.test(r) && !pairImperative(r) && ["dùng", "để", "giúp", "làm", "quyền", "nghĩa"].indexOf(fwR) === -1) {
+    /* VÁ SAU QA (họ 4): quyền/nghĩa vụ/bổn phận có nội dung liệt kê — hỏi
+       nội dung, tuyệt đối không hỏi như tình huống hay thời điểm */
+    kind = "value-list";
+    fwd = "“" + l + "” gồm những nội dung nào?";
+    rev = "“" + r + "” là nội dung của khái niệm nào?";
+  } else if (behaviorSubj && (rl === "không nên" || rl === "nên" || /\(không nên\)\s*$/.test(r))) {
+    /* nhận xét nên/không nên cho một việc làm (Đạo đức) — đặt trước các
+       nhánh khuôn khác để cặp "việc làm → Không nên" không bị bắt nhầm */
+    kind = "judge";
+    fwd = "Việc “" + l + "” có nên làm không?";
+    rev = "Việc làm nào được nhận xét là “" + r + "”?";
+  } else if (pairSayingFragment(l)) {
+    /* vế trái là nửa đầu của câu tục ngữ, vế phải là phần nói tiếp */
+    kind = "proverb-complete";
+    fwd = "Câu tục ngữ bắt đầu bằng “" + l + "” được nói đầy đủ thế nào?";
+    rev = "“" + r + "” là phần tiếp theo của câu tục ngữ nào?";
+  } else if (pairProverbPair(l, r, subj)) {
+    /* VÁ SAU QA (họ 4): ca dao/ngạn ngữ — hỏi ý nghĩa của câu nói */
+    kind = "proverb";
+    fwd = "Câu nói “" + l + "” có ý nghĩa gì?";
+    rev = "Câu nói nào có ý nghĩa “" + r + "”?";
+  } else if ((/chinhta/.test(topic) && (/^(viết|đứng|dùng)\s/i.test(r) || wR <= 4)) || (/(^|-)tv$/.test(subj) && /^viết\s/i.test(r))) {
+    /* quy tắc chính tả: vế phải là quy tắc viết */
+    kind = "spelling";
+    fwd = pairVar(["“" + l + "” viết thế nào cho đúng chính tả?", "“" + l + "” được viết theo quy tắc nào?"], seed);
+    rev = "“" + r + "” là quy tắc viết cho trường hợp nào?";
+  } else if (behaviorSubj && pairConductL(l) && /^không\s/i.test(r)) {
+    /* vế trái là một cách cư xử, vế phải là nhận xét về cách cư xử đó
+       (Hứa cho vui rồi quên → Không giữ lời hứa) */
+    kind = "behavior-value";
+    fwd = "Việc “" + l + "” thể hiện điều gì?";
+    rev = "Việc làm nào thể hiện “" + r + "”?";
+  } else if (((["chú", "cô", "bác", "ông", "bà", "thầy", "anh", "chị"].indexOf(fwL) !== -1 && wL <= 3)
+      || (/^(bác sĩ|y tá|giáo viên|thầy cô|cô giáo|thầy giáo)(?=[\s,]|$)/i.test(l) && wL <= 5)
+      || (fwL === "người" && wL === 2 && PAIR_VERBS.indexOf(pairW(l)[1].toLowerCase()) !== -1))
+    && !/(mệt|nóng|buồn|ốm|đau|khó|bị|đang|vui)/i.test(l) && (pairActionLike(r) || (/thầy cô/i.test(l) && /^dạy\s/i.test(r))) && !pairValueStmt(r) && !/nhanhoa/.test(topic) && !/nhân hoá/.test(r)) {
+    /* người → công việc/nhiệm vụ (Chú công an → Giữ trật tự; Bác nông
+       dân → Trồng lúa): đặt TRƯỚC nhánh tình huống để cặp vai trò không
+       bị hỏi như hoàn cảnh. VÁ VÒNG 2: thêm ba dạng vai trò bị lọt sang
+       situation ở tầng knowledge — nghề liệt kê (Bác sĩ, y tá), danh
+       từ tác nhân (Người mua), và cặp thầy cô mà vế việc bắt đầu bằng
+       "Dạy" (chưa có trong PAIR_VERBS) */
+    kind = "role";
+    fwd = "“" + l + "” làm công việc gì?";
+    rev = "Ai làm công việc “" + r + "”?";
+  } else if (pairSafetyPair(l, r, ctx)) {
+    /* VÁ SAU QA (họ 5 + lõi họ 2): vế phải là mệnh lệnh/lưu ý an toàn —
+       hỏi điều cần lưu ý, không hỏi "đặc điểm" hay "có nghĩa" */
+    kind = "safety";
+    fwd = pairVar(["“" + l + "” — em cần lưu ý điều gì?", "Khi gặp “" + l + "”, em cần lưu ý điều gì?"], seed);
+    rev = "Em cần “" + pairDecap(r) + "” khi gặp điều gì?";
+  } else if (pairSitSupport(l, r, ctx) && pairActionLike(r) && !/nhanhoa/.test(topic)) {
+    /* VÁ SAU QA (họ 2): tình huống → hành động ở MỌI môn (tv, tnxh, gdtc,
+       tin…) khi vế phải thật sự là hành động/hướng dẫn và vế trái là
+       hoàn cảnh có căn cứ; cặp giá trị (quyền/nghĩa vụ…) đã bị chặn ở
+       pairSitSupport/pairValueStmt */
+    kind = "situation";
+    fwd = pairVar(["Khi “" + l + "”, em nên làm gì?", "“" + l + "” — em nên làm gì?", "Gặp tình huống “" + l + "”, em nên làm gì?"], seed);
+    rev = pairSitRev(r, seed);
+  } else if (behaviorSubj && !pairValueStmt(r) && (PAIR_CIRC.indexOf(fwL) !== -1 || PAIR_PRON.indexOf(fwL) !== -1)) {
+    /* VÁ SAU QA (họ 4): thêm !pairValueStmt(r) — vế phải là mệnh đề
+       quyền/nghĩa vụ thì không bao giờ là tình huống (vd "Được học tập →
+       Vừa là quyền, vừa là nghĩa vụ" rơi xuống concept) */
+    kind = "situation";
+    fwd = pairVar(["Khi “" + l + "”, em nên làm gì?", "“" + l + "” — em nên làm gì?", "Gặp tình huống “" + l + "”, em nên làm gì?"], seed);
+    rev = pairSitRev(r, seed);
+  } else if (behaviorSubj && PAIR_ACTION.indexOf(fwR) !== -1 && !pairValueStmt(r) && (wL >= 3 || PAIR_CIRC.indexOf(fwL) !== -1 || PAIR_PRON.indexOf(fwL) !== -1 || pairSitSupport(l, r, ctx)) && !(wL >= 3 && wR <= 4 && (fwR === "không" || fwR === "là")) && !(fwR === "không" && wR >= 5)) {
+    /* VÁ SAU QA (họ 4): thêm căn cứ ở vế trái (từ 3 từ, hoặc mở đầu bằng
+       từ hoàn cảnh/đại từ) — từ đức tính đứng một mình (Trung thực, Siêng
+       năng, Tự lập) không còn bị hỏi như tình huống, rơi xuống concept */
+    kind = "situation";
+    fwd = pairVar(["“" + l + "” — em nên làm gì?", "Gặp tình huống “" + l + "”, em nên làm gì?", "Khi “" + l + "”, em nên làm gì?"], seed);
+    rev = pairSitRev(r, seed);
+  } else if (behaviorSubj && PAIR_VERBS.indexOf(fwL) !== -1 && PAIR_ACTION.indexOf(fwR) === -1) {
+    kind = "behavior-value";
+    fwd = "Việc “" + l + "” có ý nghĩa gì?";
+    rev = "Việc làm nào thể hiện “" + r + "”?";
+  } else if (!behaviorSubj && !proseSubj && PAIR_PRON.indexOf(fwL) !== -1 && wL >= 3) {
+    kind = "situation";
+    fwd = pairVar(["Khi “" + l + "”, em nên làm gì?", "“" + l + "” — em nên làm gì?", "Gặp tình huống “" + l + "”, em nên làm gì?"], seed);
+    rev = pairSitRev(r, seed);
+  } else if ((PAIR_FUNC.indexOf(fwR) !== -1 || (pairActionLike(r) && wR <= 8 && wL <= 4 && PAIR_CIRC.indexOf(fwL) === -1 && PAIR_PRON.indexOf(fwL) === -1 && /(^|-)tnxh|(^|-)tin$|(^|-)cn$|gdtc/.test(subj) && ["pha", "nuôi", "ăn", "nằm", "là", "có", "ở", "thuộc", "gồm", "mua"].indexOf(fwR) === -1 && !(fwR === "không" && !pairImperative(r)) && !/(trời|mưa|nắng|lạnh|nóng)/i.test(l) && !/baove|banquyen/.test(topic) && !/(khai giảng|bế giảng)/i.test(l) && !/(ao|nước ngọt|nước lợ|ruộng|ngập mặn|ĐBSCL)/i.test(r))) && (techSubj || (wL <= 3 && !proseSubj)) && !(behaviorSubj && !techSubj && fwR === "giúp")) {
+    /* VÁ SAU QA (họ 2): mở rộng khuôn "dùng để làm gì?" cho vật/địa điểm
+       thật ở tnxh/tin/cn/gdtc khi vế phải là cụm hành động ngắn chỉ công
+       dụng (Khăn mặt → Lau mặt; Móng nhà → Đỡ trọng lượng ngôi nhà) */
+    kind = "purpose";
+    var pur = pairDecap(r.replace(/^Để\s+/, ""));
+    fwd = "“" + l + "” dùng để làm gì?";
+    rev = (/(^|-)tin$/.test(subj) && (/^[A-Z0-9]/.test(l) || wL <= 2) ? "Lệnh nào dùng để " : "Đối tượng nào dùng để ") + pur + "?";
+  } else if (wR <= 4 && PAIR_PROP.indexOf(fwR) !== -1 && PAIR_FUNC.indexOf(fwR) === -1 && !pairImperative(r)) {
+    /* VÁ SAU QA (họ 5): trait loại trừ vế phải là mệnh lệnh/hướng dẫn —
+       "Không quang hợp"/"Không trùng, không rỗng" vẫn là đặc điểm thật
+       (động từ sau "Không" không nằm trong tập động từ mệnh lệnh) */
+    kind = "trait";
+    fwd = "“" + l + "” có đặc điểm gì?";
+    rev = "Khái niệm nào có đặc điểm “" + r + "”?";
+  } else if (/songs/.test(topic) || /(^|-)an$/.test(subj)) {
+    kind = "song";
+    fwd = "Bài hát “" + l + "” nói về điều gì?";
+    rev = "Bài hát nào nói về “" + r + "”?";
+  } else {
+    kind = "concept";
+    fwd = pairVar(["“" + l + "” là gì?", "“" + l + "” có nghĩa là gì?"], seed);
+    rev = pairVar(["Khái niệm nào được mô tả là “" + r + "”?", "Nội dung “" + r + "” thuộc về khái niệm nào?", "“" + r + "” là mô tả của khái niệm nào?"], seed);
+  }
+  /* VÁ VÒNG 2 — CHỐT HAI PHÍA: cặp đã rơi vào "situation" nhưng trượt
+     điều kiện hoàn cảnh–hành động (xem pairSitBlocked) thì rơi về khuôn
+     đúng quan hệ: môn hành vi + vế trái là việc làm → behavior-value;
+     còn lại → concept (khớp phân loại vòng 1 của các cặp này) */
+  if (kind === "situation" && pairSitBlocked(l, r, ctx)) {
+    if (behaviorSubj && pairActionLike(l)) {
+      kind = "behavior-value";
+      fwd = "Việc “" + l + "” có ý nghĩa gì?";
+      rev = "Việc làm nào thể hiện “" + r + "”?";
+    } else {
+      kind = "concept";
+      fwd = pairVar(["“" + l + "” là gì?", "“" + l + "” có nghĩa là gì?"], seed);
+      rev = pairVar(["Khái niệm nào được mô tả là “" + r + "”?", "Nội dung “" + r + "” thuộc về khái niệm nào?", "“" + r + "” là mô tả của khái niệm nào?"], seed);
+    }
+  }
+  return { kind: kind, fwd: fwd, rev: rev };
+}
+window.__pairQBuild = pairQBuild;
+function deriveFromPairs127(t, subjId, grade) {
   if (!t.pools || !t.pools.match || !t.pools.match.length) return false;
   var mq;
   try { mq = t.pools.match[0](); } catch (e) { return false; }
@@ -4496,9 +5298,10 @@ function deriveFromPairs127(t) {
   var derived = [];
   pairs.forEach(function (pr, idx) {
     var othersR = pairs.filter(function (x, j) { return j !== idx; }).map(function (x) { return x[1]; });
-    derived.push(["“" + pr[0] + "” ứng với ý nào đúng?", pr[1], othersR[0], othersR[1], "“" + pr[0] + "” — " + pr[1] + "."]);
+    var qb = pairQBuild(pr[0], pr[1], { subjId: subjId, topicId: t.id, grade: grade });
+    derived.push([qb.fwd, pr[1], othersR[0], othersR[1], "“" + pr[0] + "” — " + pr[1] + "."]);
     var othersL = pairs.filter(function (x, j) { return j !== idx; }).map(function (x) { return x[0]; });
-    derived.push(["“" + pr[1] + "” ứng với ý nào đúng?", pr[0], othersL[0], othersL[1], "“" + pr[1] + "” — " + pr[0] + "."]);
+    derived.push([qb.rev, pr[0], othersL[0], othersL[1], "“" + pr[1] + "” — " + pr[0] + "."]);
   });
   pushFacts127(t, derived);
   var reversed = pairs.map(function (pr) { return [pr[1], pr[0]]; });
@@ -4613,7 +5416,7 @@ function __applyExtra127(g) {
   GRADES[g].subjects.forEach(function (s) {
     s.topics.forEach(function (t) { if (window.__EXTRA127[t.id]) pushFacts127(t, window.__EXTRA127[t.id]); });
   });
-  GRADES[g].subjects.forEach(function (s) { s.topics.forEach(function (t) { deriveFromPairs127(t); }); });
+  GRADES[g].subjects.forEach(function (s) { s.topics.forEach(function (t) { deriveFromPairs127(t, s.id, g); }); });
 }
 var LS127 = "gameHocTap_recentQ127_v1";
   var recent127 = {};
@@ -8798,13 +9601,15 @@ window.__ensureGrade = function (g, cb) {
       var f = pick(facts);
       var pool = facts.filter(function (x) { return x.q !== f.q && x.a !== f.a && engFmtOK(f, x) && !engNoWrong(f, x) && !x.crossUnitWord; });
       /* B1-sửa lớp nhỏ (2026-10-15): Lớp 1–3 không dùng cách hỏi đảo ngược
-         ("đáp án này là câu trả lời cho câu hỏi nào?") — chỉ hỏi thẳng,
-         đúng chuẩn một-ý-một-câu của §6.3 BAO-CAO-B1-DO. */
+         — chỉ hỏi thẳng, đúng chuẩn một-ý-một-câu của §6.3 BAO-CAO-B1-DO.
+         V23 Việc C (2026-10-21): nhánh đảo ngược dùng THỐNG NHẤT khuôn gọn
+         của revGen2 ("Câu hỏi nào dưới đây có đáp án là “X”?"); khuôn vòng
+         vo cũ đã LOẠI HẲN ở mọi bộ sinh — không giữ tỉ lệ nào. */
       if ((grade == null || grade > 3) && Math.random() < 0.25) {
         var others = shuffle(pool.slice()).slice(0, 2).map(function (x) { return x.q; });
         if (others.length < 2) return blankVarGen(facts, false, ctx)();
-        return identifyRoundFact(mcqQ("Đáp án “" + f.a + "” là câu trả lời đúng cho câu hỏi nào?", others, f.q,
-          f.ex || ("Câu hỏi đúng là: “" + f.q + "” — đáp án: " + f.a + ".")), f.q);
+        return identifyRoundFact(mcqQ("Câu hỏi nào dưới đây có đáp án là “" + f.a + "”?", others, f.q,
+          f.ex || ("Đáp án “" + f.a + "” thuộc câu hỏi: “" + f.q + "”.")), f.q);
       }
       /* Mục 7: nhiễu CÙNG LOẠI theo thang trước, thiếu thì lấp bằng pool cũ. */
       var wrongs = twPickTyped(f, pool.map(function (x) { return x.a; }), 3, ctx || { grade: grade, facts: facts }) || [];
@@ -8820,18 +9625,29 @@ window.__ensureGrade = function (g, cb) {
      Nay uỷ quyền cho oddStmtGen (khẳng định văn xuôi, xem bên dưới). */
   function oddGen(facts) { return oddStmtGen(facts, null, false); }
   function tfVarGen(facts, roundsN, promptText, grade) {
+    /* V23 — Việc B: lọc còn dữ kiện chuyển được thành khẳng định; rỗng
+       hẳn thì giữ ngân hàng gốc và để lúc gọi rơi sang câu điền đáp án. */
+    var convF23 = facts.filter(function (f) { return qaToStmt(f.q, f.a) !== null; });
+    if (convF23.length) facts = convF23;
     /* B1-sửa lớp nhỏ (2026-10-15): ở Lớp 1–3, vòng đúng/sai chỉ lấy dữ kiện
        mà mệnh đề khẳng định dựng từ nó đủ ngắn (Lớp 1–2 <=70 ký tự, Lớp 3
        <=90) — một vòng một ý, đọc vừa sức; thiếu thì lấy các dữ kiện ngắn
        nhất còn lại thay vì bỏ dạng. */
     if (grade != null && grade <= 3 && facts.length) {
       var capT = grade <= 2 ? 70 : 90;
-      var shortF = facts.filter(function (f) { return qaToStmt(f.q, f.a).length <= capT; });
+      var shortF = facts.filter(function (f) { return (qaToStmt(f.q, f.a) || "").length <= capT; });
       if (shortF.length >= 2) facts = shortF;
-      else facts = facts.slice().sort(function (a, b) { return qaToStmt(a.q, a.a).length - qaToStmt(b.q, b.a).length; }).slice(0, Math.max(2, shortF.length));
+      else facts = facts.slice().sort(function (a, b) { return (qaToStmt(a.q, a.a) || "").length - (qaToStmt(b.q, b.a) || "").length; }).slice(0, Math.max(2, shortF.length));
     }
     return function () {
-      var selectedFacts = shuffle(facts.slice()).slice(0, roundsN);
+      if (!convF23.length) return blankVarGen(facts, false, { grade: grade, facts: facts })();
+      var selectedFacts = tfPickDistinct23(shuffle(facts.slice()), roundsN, function (f) {
+        var ks = [tfStmtKey23(qaStmtShow(f.q, f.a))];
+        var wv = (f.opts || []).filter(function (o) { return o !== f.a; })[0];
+        if (wv != null) ks.push(tfStmtKey23(qaStmtShow(f.q, wv)));
+        return ks;
+      });
+      if (!selectedFacts.length) selectedFacts = [facts[0]];
       var items = [];
       for (var k = 0; k < roundsN; k++) {
         var f = selectedFacts[k]; if (!f) break; var truth = Math.random() < 0.5;
@@ -8844,7 +9660,7 @@ window.__ensureGrade = function (g, cb) {
          cân bằng phán quyết (tfBalanceItems). */
       tfBalanceItems(items, function (it) { var w = (it.f.opts || []).filter(function (o) { return o !== it.f.a; })[0]; return w != null ? w : null; });
       var rounds = items.map(function (it) {
-        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(qaToStmt(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(qaStmtShow(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
       });
       var q = tfQ(promptText, rounds);
       q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f.q; }) }; return q;
@@ -8886,19 +9702,30 @@ window.__ensureGrade = function (g, cb) {
      của một dữ kiện (chấm riêng từng "câu nhỏ" như tfVarGen), thay advTFGen
      vốn nhét hai ý vào một vòng. */
   function advTF1Gen(facts, roundsN, grade) {
+    /* V23 — Việc B: như tfVarGen — chỉ dữ kiện chuyển được; rỗng thì
+       lúc gọi rơi sang câu điền đáp án (tầng nâng cao). */
+    var convA23 = facts.filter(function (f) { return qaToStmt(f.q, f.a) !== null; });
+    if (convA23.length) facts = convA23;
     /* B1-sửa lớp nhỏ (2026-10-15): đường lùi của tfStmtGen khi ngân hàng
        khẳng định văn xuôi rỗng (chủ đề tính toán) — cũng phải qua cổng độ
        dài Lớp 1–3 như tfVarGen, nếu không mệnh đề dạng "Đáp án đúng cho
        câu hỏi <bài toán dài>…" vẫn lọt vào màn đúng/sai của lớp nhỏ. */
     if (grade != null && grade <= 3 && facts.length) {
       var capA = grade <= 2 ? 70 : 90;
-      var shortA = facts.filter(function (f) { return qaToStmt(f.q, f.a).length <= capA; });
+      var shortA = facts.filter(function (f) { return (qaToStmt(f.q, f.a) || "").length <= capA; });
       if (shortA.length >= 2) facts = shortA;
-      else facts = facts.slice().sort(function (a, b) { return qaToStmt(a.q, a.a).length - qaToStmt(b.q, b.a).length; }).slice(0, Math.max(2, shortA.length));
+      else facts = facts.slice().sort(function (a, b) { return (qaToStmt(a.q, a.a) || "").length - (qaToStmt(b.q, b.a) || "").length; }).slice(0, Math.max(2, shortA.length));
     }
     return function () {
       var n = roundsN || 3;
-      var selectedFacts = shuffle(facts.slice()).slice(0, n);
+      if (!convA23.length) return blankVarGen(facts, true, { grade: grade, facts: facts })();
+      var selectedFacts = tfPickDistinct23(shuffle(facts.slice()), n, function (f) {
+        var ks = [tfStmtKey23(qaStmtShow(f.q, f.a))];
+        var wa = (f.opts || []).filter(function (o) { return o !== f.a; })[0];
+        if (wa != null) ks.push(tfStmtKey23(qaStmtShow(f.q, wa)));
+        return ks;
+      });
+      if (!selectedFacts.length) selectedFacts = [facts[0]];
       var items = selectedFacts.map(function (f) {
         var truth = Math.random() < 0.5;
         var shown = truth ? f.a : ((f.opts || []).filter(function (o) { return o !== f.a; })[0] || f.a);
@@ -8908,7 +9735,7 @@ window.__ensureGrade = function (g, cb) {
       /* B1-sửa khuôn vỏ: mệnh đề khẳng định hoàn chỉnh + cân bằng phán quyết. */
       tfBalanceItems(items, function (it) { var w = (it.f.opts || []).filter(function (o) { return o !== it.f.a; })[0]; return w != null ? w : null; });
       var rounds = items.map(function (it) {
-        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(qaToStmt(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(qaStmtShow(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
       });
       var q = tfQ("Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!", rounds);
       q.roundIdentity = { type: "bundle", facts: selectedFacts.map(function (f) { return f.q; }) }; return q;
@@ -9395,7 +10222,8 @@ window.__ensureGrade = function (g, cb) {
         pairs.forEach(function (p, idx) {
           var othersR = pairs.filter(function (x, j) { return j !== idx; }).map(function (x) { return x[1]; });
           var othersL = pairs.filter(function (x, j) { return j !== idx; }).map(function (x) { return x[0]; });
-          var q1 = "“" + p[0] + "” ứng với ý nào đúng?", q2 = "“" + p[1] + "” ứng với ý nào đúng?";
+          var qb = pairQBuild(p[0], p[1], { subjId: subj.id, topicId: t.id, grade: grade });
+          var q1 = qb.fwd, q2 = qb.rev;
           if (!seenQ[q1] && othersR.length >= 2) { facts.push({ q: q1, a: p[1], opts: [p[1]].concat(othersR.slice(0, 3)), ex: "“" + p[0] + "” — " + p[1] + "." }); seenQ[q1] = 1; }
           if (!seenQ[q2] && othersL.length >= 2) { facts.push({ q: q2, a: p[0], opts: [p[0]].concat(othersL.slice(0, 3)), ex: "“" + p[1] + "” — " + p[0] + "." }); seenQ[q2] = 1; }
         });
@@ -10167,8 +10995,8 @@ window.__ensureGrade = function (g, cb) {
     if(!pairs.length) (t.pools.match||[]).forEach(function(gen,gi){try{var q=withSeed(902+gi,gen);(q.pairs||[]).forEach(function(p){var rawL=String(p.l||p.a||""),rawR=String(p.r||p.b||"");var l=clean(rawL),r=clean(rawR);if(l&&r&&!pairs.some(function(x){return x[0]===l&&x[1]===r;})&&!pairs.some(function(x){return x[0]===r&&x[1]===l;}))pairs.push([l,r]); /* B6: như harvestTopic — ngân hàng cặp chỉ giữ một chiều (hướng gặp đầu tiên) */var imL=imgMarkup9(rawL),imR=imgMarkup9(rawR);var kl=imL?rawL:l,kr=imR?rawR:r;var okL=imL?!!rawL.trim():!!l,okR=imR?!!rawR.trim():!!r;if(okL&&okR&&!pairsK.some(function(x){return x[0]===kl&&x[1]===kr;}))pairsK.push([kl,kr]);});}catch(e){}});
     curSrc="pairmeta";
     pairs.forEach(function(p,i){var others=pairs.filter(function(x,j){return j!==i&&x[1]!==p[1];}).map(function(x){return x[1];});
-      /* B1-sửa khuôn vỏ: bỏ khung meta "Trong chương này" — hỏi thẳng vào nội dung của cặp. */
-      add('“'+p[0]+'” ứng với nội dung nào?',p[1],others.slice(0,2),p[0]+': '+p[1]);});
+      /* B1-sửa khuôn vỏ + V23 Việc A: hỏi thẳng theo LOẠI CẶP (pairQBuild), không còn "ứng với nội dung nào?". */
+      add(pairQBuild(p[0], p[1], { subjId: subj.id, topicId: t.id, grade: grade }).fwd, p[1], others.slice(0, 2), p[0] + ': ' + p[1]);});
     /* Chương có bộ sinh Toán/thuật toán: giữ cả hình và dữ kiện cụ thể của bài. */
     if (/math/.test(subj.id) || facts.length<12) {
       curSrc="sample";
@@ -10310,11 +11138,15 @@ window.__ensureGrade = function (g, cb) {
       var f = pick(facts);
       /* B1-sửa khuôn vỏ: dạng đảo ngược chỉ còn ~1/4 số lượt; còn lại hỏi
          thẳng vào nội dung (cùng thân câu với sfChooseGen, giữ nguyên hình
-         minh hoạ và huy hiệu tầng nâng cao). */
+         minh hoạ và huy hiệu tầng nâng cao).
+         V23 Việc C (2026-10-21): nhánh đảo ngược dùng THỐNG NHẤT khuôn gọn
+         của revGen2 ("Câu hỏi nào dưới đây có đáp án là “X”?") — khuôn vòng
+         vo cũ đã LOẠI HẲN, không giữ ở bất kỳ tỉ lệ lượt rút nào. Khi không
+         đủ 2 câu hỏi khác làm nhiễu, bộ sinh lùi về hỏi thẳng như cũ. */
       if (Math.random() >= 0.25) { var qd = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || ""); if (adv) qd.badge = "🧠 Thử thách tư duy"; return identifyRoundFact(qd, f.q); }
       var others = shuffle(facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; })).slice(0, 2).map(function (x) { return x.q; });
       if (others.length < 2) { var q0 = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || ""); if (adv) q0.badge = "🧠 Thử thách tư duy"; return identifyRoundFact(q0, f.q); }
-      var q = mcqQ("Đáp án “" + f.a + "” là câu trả lời đúng cho câu hỏi nào?", others, f.q, f.ex || ("Câu hỏi đúng là: “" + f.q + "” — đáp án: " + f.a + "."));
+      var q = mcqQ("Câu hỏi nào dưới đây có đáp án là “" + f.a + "”?", others, f.q, f.ex || ("Đáp án “" + f.a + "” thuộc câu hỏi: “" + f.q + "”."));
       if (adv) q.badge = "🧠 Thử thách tư duy";
       return identifyRoundFact(q, f.q);
     };
@@ -10332,7 +11164,18 @@ window.__ensureGrade = function (g, cb) {
   }
   function sfTFGen(facts, adv) {
     return function () {
-      var sel = shuffle(facts.slice()).slice(0, 3);
+      /* V23 — Việc B: ưu tiên dữ kiện chuyển được thành khẳng định; ngân
+         hàng tĩnh rỗng-chuyển được thì vẫn dựng vòng bằng qaStmtShow
+         (dạng bọc) để giữ nguyên hình dạng màn Đ/S của ngân hàng. */
+      var convF = facts.filter(function (f) { return qaToStmt(f.q, f.a) !== null; });
+      var srcF23 = convF.length ? convF : facts;
+      var sel = tfPickDistinct23(shuffle(srcF23.slice()), 3, function (f) {
+        var ks = [tfStmtKey23(qaStmtShow(f.q, f.a))];
+        var ws = (f.wrongs || [])[0];
+        if (ws != null && ws !== f.a) ks.push(tfStmtKey23(qaStmtShow(f.q, ws)));
+        return ks;
+      });
+      if (!sel.length) sel = [srcF23[0]];
       var items = sel.map(function (f) {
         var truth = Math.random() < 0.5;
         var shown = truth ? f.a : ((f.wrongs && f.wrongs[0]) || f.a);
@@ -10343,7 +11186,7 @@ window.__ensureGrade = function (g, cb) {
          cặp hỏi–đáp, và cân bằng phán quyết cho cả màn. */
       tfBalanceItems(items, function (it) { var w = (it.f.wrongs || [])[0]; return (w != null && w !== it.f.a) ? w : null; });
       var rounds = items.map(function (it) {
-        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escText(qaToStmt(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escText(qaStmtShow(it.f.q, it.shown)) + "</div>", truth: it.truth, explain: "Đáp án đúng: " + it.f.a };
       });
       var q = tfQ("Đúng hay sai? Đọc kĩ từng câu nhỏ nhé!", rounds);
       q.roundIdentity = { type: "bundle", facts: sel.map(function (f) { return f.q; }) };
@@ -10850,6 +11693,202 @@ window.__ensureGrade = function (g, cb) {
     return !!ctx.topic.knowledge || (r.grade >= 1 && r.grade <= 9);
   }
   window.__topics = { refOf: refOf, branch: branch, resolve: resolve, ensure: ensure, currentRef: currentRef, canShowKnowledge: canShowKnowledge };
+})();
+
+</script>
+<script>
+/* ===== V23 — Việc D: BÁO CÂU HỎI CÓ VẤN ĐỀ (window.__reportQ) =====
+   Một module dùng chung cho mọi màn câu hỏi: luyện tập (vỏ), Kiểm tra
+   (feat-assess), xem lại Kiểm tra / Rung chuông vàng / Tia chớp
+   (giaitri). Chỉ LƯU TRÊN MÁY (localStorage khóa mới
+   gameHocTap_reports_v1, tối đa 200 bản ghi, quá thì bỏ cũ nhất) —
+   KHÔNG gửi đi đâu. Chống trùng: cùng một câu trong cùng một phiên
+   (sess) bấm lại thì GHI ĐÈ lý do + thời gian, không nhân đôi. */
+(function () {
+  var KEY = "gameHocTap_reports_v1";
+  var MAXN = 200;
+  var REASONS = ["Thiếu dữ kiện", "Đáp án có vẻ sai", "Khó hiểu"];
+  var sessToken = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+  var lastGame = null;
+
+  function load() {
+    try { var v = JSON.parse(localStorage.getItem(KEY) || "[]"); return Array.isArray(v) ? v : []; }
+    catch (e) { return []; }
+  }
+  function saveAll(arr) { try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) {} }
+  function hashStr(s) { var h = 2166136261; s = String(s || ""); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+  function textOf(html) {
+    if (html == null) return "";
+    var d = document.createElement("div");
+    d.innerHTML = String(html);
+    d.querySelectorAll("button").forEach(function (b) { b.remove(); });
+    var t = (d.textContent || "").replace(/\s+/g, " ").trim();
+    return t;
+  }
+  function gameObj() { try { return typeof game !== "undefined" ? game : null; } catch (e) { return null; } }
+
+  function save(rec) {
+    var arr = load();
+    var sig = hashStr([rec.maChuDe, rec.mode, rec.de, (rec.luaChon || []).join("~"), rec.dapAn, rec.tf ? JSON.stringify(rec.tf) : ""].join("|"));
+    var idx = -1;
+    for (var i = 0; i < arr.length; i++) if (arr[i].sig === sig && arr[i].sess === rec.sess) { idx = i; break; }
+    rec.sig = sig;
+    if (idx >= 0) arr[idx] = rec; else arr.push(rec);
+    while (arr.length > MAXN) arr.shift();
+    saveAll(arr);
+    refreshPanel();
+  }
+
+  /* ---------- ngữ cảnh từ vỏ (scr-game) ---------- */
+  function shellContext() {
+    var g = gameObj();
+    if (!g || !g.current) return null;
+    if (g !== lastGame) { lastGame = g; sessToken = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); }
+    var q = g.current;
+    var ref = null, ctx = null;
+    try {
+      if (window.__topics) {
+        ref = (q.__topicRef) ? window.__topics.refOf(q.__topicRef) : (g.ctxKey ? window.__topics.refOf(g.ctxKey) : window.__topics.currentRef());
+        if (ref) ctx = window.__topics.resolve(ref);
+      }
+    } catch (e) {}
+    var lop = ref ? ref.grade : null, monId = ref ? ref.subjectId : "", maCD = ref ? ref.topicId : "";
+    var mon = "", tenCD = "";
+    if (ctx) { mon = (ctx.subj && (ctx.subj.name || ctx.subj.id)) || ""; tenCD = (ctx.topic && (ctx.topic.name || ctx.topic.id)) || ""; }
+    if (!tenCD && g.title) tenCD = g.title;
+    var mode = "Luyện tập";
+    if (g.a1Review) mode = "Ôn câu sai";
+    else if (g.a1Daily) mode = "Thử thách mỗi ngày";
+    else if (ref && /\\|adv$/.test(g.ctxKey || "")) mode = "Luyện tập nâng cao";
+    else if (monId === "chuyende") mode = "Chuyên đề";
+    else if (monId === "giaitri") mode = "Giải trí";
+    /* dữ kiện câu hỏi */
+    var visText = textOf(q.visual);
+    var de = String(q.prompt || "");
+    if (visText && de.indexOf(visText) === -1) de = de ? de + " | " + visText : visText;
+    var hasFigure = !!(q.figure || (q.visual && /<svg|<img/i.test(q.visual)));
+    var kind = q.kind || (q.rounds ? "tf" : (q.options ? "options" : ""));
+    var loaiCau = { options: "Trắc nghiệm", blank: "Điền đáp án", tf: "Đúng/Sai", catch: "Bắt đáp án", match: "Ghép nối", memory: "Trí nhớ", sort: "Sắp xếp" }[kind] || "Câu hỏi";
+    var luaChon = [], dapAn = "", tf = null;
+    if (q.rounds && q.rounds.length) {
+      tf = q.rounds.map(function (r) { return { md: textOf(r.visual), dung: !!r.truth }; });
+      loaiCau = "Đúng/Sai";
+    } else if (q.pairs && q.pairs.length) {
+      luaChon = q.pairs.map(function (p) { return textOf(p.l) + " ↔ " + textOf(p.r); });
+    } else if (q.options && q.options.length) {
+      luaChon = q.options.map(function (o) { return textOf(o.html != null ? o.html : o); });
+      if (typeof q.answer === "number" && luaChon[q.answer] != null) dapAn = luaChon[q.answer];
+    } else if (q.items && q.items.length) {
+      luaChon = q.items.map(function (x) { return textOf(typeof x === "string" ? x : (x.html || x.text || "")); });
+    }
+    return { lop: lop, mon: mon, monId: monId, maChuDe: maCD, tenChuDe: tenCD, mode: mode, loaiCau: loaiCau, de: de, coHinh: hasFigure, luaChon: luaChon, dapAn: dapAn, tf: tf, sess: sessToken };
+  }
+
+  /* ---------- giao diện chọn lý do + xác nhận ---------- */
+  var styleDone = false;
+  function ensureStyle() {
+    if (styleDone) return; styleDone = true;
+    var st = document.createElement("style");
+    st.textContent =
+      ".q-report-btn{display:inline-block;margin:2px 0 8px 8px;font-family:inherit;font-size:15px;font-weight:800;padding:9px 13px;border-radius:14px;border:3px solid var(--line,#f0dfba);background:#fff6f0;color:#8a4b12;cursor:pointer}" +
+      ".rep-overlay{position:fixed;inset:0;background:rgba(40,32,18,.45);z-index:9990;display:flex;align-items:center;justify-content:center;padding:18px}" +
+      ".rep-box{background:#fffdf6;border:3px solid #f0dfba;border-radius:20px;max-width:420px;width:100%;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:inherit}" +
+      ".rep-box h3{margin:0 0 6px;font-size:20px;color:#33302a}.rep-box p{margin:0 0 14px;color:#6b6252;font-size:15px}" +
+      ".rep-reason{display:block;width:100%;text-align:left;margin:0 0 10px;font-family:inherit;font-size:17px;font-weight:800;padding:12px 14px;border-radius:14px;border:3px solid #f0dfba;background:#fff;color:#33302a;cursor:pointer}" +
+      ".rep-cancel{display:block;width:100%;font-family:inherit;font-size:16px;font-weight:700;padding:10px;border-radius:14px;border:3px solid transparent;background:transparent;color:#8a7a5c;cursor:pointer}" +
+      ".rep-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#2e7d32;color:#fff;font-family:inherit;font-size:16px;font-weight:800;padding:11px 20px;border-radius:999px;z-index:9995;box-shadow:0 6px 18px rgba(0,0,0,.3)}";
+    document.head.appendChild(st);
+  }
+  function toast(msg) {
+    ensureStyle();
+    var t = document.createElement("div");
+    t.className = "rep-toast"; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2000);
+  }
+  function open(ctx) {
+    var c = ctx || shellContext();
+    if (!c) { toast("Chưa có câu hỏi để báo lỗi."); return; }
+    ensureStyle();
+    var ov = document.createElement("div");
+    ov.className = "rep-overlay";
+    var box = document.createElement("div");
+    box.className = "rep-box";
+    box.innerHTML = "<h3>🚩 Báo câu hỏi có vấn đề</h3><p>Em thấy câu hỏi này làm sao? Chọn một lý do nhé — báo lỗi chỉ lưu trên máy này để thầy cô xem lại.</p>";
+    REASONS.forEach(function (r) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "rep-reason"; b.textContent = r;
+      b.addEventListener("click", function () {
+        save({ thoiGian: new Date().toISOString(), lop: c.lop, mon: c.mon || "", maChuDe: c.maChuDe || "", tenChuDe: c.tenChuDe || "", mode: c.mode || "", loaiCau: c.loaiCau || "", de: c.de || "", coHinh: !!c.coHinh, luaChon: c.luaChon || [], dapAn: c.dapAn || "", tf: c.tf || null, lyDo: r, sess: c.sess || sessToken });
+        ov.remove();
+        toast("Đã ghi nhận, cảm ơn em!");
+      });
+      box.appendChild(b);
+    });
+    var cancel = document.createElement("button");
+    cancel.type = "button"; cancel.className = "rep-cancel"; cancel.textContent = "Huỷ";
+    cancel.addEventListener("click", function () { ov.remove(); });
+    box.appendChild(cancel);
+    ov.appendChild(box);
+    ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+  }
+
+  /* ---------- panel cài đặt (scr-home) ---------- */
+  function refreshPanel() {
+    var c = document.getElementById("report-count");
+    if (c) c.textContent = load().length;
+  }
+  function exportAll() {
+    var arr = load();
+    var esc = function (s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); };
+    var parts = ["<!DOCTYPE html><html lang=\"vi\"><head><meta charset=\"utf-8\"><title>Danh sách báo lỗi câu hỏi</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:24px auto;padding:0 16px;color:#222}h1{font-size:22px}.rec{border:1px solid #ccc;border-radius:10px;padding:12px 14px;margin:0 0 12px}.rec h3{margin:0 0 6px;font-size:16px}.meta{color:#555;font-size:13px}pre{white-space:pre-wrap;font-family:inherit;margin:6px 0}</style></head><body>"];
+    parts.push("<h1>🚩 Danh sách báo lỗi câu hỏi (" + arr.length + " bản ghi)</h1><p class=\"meta\">Xuất lúc " + new Date().toLocaleString("vi-VN") + " — bấm Ctrl+P để in hoặc lưu PDF.</p>");
+    if (!arr.length) parts.push("<p>Chưa có báo lỗi nào được ghi trên máy này.</p>");
+    arr.forEach(function (r, i) {
+      parts.push("<div class=\"rec\"><h3>" + (i + 1) + ". " + esc(r.lyDo) + " — " + esc(r.tenChuDe || r.maChuDe) + "</h3>");
+      parts.push("<div class=\"meta\">" + esc(r.thoiGian) + " · Lớp " + esc(r.lop) + " · Môn " + esc(r.mon) + " · Mã chủ đề: " + esc(r.maChuDe) + " · Mode: " + esc(r.mode) + " · Loại câu: " + esc(r.loaiCau) + " · Có hình: " + (r.coHinh ? "Có" : "Không") + "</div>");
+      parts.push("<pre>Đề: " + esc(r.de) + "</pre>");
+      if (r.tf && r.tf.length) r.tf.forEach(function (s2, j) { parts.push("<pre>Mệnh đề " + (j + 1) + ": " + esc(s2.md) + " → " + (s2.dung ? "Đúng" : "Sai") + "</pre>"); });
+      else {
+        if (r.luaChon && r.luaChon.length) parts.push("<pre>Lựa chọn: " + esc(r.luaChon.join(" | ")) + "</pre>");
+        if (r.dapAn) parts.push("<pre>Đáp án đúng: " + esc(r.dapAn) + "</pre>");
+      }
+      parts.push("</div>");
+    });
+    parts.push("</body></html>");
+    var url = URL.createObjectURL(new Blob([parts.join("\n")], { type: "text/html;charset=utf-8" }));
+    window.open(url, "_blank");
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }
+  function clearAll() {
+    if (!load().length) { toast("Chưa có báo lỗi nào để xoá."); return; }
+    if (window.confirm("Xoá hết các báo lỗi câu hỏi đã ghi trên máy này?")) { saveAll([]); refreshPanel(); toast("Đã xoá hết báo lỗi đã ghi."); }
+  }
+  function wirePanel() {
+    var ex = document.getElementById("btn-report-export");
+    if (ex && !ex.__repWired) { ex.__repWired = true; ex.addEventListener("click", exportAll); }
+    var cl = document.getElementById("btn-report-clear");
+    if (cl && !cl.__repWired) { cl.__repWired = true; cl.addEventListener("click", clearAll); }
+    var rb = document.getElementById("q-report-btn");
+    if (rb && !rb.__repWired) { rb.__repWired = true; rb.addEventListener("click", function () { open(null); }); }
+    refreshPanel();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wirePanel);
+  else wirePanel();
+  setInterval(function () { wirePanel(); }, 2500);
+
+  window.__reportQ = {
+    open: open,
+    newSession: function () { sessToken = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); return sessToken; },
+    session: function () { return sessToken; },
+    count: function () { return load().length; },
+    all: load,
+    exportAll: exportAll,
+    clearAll: clearAll,
+    refreshPanel: refreshPanel,
+    textOf: textOf
+  };
 })();
 
 </script>

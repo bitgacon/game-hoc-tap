@@ -113,6 +113,7 @@
     '<div class="q-card" id="as-card">' +
     '<div class="q-badge" id="as-badge"></div>' +
     '<p class="q-prompt" id="as-prompt"></p>' +
+    '<button id="as-report-btn" class="q-report-btn" type="button" title="Báo câu hỏi có vấn đề">🚩 Báo lỗi</button>' +
     '<div class="q-visual" id="as-visual"></div>' +
     '<div class="options" id="as-options"></div>' +
     '<div class="as-confirm" id="as-confirm"><span id="as-confirm-text"></span><div class="row">' +
@@ -512,7 +513,32 @@
     });
     el("as-answered").textContent = "Đã làm: " + answeredCount() + "/" + test.items.length;
   }
+  /* V23 — Việc D: ngữ cảnh báo lỗi cho một câu trong bài Kiểm tra. */
+  function assessReportCtx(it, mode) {
+    var R = window.__reportQ; if (!R || !it) return null;
+    var visText = R.textOf(it.visual);
+    var de = String(it.prompt || "");
+    if (visText && de.indexOf(visText) === -1) de = de ? de + " | " + visText : visText;
+    var opts = (it.options || []).map(function (o) { return R.textOf(o); });
+    return { lop: it.grade, mon: it.subjName || "", maChuDe: it.topicId || "", tenChuDe: it.topicName || "", mode: mode,
+      loaiCau: it.type === "tf" ? "Đúng/Sai" : it.type === "blank" ? "Điền đáp án" : "Trắc nghiệm",
+      de: de, coHinh: !!(it.figure || (it.visual && /<svg|<img/i.test(it.visual))),
+      luaChon: opts, dapAn: it.correctText || (typeof it.answer === "number" ? (opts[it.answer] || "") : ""), tf: null,
+      sess: (typeof test !== "undefined" && test && test.repSess) ? test.repSess : undefined };
+  }
+  function wireAssessReportBtn() {
+    var b = el("as-report-btn");
+    if (b && !b.__repWired) {
+      b.__repWired = true;
+      b.addEventListener("click", function () {
+        if (!test || !test.items) return;
+        var ctx = assessReportCtx(test.items[test.idx], "Kiểm tra");
+        if (ctx && window.__reportQ) window.__reportQ.open(ctx);
+      });
+    }
+  }
   function renderItem() {
+    wireAssessReportBtn();
     var it = test.items[test.idx];
     el("as-counter").textContent = "Câu " + (test.idx + 1) + "/" + test.items.length;
     el("as-progress").style.width = (test.items.length ? (test.idx / test.items.length * 100) : 0) + "%";
@@ -645,6 +671,12 @@
         }
       });
       div.appendChild(spkBtn);
+      if (window.__reportQ) {
+        var repBtn = document.createElement("button");
+        repBtn.type = "button"; repBtn.className = "as-speak-btn"; repBtn.textContent = "🚩 Báo lỗi câu này";
+        repBtn.addEventListener("click", function () { var ctx = assessReportCtx(it, "Xem lại Kiểm tra"); if (ctx) window.__reportQ.open(ctx); });
+        div.appendChild(repBtn);
+      }
       var holder = div.querySelector(".as-review-visual");
       holder.innerHTML = figHTML(it.figure) + (it.visual || "");
       var slot = holder.querySelector(".blank-slot");

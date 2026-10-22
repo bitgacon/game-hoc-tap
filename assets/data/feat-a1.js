@@ -199,6 +199,7 @@
   /* Nguồn (a1): câu chọn/điền sai trong vòng luyện tập thường + nâng cao */
   window.__a1CapturePractice = function (q) {
     try {
+      var gNow23 = curGame(); if (gNow23 && gNow23.inRetry) return; /* V23-E: câu thử lại sai KHÔNG ghi sổ câu sai */
       if (!q || q.pairs || q.items || q.rounds) return;
       if (q.__a1CapDone) return;
       if (!q.options || typeof q.answer !== "number" || !q.options[q.answer]) return;
@@ -217,6 +218,7 @@
   /* Nguồn (a2): một nhận định Đúng/Sai sai trong vòng luyện tập */
   window.__a1CaptureTF = function (q, r) {
     try {
+      var gNow23 = curGame(); if (gNow23 && gNow23.inRetry) return; /* V23-E: câu thử lại sai KHÔNG ghi sổ câu sai */
       if (!q || !r || typeof r.truth !== "boolean" || r.__a1CapDone) return;
       if (inA1Session()) return;
       var ctx = topicContext(); if (!ctx) return;
