@@ -1256,9 +1256,13 @@
     function tfQ(prompt, rounds) { return { kind: "tf", badge: "🎮 Trò chơi!", prompt: prompt, rounds: rounds }; }
     function gTFCalcFactory(max) {
       return function () {
-        var items = [];
+        var items = [], usedExpr = {};
         for (var k = 0; k < 3; k++) {
-          var p = calcPair(max);
+          /* V24 — khử trùng biểu thức trong một màn Đ/S (cùng họ lỗi
+             g3TableTF): rút lại cặp phép tính nếu biểu thức đã có trong màn. */
+          var p = calcPair(max), guard = 0;
+          while (usedExpr[p.expr] && guard++ < 20) p = calcPair(max);
+          usedExpr[p.expr] = 1;
           var truth = Math.random() < 0.5;
           var shown = truth ? p.res : p.res + pick([-2, -1, 1, 2]);
           if (shown < 0) shown = p.res + 2;
@@ -1334,9 +1338,15 @@
       return function () {
         var pw = engPicWords(pool);
         if (pw.length >= 2) {
-          var items = [];
+          var items = [], usedW = {};
           for (var k = 0; k < 3; k++) {
-            var w = pick(pw), truth = Math.random() < 0.5;
+            /* V24 — khử trùng TỪ trong một màn Đ/S (cùng họ lỗi g3TableTF):
+               cùng một từ rút hai lần với cùng cách hiển thị sẽ thành hai
+               mệnh đề nguyên văn giống hệt nhau trong một màn. */
+            var w = pick(pw), guard = 0;
+            while (usedW[w[0]] && guard++ < 15) w = pick(pw);
+            usedW[w[0]] = 1;
+            var truth = Math.random() < 0.5;
             var shown = truth ? w : (engDistractors(w, pool, 1, { pic: true, gloss: true })[0] || w);
             items.push({ w: w, truth: truth, shown: shown, correct: w });
           }
@@ -1346,9 +1356,13 @@
           return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
         }
         /* Không đủ từ có tranh: TF khẳng định NGHĨA (dạng chữ hoàn toàn). */
-        var items2 = [];
+        var items2 = [], usedW2 = {};
         for (var k2 = 0; k2 < 3; k2++) {
-          var w2 = pick(pool), truth2 = Math.random() < 0.5;
+          /* V24 — khử trùng từ trong màn như nhánh có tranh ở trên. */
+          var w2 = pick(pool), guard2 = 0;
+          while (usedW2[w2[0]] && guard2++ < 15) w2 = pick(pool);
+          usedW2[w2[0]] = 1;
+          var truth2 = Math.random() < 0.5;
           var shown2 = truth2 ? w2 : (engDistractors(w2, pool, 1, { gloss: true })[0] || w2);
           items2.push({ w: w2, truth: truth2, shown: shown2, correct: w2 });
         }
@@ -3452,9 +3466,16 @@ function valueKeyOf(html) {
       return memQ("Lật thẻ tìm cặp đúng: phép nhân và tích!", pairs);
     }
     function g3TableTF() {
-      var items = [];
+      var items = [], usedTK = {};
       for (var i = 0; i < 3; i++) {
-        var t = pick(TABLES3), k = rand(2, 9), truth = Math.random() < 0.5;
+        /* V24 — vá trùng mệnh đề trong màn (lỗi tiềm ẩn từ bản live, dupsim
+           đợt 1 v24 truy vết tại m3-bang: 69–84 màn vi phạm/13,9k màn Đ/S):
+           trước đây (t,k) rút độc lập từng vòng nên cùng một phép nhân có thể
+           xuất hiện hai lần nguyên văn trong một màn. Khử trùng cặp (t,k)
+           trong màn theo tiền lệ gTFClock/gTFLabelShape. */
+        var t = pick(TABLES3), k = rand(2, 9), truth = Math.random() < 0.5, guard = 0;
+        while (usedTK[t + "x" + k] && guard++ < 20) { t = pick(TABLES3); k = rand(2, 9); }
+        usedTK[t + "x" + k] = 1;
         var shown = truth ? t * k : t * k + pick([-t, t, -1, 1, 2, -2]);
         if (shown <= 0) shown = t * k + t;
         items.push({ t: t, k: k, truth: truth, shown: shown, correct: t * k });
@@ -5373,9 +5394,13 @@ function engExtraPush(t, words, allWords) {
   t.pools.games.push(function () {
     var pw = engPicWords(words);
     if (pw.length >= 2) {
-      var items = [];
+      var items = [], usedW = {};
       for (var k = 0; k < 3; k++) {
-        var w = pick(pw), truth = Math.random() < 0.5;
+        /* V24 — khử trùng từ trong một màn Đ/S (cùng họ lỗi g3TableTF). */
+        var w = pick(pw), guard = 0;
+        while (usedW[w[0]] && guard++ < 15) w = pick(pw);
+        usedW[w[0]] = 1;
+        var truth = Math.random() < 0.5;
         var shown = truth ? w : (engDistractors(w, words, 1, { pic: true, gloss: true })[0] || w);
         items.push({ w: w, truth: truth, shown: shown, correct: w });
       }
@@ -5384,9 +5409,13 @@ function engExtraPush(t, words, allWords) {
       var rounds = items.map(function (it) { return { visual: '<div class="big-pic">' + picHTML(it.w) + '</div><div class="sentence">Hình này là “' + it.shown[2] + "” (" + it.shown[0] + ")</div>", truth: it.truth, explain: "Đáp án đúng: “" + it.w[2] + "” (" + it.w[0] + ")" }; });
       return tfQ("Đúng hay sai? Nhìn hình và nghĩa nhé!", rounds);
     }
-    var items2 = [];
+    var items2 = [], usedW2 = {};
     for (var k2 = 0; k2 < 3; k2++) {
-      var w2 = pick(words), truth2 = Math.random() < 0.5;
+      /* V24 — khử trùng từ trong màn như nhánh có tranh ở trên. */
+      var w2 = pick(words), guard2 = 0;
+      while (usedW2[w2[0]] && guard2++ < 15) w2 = pick(words);
+      usedW2[w2[0]] = 1;
+      var truth2 = Math.random() < 0.5;
       var shown2 = truth2 ? w2 : (engDistractors(w2, words, 1, { gloss: true })[0] || w2);
       items2.push({ w: w2, truth: truth2, shown: shown2, correct: w2 });
     }
@@ -9536,7 +9565,7 @@ window.__ensureGrade = function (g, cb) {
       });
     }
     [['4', 'tv4-tungu8', [['Nhân hậu', 'Hiền lành, giàu lòng thương người'], ['Can đảm', 'Dũng cảm, không sợ nguy hiểm'], ['Trung thực', 'Thật thà, không gian dối'], ['Đoàn kết', 'Gắn bó, cùng nhau chung sức'], ['Hiếu thảo', 'Yêu kính, chăm sóc ông bà cha mẹ'], ['Khoan dung', 'Rộng lượng, biết tha thứ'], ['Siêng năng', 'Chăm chỉ làm việc'], ['Kiên quyết', 'Quyết tâm làm đến cùng']]],
-     ['4', 'tin4-laptrinh', [['Sprite', 'Nhân vật trong Scratch'], ['Stage', 'Sân khấu hiển thị của chương trình'], ['Khối lệnh', 'Mảnh ghép chứa một lệnh'], ['Trang phục', 'Hình dạng của nhân vật'], ['Lá cờ xanh', 'Nút bắt đầu chạy chương trình'], ['Vòng lặp', 'Khối lệnh lặp lại một hành động'], ['Bút vẽ', 'Công cụ vẽ khi nhân vật di chuyển'], ['Nhóm Sự kiện', 'Khối lệnh bắt đầu khi có sự việc xảy ra']]],
+     ['4', 'tin4-laptrinh', [['Sprite', 'Nhân vật trong Scratch'], ['Stage', 'Khu vực hiển thị nhân vật và kết quả khi chạy chương trình'], ['Khối lệnh', 'Mảnh ghép chứa một lệnh'], ['Trang phục', 'Hình dạng của nhân vật'], ['Lá cờ xanh', 'Nút bắt đầu chạy chương trình'], ['Vòng lặp', 'Khối lệnh lặp lại một hành động'], ['Bút vẽ', 'Công cụ vẽ khi nhân vật di chuyển'], ['Nhóm Sự kiện', 'Khối lệnh bắt đầu khi có sự việc xảy ra']]],
      ['4', 'cn4-hoacay', [['Cây cảnh', 'Cây trồng để trang trí, làm đẹp'], ['Giâm cành', 'Nhân giống bằng cành cắt cắm xuống đất'], ['Phân hữu cơ', 'Phân từ xác cây cỏ và phân chuồng hoai mục'], ['Quang hợp', 'Quá trình cây dùng ánh sáng để tạo chất nuôi cây'], ['Chậu cây', 'Vật đựng đất để trồng cây'], ['Cắt tỉa', 'Cắt bỏ cành lá để tạo dáng và thông thoáng']]],
      ['4', 'cn4-thucong', [['Kéo thủ công', 'Dụng cụ cắt giấy và vải mỏng'], ['Hồ dán', 'Chất dính các vật liệu nhẹ như giấy'], ['Thước kẻ', 'Dụng cụ đo và kẻ đường thẳng'], ['Giấy thủ công', 'Giấy màu dùng để gấp, cắt, dán'], ['Kim khâu', 'Dụng cụ dùng để khâu vải'], ['Keo sữa', 'Chất dán chắc cho gỗ mỏng và vải'], ['Đệm kim', 'Đồ dùng để cắm kim khi không sử dụng'], ['Vật liệu tái chế', 'Chai nhựa, giấy bìa được dùng lại']]],
      ['5', 'm5-tiso', [['Tỉ số', 'Thương của phép chia hai số'], ['Tỉ lệ bản đồ', 'Tỉ số giữa độ dài trên bản đồ và độ dài ngoài thật'], ['Tỉ số phần trăm', 'Tỉ số được viết dưới dạng phần trăm'], ['Lãi suất', 'Tỉ lệ tiền lãi so với tiền gốc'], ['Tiền lãi', 'Số tiền được cộng thêm khi gửi tiết kiệm'], ['Tiền gốc', 'Số tiền ban đầu đem gửi tiết kiệm']]],
@@ -9677,7 +9706,9 @@ window.__ensureGrade = function (g, cb) {
     return function () {
       var f = pick(facts);
       var os = shuffle([f.a].concat(wrongsOf(f, 2, ctx || { facts: facts })));
-      return { roundIdentity: { type: "fact", facts: [f.q] }, kind: "blank", badge: adv ? "🧠 Điền vào chỗ trống" : "✏️ Điền vào chỗ trống",
+      /* ĐỢT 0 V24 (nhãn trung thực, mục 3.5): điền-từ-dữ-kiện là câu BỌC —
+         huy hiệu trung tính ✏️ ở cả hai tầng, không còn 🧠 ở tầng nâng cao. */
+      return { roundIdentity: { type: "fact", facts: [f.q] }, kind: "blank", badge: "✏️ Điền vào chỗ trống",
         prompt: adv ? "Suy nghĩ kĩ rồi điền đáp án đúng nhé!" : "Điền đáp án đúng vào chỗ trống nhé!",
         blankText: f.a, explain: f.ex || ("Đáp án đúng là: " + f.a + "."),
         visual: '<div class="sentence">' + escB(f.q) + '</div><div class="sentence">Đáp án: ' + blankSlot() + "</div>",
@@ -9814,17 +9845,136 @@ window.__ensureGrade = function (g, cb) {
   }
   function d5IsUpper(ch) { return !!ch && ch === ch.toUpperCase() && ch !== ch.toLowerCase(); }
   function d5Cap(s) { s = String(s || ""); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  /* VÁ D2 vòng 2 (phúc thẩm QA vòng 2, ca g7-527/g9-538): giá trị bắt đầu
+     bằng KÍ HIỆU/CÔNG THỨC/TÊN RIÊNG có chữ hoa nội tại thì KHÔNG hạ chữ
+     đầu — hạ "N₂"→"n₂", "C₁₂H₂₂O₁₁"→"c₁₂H₂₂O₁₁" làm hỏng kí hiệu hoá học
+     trong lựa chọn được coi là đúng của oddStmt (học sinh biết hoá sẽ coi
+     mệnh đề là sai → hai đáp án cùng bảo vệ được). Nhận diện trên token
+     đầu của giá trị: chứa số/chỉ số trên-dưới; có chữ hoa ở vị trí ≥1
+     (NaCl, VietGAP, MHz…); là chữ viết tắt toàn hoa (DNA, UNESCO); là một
+     kí tự hoa đơn (nguyên tố/biến); hoặc thuộc tập kí hiệu đơn vị ngắn
+     (Hz, Pa…). Áp tại d5Decap — điểm hạ chữ duy nhất của bộ dựng mệnh đề
+     — nên phủ mọi họ dùng d5BuildStmts (judge/oddStmt/tf4/dot4). */
+  var D5_UNIT_SYMS = { "Hz": 1, "Pa": 1, "Wb": 1, "lx": 1, "Bq": 1, "Gy": 1, "Sv": 1, "sr": 1, "cd": 1, "mol": 1, "Ω": 1 };
+  function d5KeepCaseVal(s) {
+    var t = String(s || "").trim().split(/\s+/)[0].replace(/^[“"«(]+/, "").replace(/[.,;:)]+$/, "");
+    if (!t) return false;
+    if (/[0-9₀-₉⁰-⁹]/.test(t)) return true;                       // N₂, C₁₂H₂₂O₁₁, H2O, CO2, O₂…
+    if (/[A-ZÀ-Ỹ]/.test(t.slice(1))) return true;                  // chữ hoa nội tại: NaCl, VietGAP, MHz, McDonald…
+    if (t.length >= 2 && t === t.toUpperCase() && t !== t.toLowerCase()) return true;   // viết tắt toàn hoa: DNA, UNESCO, LHQ
+    if (t.length === 1 && d5IsUpper(t)) return true;               // kí tự hoa đơn: nguyên tố/đơn vị/biến
+    if (D5_UNIT_SYMS[t]) return true;                              // kí hiệu đơn vị ngắn: Hz, Pa…
+    if (/^[A-Z][a-z]+$/.test(t)) return true;                      // VÁ D2 vòng 2 (mẫu mù): tên riêng nước ngoài thuần ASCII ở đầu giá trị/mệnh đề — Watt, Newton, Edison, Mendel… hạ chữ đầu thành "watt" làm hỏng dạng chuẩn
+    if (t.indexOf("-") !== -1 && d5IsUpper(t.charAt(0))) return true;   // tên phiên âm có gạch nối: Niu-tơn, Đác-uyn, Anh-xtanh…
+    return false;
+  }
   function d5Decap(s) {
     s = String(s || "");
     if (s.length < 2 || !d5IsUpper(s.charAt(0))) return s;
     var w = s.split(/\s+/);
     if (w.length >= 2 && d5IsUpper(w[1].charAt(0))) return s;   // tên riêng nhiều từ viết hoa (vd "Hồ Chí Minh"): giữ nguyên
+    if (w.length === 1) return s;   // VÁ D2 vòng 2 (mở rộng cơ chế 3): giá trị MỘT từ viết hoa đứng đầu là tên riêng/kí hiệu danh từ riêng (Nemo, Nautilus, Watt…) — hạ chữ đầu làm hỏng dạng chuẩn, học sinh có thể coi là sai → giữ nguyên
+    if (d5KeepCaseVal(s)) return s;   // VÁ D2 vòng 2: kí hiệu/công thức giữ nguyên hoa/thường
     return s.charAt(0).toLowerCase() + s.slice(1);
   }
   function d5NormVal(s) { return String(s || "").replace(/\s+/g, " ").trim().toLowerCase(); }
   function d5BuildStmts(facts, pairs) {
     var out = [], seen = {}, seenPairDir = {};
-    function addStmt(head, val) {
+    /* VÁ D1/D2 (vòng vá QA v24): hai thẻ cho tầng tiêu thụ (chuỗi dot4,
+       judge/oddStmt):
+       - __def: mệnh đề ĐỊNH NGHĨA dựng từ câu hỏi dữ kiện ("X là gì/là ai/
+         có nghĩa là gì/gọi là gì") — quan hệ đồng nhất thật, được phép làm
+         cạnh B→C của chuỗi hai bước. Mệnh đề từ cặp nối KHÔNG có thẻ này:
+         cặp nối mang quan hệ bất kỳ (tác giả-của, thủ-đô-của, kí-hiệu-của…)
+         nhưng vẫn bị dựng thành "X là Y".
+       - __catErr: mệnh đề từ cặp nối mà quan hệ thật là SỞ HỮU/TÁC GIẢ/
+         THỦ ĐÔ (dữ kiện hỏi "… là của ai / tác giả nào / thủ đô …" hoặc một
+         vế là tên người còn vế kia không) — "Tác phẩm là Tác giả" là lỗi
+         phạm trù, không được vào ngân hàng của judge/oddStmt/dot4. */
+    var ATTR_RE = /(tác giả|nhà thơ|nhà văn|thủ đô|sáng tác|là của|của ai|ai viết|do ai)/;
+    function coreTxt(s) { return d5NormText(s).replace(/[“”"«»]/g, "").trim(); }
+    function isPersonName(s) {
+      var w = String(s || "").replace(/[“”"«»()]/g, "").trim().split(/\s+/);
+      if (w.length < 2 || w.length > 4) return false;
+      return w.every(function (x) {
+        return x.length >= 2 && !/\d/.test(x) && d5IsUpper(x.charAt(0));
+      });
+    }
+    function isNameLike(s) {
+      if (isPersonName(s)) return true;
+      return /^[A-ZÀ-Ỹ][a-zà-ỹ]+(-[a-zà-ỹ]+)+$/.test(String(s || "").trim());   /* tên phiên âm một token: Xan-ti-a-gô, Ca-ra-cát, Bô-gô-ta… */
+    }
+    var ERA_RE = /^(thoi|trieu|the ky|thoi ky|thoi dai)\b/;
+    var ORG_RE = /^(bai|chuong|tuan|unit)\s+\d/;
+    var GENRE_LEX = { "tiểu thuyết": 1, "truyện ngắn": 1, "truyện dài": 1, "thơ": 1, "bài thơ": 1, "văn bản": 1, "ca khúc": 1, "bài hát": 1, "bộ phim": 1, "vở kịch": 1, "bức tranh": 1 };
+    function pairCatErr(L, R) {
+      var lC = coreTxt(L), rC = coreTxt(R);
+      var hit = (facts || []).some(function (f) {
+        var q = d5NormText(f.q || "");
+        if (!ATTR_RE.test(q)) return false;
+        return (lC.length >= 3 && q.indexOf(lC) !== -1) || (rC.length >= 3 && q.indexOf(rC) !== -1);
+      });
+      if (hit) return true;
+      /* VÁ bổ sung (phân xử tái giải vòng vá D1–D3): ba dạng cặp mà quan hệ
+         KHÔNG phải đồng nhất nhưng dễ lọt qua các cổng tên riêng:
+         (i) một vế là KỶ NGUYÊN (thời…/triều…/thế kỷ…) hay ĐƠN VỊ TỔ CHỨC
+             bài học (bài N/chương N) — "X là Thời Lê trung hưng",
+             "X là bài 9" là gán thời đại/vị trí, không phải định nghĩa;
+         (ii) một vế là TỪ THỂ LOẠI trần (tiểu thuyết, truyện ngắn, thơ…)
+             còn vế kia là tên riêng/tác phẩm cụ thể — "Tiểu thuyết là
+             Đất rừng phương Nam" sai hướng phạm trù (tác phẩm thuộc loại,
+             loại không "là" một tác phẩm). */
+      var lF = d5FoldText(lC), rF = d5FoldText(rC);
+      if (ERA_RE.test(lF) || ERA_RE.test(rF) || ORG_RE.test(lF) || ORG_RE.test(rF)) return true;
+      /* VÁ D2 vòng 2: cụm thể loại nhiều từ kết thúc bằng từ thể loại trần
+         ("Đoạn trích tiểu thuyết") cũng là vế THỂ LOẠI như từ trần. */
+      var GENRE_TAIL = /(tiểu thuyết|truyện ngắn|truyện dài|bài thơ|ca khúc|bài hát|bộ phim|vở kịch|bức tranh)$/;
+      var lGenre = GENRE_LEX[lC] || GENRE_TAIL.test(lC), rGenre = GENRE_LEX[rC] || GENRE_TAIL.test(rC);
+      if (lGenre && rC.length <= 42 && !/,/.test(rC) && d5IsUpper(String(R).trim().charAt(0))) return true;
+      if (rGenre && lC.length <= 42 && !/,/.test(lC) && d5IsUpper(String(L).trim().charAt(0))) return true;
+      /* VÁ D2 vòng 2 (phúc thẩm QA vòng 2, ca nv1 — F2-nv1-5741/5768): một vế
+         là TÊN NGƯỜI, vế kia là TÊN RIÊNG của một thực thể KHÁC LOẠI (tác
+         phẩm/địa danh/tổ chức: cụm ≥2 từ, từ đầu viết hoa và có thêm ≥1 từ
+         viết hoa khác — vd "Đất rừng phương Nam") → "Người là Tác phẩm" là
+         lỗi phạm trù ở MỌI vai trò trong ngân hàng mệnh đề (kể cả lựa chọn
+         được coi là đúng của judge/oddStmt). Luật vòng 1 hụt vì nó đòi dữ
+         kiện của chủ đề phải nhắc tới vế phải, và "Đất rừng phương Nam"
+         không qua được isNameLike (tên tác phẩm nhiều từ, từ giữa thường).
+         Vế phải là tên người thì để luật hai-tên-riêng ở dưới quyết (giữ
+         được đồng nhất có xác nhận kiểu Lê Hữu Trác = Hải Thượng Lãn Ông). */
+      function titledEntity(s) {
+        var w = String(s || "").replace(/[“”"«»()]/g, "").trim().split(/\s+/);
+        if (w.length < 2 || !d5IsUpper(w[0].charAt(0))) return false;
+        for (var i = 1; i < w.length; i++) if (d5IsUpper(w[i].charAt(0))) return true;
+        return false;
+      }
+      if (isPersonName(L) && !isPersonName(R) && titledEntity(R)) return true;
+      /* Cả hai vế đều dạng TÊN RIÊNG (vd [Tranh Đông Hồ, Bắc Ninh],
+         [Lê Thánh Tông, Luật Hồng Đức], [Chùa Một Cột, Thời Lý]): quan hệ
+         của cặp là gốc-gác/kỷ nguyên/ban-hành… chứ không phải đồng nhất,
+         trừ khi chính dữ kiện của chủ đề có câu hỏi danh tính ("…là ai/
+         là gì/tên thật…") khẳng định hai vế là một thực thể (vd "Hải
+         Thượng Lãn Ông tên thật là ai? → Lê Hữu Trác"). Không có dữ kiện
+         xác nhận → "X là Y" là lỗi phạm trù, gắn thẻ chặn. */
+      if (isNameLike(L) && isNameLike(R)) {
+        var IDQ_RE = /(là ai|là gì|tên thật|tên gọi|biệt danh|bí danh|có nghĩa là|gọi là|nghĩa là)/;
+        var confirmed = (facts || []).some(function (f) {
+          var q = d5NormText(f.q || "").replace(/^[“”"«»\s]+/, ""), aN = d5NormText(f.a || "");
+          if (!IDQ_RE.test(q)) return false;
+          /* vế tên phải là CHỦ THỂ của câu hỏi (đứng đầu câu) — tên chỉ
+             xuất hiện giữa câu hỏi dài ("…được xây ở Thăng Long thời Lý
+             là gì? → Chùa Một Cột") không phải khẳng định danh tính. */
+          return ((lC.length >= 3 && q.indexOf(lC) === 0) && aN === rC) || ((rC.length >= 3 && q.indexOf(rC) === 0) && aN === lC);
+        });
+        if (!confirmed) return true;
+      }
+      if (isPersonName(R) && !isPersonName(L)) return true;
+      if (isPersonName(L) && !isPersonName(R) && rC.length >= 3) {
+        return (facts || []).some(function (f) { return d5NormText(f.q || "").indexOf(rC) !== -1; });
+      }
+      return false;
+    }
+    function addStmt(head, val, tag) {
       head = String(head || "").replace(/\s+/g, " ").trim();
       val = String(val || "").replace(/\s+/g, " ").trim();
       if (!head || !val) return;
@@ -9840,7 +9990,9 @@ window.__ensureGrade = function (g, cb) {
       var sk = d5SubjectOf(head) + "" + d5NormText(val);
       if (seen["§" + sk]) return;
       seen["§" + sk] = 1;
-      out.push({ head: head, val: val, stmt: stmt });
+      var st = { head: head, val: val, stmt: stmt };
+      if (tag) { if (tag.def) st.__def = 1; if (tag.catErr) st.__catErr = 1; }
+      out.push(st);
     }
     (pairs || []).forEach(function (p) {
       var L = String(p[0] || "").replace(/\s+/g, " ").trim(), R = String(p[1] || "").replace(/\s+/g, " ").trim();
@@ -9862,16 +10014,16 @@ window.__ensureGrade = function (g, cb) {
       var pk = [d5NormVal(L), d5NormVal(R)].sort().join("");
       if (seenPairDir[pk]) return;
       seenPairDir[pk] = 1;
-      addStmt(d5Cap(L) + " là", d5Decap(R));
+      addStmt(d5Cap(L) + " là", d5Decap(R), { catErr: pairCatErr(L, R) });
     });
     (facts || []).forEach(function (f) {
       var q = String(f.q || ""), a = String(f.a || "").replace(/\s+/g, " ").trim(), m;
       if (!a || a.length > 60 || a.indexOf("?") !== -1) return;
-      if ((m = /^(.+?)\s+là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " là", a);
-      else if ((m = /^(.+?)\s+là ai\??$/.exec(q))) addStmt(d5Cap(m[1]) + " là", a);
-      else if ((m = /^(.+?)\s+có nghĩa là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " có nghĩa là", a);
-      else if ((m = /^(.+?)\s+nghĩa là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " nghĩa là", a);
-      else if ((m = /^(.+?)\s+gọi là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " gọi là", a);
+      if ((m = /^(.+?)\s+là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " là", a, { def: 1 });
+      else if ((m = /^(.+?)\s+là ai\??$/.exec(q))) addStmt(d5Cap(m[1]) + " là", a, { def: 1 });
+      else if ((m = /^(.+?)\s+có nghĩa là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " có nghĩa là", a, { def: 1 });
+      else if ((m = /^(.+?)\s+nghĩa là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " nghĩa là", a, { def: 1 });
+      else if ((m = /^(.+?)\s+gọi là gì\??$/.exec(q))) addStmt(d5Cap(m[1]) + " gọi là", a, { def: 1 });
       else if (q.indexOf("Đồng hồ chỉ mấy giờ?") !== -1 && /^\d+ giờ( \d+ phút)?$/.test(a)) addStmt(q.replace("Đồng hồ chỉ mấy giờ?", "Đồng hồ chỉ").replace(/\s+/g, " ").trim().replace(/\.$/, ""), a);
       else if ((m = /^(.+?) có bao nhiêu ([^?]+)\?$/.exec(q)) && /^\d[\d.]*\s+\S+$/.test(a) && a.split(/\s+/).pop() === m[2].trim()) addStmt(d5Cap(m[1]) + " có", a);
     });
@@ -9891,7 +10043,11 @@ window.__ensureGrade = function (g, cb) {
      (blankVarGen / advTF1Gen) như thiết kế gốc — không ép sinh mệnh đề sai. */
   var D5_NUMWORDS = { "một": "1", "hai": "2", "ba": "3", "bốn": "4", "tư": "4", "năm": "5", "sáu": "6", "bảy": "7", "tám": "8", "chín": "9", "mười": "10" };
   function d5NormText(s) {
-    var t = d5NormVal(s).replace(/[.。!?…]+$/g, "").trim();
+    /* VÁ D2 bổ sung: bỏ dấu ngoặc kép khi SO SÁNH — hai cách viết của cùng
+       một thực thể ("Nhân vật chính của “Vợ nhặt”" ↔ "nhân vật chính của
+       Vợ nhặt") từng làm mù cổng chống đồng nhất thức T1, sinh khẳng định
+       tự lặp "Nhân vật chính của Vợ nhặt là nhân vật chính của Vợ nhặt". */
+    var t = d5NormVal(s).replace(/[“”"«»]/g, "").replace(/[.。!?…]+$/g, "").trim();
     /* Chuẩn hoá số đếm viết bằng chữ ("một giờ" ≡ "1 giờ") để các cổng so sánh
        nhận ra cùng một khái niệm dù diễn đạt khác nhau — bài học B1-P0 vòng 2:
        "Một giờ có 60 phút." từng bị gán SAI vì ngân hàng diễn đạt song song
@@ -9921,19 +10077,188 @@ window.__ensureGrade = function (g, cb) {
     var small = Math.min(ka.length, kb.length);
     return small >= 2 && inter / small >= 0.8;   /* tập từ vế ngắn nằm gần trọn trong vế dài → cùng nội dung */
   }
+  /* VÁ D2 (vòng vá QA v24): ĐỒNG NHẤT THỰC THỂ trước khi ghép/nhiễu.
+     Hai chủ thể được coi là CÙNG MỘT thực thể khi một bên chứa bên kia theo
+     token ("dna" ⊂ "dna có tên đầy đủ"; "tổng thống đầu tiên của hoa kỳ" ⊂
+     "tổng thống đầu tiên của hoa kỳ là ai"…) hoặc chồng lấp token rất cao.
+     Nhờ đó hai DẠNG TÊN của một thực thể (phiên âm ↔ nguyên dạng, tên đầy
+     đủ ↔ tên ngắn) gom về MỘT giá trị: ghép một giá trị mà chủ thể đích đã
+     mang (dưới dạng tên khác hoặc ở dữ kiện khác) thì mệnh đề khóa "sai"
+     thực chất vẫn đúng — đúng ca QA g9-476/g8-452/g8-457. */
+  function d5SubjEquiv(s1, s2) {
+    if (!s1 || !s2) return false;
+    if (s1 === s2) return true;
+    var a = d5TokSet(s1), b = d5TokSet(s2);
+    var na = Object.keys(a).length, nb = Object.keys(b).length;
+    if (!na || !nb) return false;
+    var inter = 0;
+    for (var k in a) if (b[k]) inter++;
+    if (inter === Math.min(na, nb)) return true;               // chứa nhau theo token
+    return inter >= 3 && inter / Math.min(na, nb) >= 0.7;      // chồng lấp rất cao
+  }
+  /* Tập giá trị BÍ DANH của một giá trị: mọi giá trị mà các chủ thể tương
+     đương với (các) chủ thể đang mang giá trị đó gán cho trong ngân hàng —
+     tức mọi dạng tên khác của cùng thực thể đích. */
+  function d5AliasValSet(stmts, valNorm) {
+    var subs = {}, out = {};
+    (stmts || []).forEach(function (s) { if (d5NormText(s.val) === valNorm) subs[d5SubjectOf(s.head)] = 1; });
+    var subList = Object.keys(subs);
+    if (!subList.length) return out;
+    (stmts || []).forEach(function (s) {
+      var su = d5SubjectOf(s.head);
+      for (var i = 0; i < subList.length; i++) if (d5SubjEquiv(su, subList[i])) { out[d5NormText(s.val)] = 1; break; }
+    });
+    return out;
+  }
+  /* VÁ D2 bổ sung (phân xử tái giải vòng vá): ĐỒ THỊ THỰC THỂ của ngân
+     hàng — nối chủ thể↔giá trị của mọi khẳng định, cộng nối mờ giữa hai
+     chủ thể tương đương nhau. Mọi nút trong cùng thành phần liên thông
+     với (chủ thể, giá trị) của đích đều là DẠNG TÊN KHÁC của cùng thực
+     thể qua một–hai bước trung gian (ca ls8-h1: "oa-sinh-tơn" ↔ "tổng
+     thống đầu tiên của hoa kỳ" ↔ "gioóc-si oa-sinh-tơn"/"george
+     washington" — ghép chéo cho khẳng định vẫn đúng hoặc tự lặp). */
+  function d5EntitySet(stmts, seeds) {
+    var adj = {}, subjNodes = [], seenS = {};
+    function link(a, b) { if (!a || !b || a === b) return; (adj[a] = adj[a] || {})[b] = 1; (adj[b] = adj[b] || {})[a] = 1; }
+    (stmts || []).forEach(function (s) {
+      var su = d5SubjectOf(s.head), va = d5NormText(s.val);
+      if (!seenS[su]) { seenS[su] = 1; subjNodes.push(su); }
+      link(su, va);
+    });
+    for (var i = 0; i < subjNodes.length; i++) for (var j = i + 1; j < subjNodes.length; j++)
+      if (d5SubjEquiv(subjNodes[i], subjNodes[j])) link(subjNodes[i], subjNodes[j]);
+    var seen = {}, queue = [];
+    (seeds || []).forEach(function (sd) { if (sd && !seen[sd]) { seen[sd] = 1; queue.push(sd); } });
+    while (queue.length) {
+      var n = queue.pop();
+      for (var k in (adj[n] || {})) if (!seen[k]) { seen[k] = 1; queue.push(k); }
+    }
+    return seen;
+  }
+  /* Ghép giá trị của một khẳng định về LỚP ("các ester nhẹ", "những nước
+     phát triển"…) vào một THÀNH VIÊN của lớp đó → khẳng định vẫn đúng nhờ
+     thừa hưởng tính chất lớp (ca hh12-c1: isoamyl acetate "là" tính chất
+     chung của các ester nhẹ). Nhận diện: chủ thể donor chứa "các/những/
+     mọi + danh từ lớp" và danh từ lớp đó xuất hiện trong chủ thể/giá trị
+     của đích. */
+  function d5ClassShare(target, cand) {
+    var m = /(?:^|\s)(cac|nhung|moi)\s+([a-z]+)/.exec(d5FoldText(d5SubjectOf(cand.head)));
+    if (!m) return false;
+    var noun = m[2];
+    var re = new RegExp("(^|\\s)" + noun + "(\\s|$)");
+    return re.test(d5FoldText(target.val)) || re.test(d5FoldText(d5SubjectOf(target.head)));
+  }
+  /* Hai chủ thể NGẮN đều là tên gọi/bi danh của thực thể, và hai giá trị
+     cùng trỏ về thực thể đó (chung ≥2 token) → ghép chéo vẫn đúng theo
+     nghĩa (ca nv6-b9: "hành tinh xanh" ↔ "ngôi nhà chung" cùng là Trái
+     Đất; gloss của chủ thể này gán sang chủ thể kia vẫn thành câu đúng). */
+  function d5GlossCross(target, cand) {
+    var tS = d5SubjectOf(target.head), cS = d5SubjectOf(cand.head);
+    if (!tS || !cS || tS.split(" ").length > 4 || cS.split(" ").length > 4) return false;
+    var tt = d5TokSet(target.val), sh = 0;
+    var ct = d5TokSet(cand.val);
+    for (var k in ct) if (tt[k]) sh++;
+    return sh >= 2;
+  }
+  /* VÁ D2 vòng 2 (phúc thẩm QA vòng 2, ca judge-g9-74 — nv9-b8): BÍ DANH
+     PHIÊN ÂM XUYÊN CẶP. Hai dạng tên của cùng một người nằm ở hai cặp/dữ
+     kiện KHÁC nhau nên không chung nút nào trong đồ thị thực thể của vòng
+     vá 1: đích "Guterres là Tổng Thư kí Liên hợp quốc", donor mang giá trị
+     "Gu-tê-rét (Tổng Thư kí LHQ)" của một dữ kiện khác — mệnh đề ghép
+     "Guterres là gu-tê-rét (Tổng Thư kí LHQ)" thực chất ĐÚNG (cùng một
+     người) nhưng bị khóa là khẳng định "chưa đúng". Hai đường nhận diện:
+     (a) ĐẦU TÊN của giá trị donor (phần trước ngoặc đơn/gạch ngang) sau
+     khi bỏ dấu + bỏ gạch nối thì trùng, chứa nhau, hoặc lệch Levenshtein
+     ≤ 2 (cùng chữ cái đầu, dài tối thiểu 5) so với CHỦ THỂ đích hoặc đầu
+     tên của GIÁ TRỊ ĐÚNG của đích — "guteret" ~ "guterres" lệch 2;
+     (b) CHÚ THÍCH trong ngoặc của giá trị donor mô tả đúng vai trò/giá
+     trị của đích (chồng lấp token đã bỏ dấu ≥ 70% của tập chú thích,
+     vd "(Tổng Thư kí LHQ)" ~ "Tổng Thư kí Liên hợp quốc").
+     Trúng một trong hai đường → cấm donor ở cả ba đường ghép
+     (d5DonorFor / judge24PickDonor / dot4DonorGuard). Cổng chỉ CẤM donor
+     nên lệch dương tính giả (hai người khác nhau mà tên gần nhau) chỉ làm
+     mỏng nguồn donor, không bao giờ sinh khóa sai. */
+  function d5FoldKey(s) { return d5FoldText(s).replace(/[^0-9a-z]+/g, ""); }
+  function d5NameHead(s) { return String(s || "").split(/[\(,–—]|\s-\s/)[0].trim(); }
+  function d5LevLe2(a, b) {
+    if (a === b) return true;
+    var la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > 2) return false;
+    var prev = [], cur = [], i, j;
+    for (j = 0; j <= lb; j++) prev[j] = j;
+    for (i = 1; i <= la; i++) {
+      cur[0] = i;
+      for (j = 1; j <= lb; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+      var tmp = prev; prev = cur; cur = tmp;
+    }
+    return prev[lb] <= 2;
+  }
+  function d5SameNameForm(x, y) {
+    if (!x || !y) return false;
+    if (x === y) return true;
+    if (x.length >= 4 && y.length >= 4 && (x.indexOf(y) !== -1 || y.indexOf(x) !== -1)) return true;
+    if (x.charAt(0) !== y.charAt(0) || Math.min(x.length, y.length) < 5) return false;
+    return d5LevLe2(x, y);
+  }
+  function d5GlossTokSet(s) {
+    var set = {}, toks = d5FoldText(String(s || "").replace(/-/g, "")).split(/[^0-9a-z]+/i).filter(function (x) { return x.length > 0; });
+    toks.forEach(function (x) { set[x] = 1; });
+    return set;
+  }
+  function d5DonorAliasHit(target, cand) {
+    var ck = d5FoldKey(d5NameHead(cand.val));
+    if (ck) {
+      if (d5SameNameForm(ck, d5FoldKey(d5SubjectOf(target.head)))) return true;
+      if (d5SameNameForm(ck, d5FoldKey(d5NameHead(target.val)))) return true;
+    }
+    /* VÁ D2 vòng 2 (bổ sung sau mẫu mù nội bộ): bí danh ở phía CHỦ THỂ donor —
+       donor là mệnh đề NÓI VỀ đúng người mà giá trị đúng của đích nhắc tới
+       (donor [Guterres, Tổng Thư kí LHQ] ghép vào đích [Phát biểu…, Gu-tê-rét
+       (Tổng Thư kí LHQ)]): giá trị donor mô tả cùng người nên mệnh đề ghép
+       vẫn bảo vệ được qua chuỗi đồng nhất → cấm dùng donor đó. */
+    if (cand.head) {
+      var sk = d5FoldKey(d5NameHead(d5SubjectOf(cand.head)));
+      if (sk) {
+        if (d5SameNameForm(sk, d5FoldKey(d5NameHead(target.val)))) return true;
+        if (d5SameNameForm(sk, d5FoldKey(d5SubjectOf(target.head)))) return true;
+      }
+    }
+    var pm = /\(([^()]*)\)/.exec(String(cand.val || ""));
+    if (pm && pm[1]) {
+      var g = d5GlossTokSet(pm[1]), tv = d5GlossTokSet(target.val), gn = Object.keys(g).length, inter = 0;
+      for (var k in g) if (tv[k]) inter++;
+      if (gn >= 2 && inter / gn >= 0.7) return true;
+    }
+    return false;
+  }
   function d5DonorFor(stmts, target) {
     var tSubj = d5SubjectOf(target.head), tVal = d5NormText(target.val);
     /* Đích là CHỮ CÁI (vd "B b"): mọi giá trị mở đầu bằng chính chữ cái đó đều
        làm mệnh đề đúng theo cách đọc "chữ X có trong từ …" → cấm tráo vào. */
     var letterM = /^([a-z]) \1$/.exec(d5FoldText(tSubj)) || /^([a-z])$/.exec(d5FoldText(tSubj));
     var letterHead = letterM ? letterM[1] : "";
+    var aliasVals = d5AliasValSet(stmts, tVal);
+    var entSet = d5EntitySet(stmts, [tSubj, tVal]);
     for (var i = 0; i < stmts.length; i++) {
       var cand = stmts[i];
       if (cand === target || cand.head === target.head) continue;
       if (d5NormText(cand.val) === tVal) continue;
       var cSubj = d5SubjectOf(cand.head);
       if (cSubj === tSubj || d5NearSynonym(cSubj, tSubj)) continue;
+      /* VÁ D2: donor cùng THỰC THỂ với đích (chủ thể chứa nhau/chồng lấp
+         cao, vd "dna" ↔ "dna có tên đầy đủ") hoặc mang giá trị là dạng tên
+         khác của giá trị đúng → mệnh đề tráo vẫn đúng, cấm tuyệt đối. */
+      if (d5SubjEquiv(cSubj, tSubj)) continue;
       var cVal = d5NormText(cand.val);
+      if (aliasVals[cVal]) continue;
+      if (/^(cach goi|ten goi|cach xung ho|danh xung|biet danh|ten rieng)\b/.test(d5FoldText(cand.val))) continue;
+      /* VÁ D2 bổ sung: donor nằm trong ĐỒ THỊ THỰC THỂ của đích (bí danh
+         hai bước), ghép chéo gloss giữa hai bi danh, hoặc ghép giá trị của
+         LỚP vào thành viên lớp → khẳng định sau ghép vẫn đúng, cấm. */
+      if (entSet[cSubj] || entSet[cVal]) continue;
+      if (d5DonorAliasHit(target, cand)) continue;   /* VÁ D2 vòng 2: bí danh phiên âm xuyên cặp (ca Guterres/Gu-tê-rét) */
+      if (d5GlossCross(target, cand)) continue;
+      if (d5ClassShare(target, cand)) continue;
       if (cVal === tSubj || cVal.indexOf(tSubj + " ") === 0 || cVal.indexOf(tSubj + ",") === 0) continue;
       if (d5NearSynonym(cVal, tVal)) continue;
       if (letterHead && d5FoldFirst(cand.val) === letterHead) continue;
@@ -9967,7 +10292,9 @@ window.__ensureGrade = function (g, cb) {
     old: ["Khẳng định nào dưới đây SAI?", "Khẳng định nào sau đây không đúng?", "Câu nào dưới đây SAI?", "Trong các khẳng định dưới đây, khẳng định nào chưa đúng?"]
   };
   function oddStmtGen(facts, pairs, adv, noSwap, grade) {
-    var stmts = noSwap ? [] : d5BuildStmts(facts, pairs);
+    /* VÁ D2(c): mệnh đề phạm trù từ cặp nối ("Tác phẩm là Tác giả") không
+       vào ngân hàng — làm lựa chọn "đúng" thì hai đáp án cùng bảo vệ được. */
+    var stmts = noSwap ? [] : d5BuildStmts(facts, pairs).filter(function (s) { return !s.__catErr; });
     /* B1-sửa lớp nhỏ (2026-10-15) — cổng lứa tuổi theo §6.3 BAO-CAO-B1-DO:
        Lớp 1 KHÔNG dùng khuôn tìm-khẳng-định-sai (phủ định hai tầng vượt sức
        đọc 6 tuổi) → để rỗng để rơi về dạng hỏi thẳng (blankVarGen).
@@ -10141,10 +10468,17 @@ window.__ensureGrade = function (g, cb) {
   }
   function tfCalcGen(promptText) {
     return function () {
-      var items = [];
+      var items = [], usedExpr = {};
       for (var k = 0; k < 3; k++) {
+        /* V24 — khử trùng biểu thức trong một màn Đ/S (cùng họ lỗi g3TableTF). */
         var x = rand(3, 60), y = rand(2, 40), op = Math.random() < 0.5 ? "+" : "−", res = op === "+" ? x + y : x - y;
         if (res < 0) { op = "+"; res = x + y; }
+        var guard = 0;
+        while (usedExpr[x + op + y] && guard++ < 20) {
+          x = rand(3, 60); y = rand(2, 40); op = Math.random() < 0.5 ? "+" : "−"; res = op === "+" ? x + y : x - y;
+          if (res < 0) { op = "+"; res = x + y; }
+        }
+        usedExpr[x + op + y] = 1;
         var truth = Math.random() < 0.5, shown = truth ? res : res + pick([-3, -2, -1, 1, 2, 3, 10]);
         if (shown < 0) shown = res + 2;
         items.push({ x: x, op: op, y: y, res: res, truth: truth, shown: shown, correct: res });
@@ -10201,6 +10535,10 @@ window.__ensureGrade = function (g, cb) {
   }
 
   function processTopicStd(grade, subj, t) {
+    /* ĐỢT 0 V24: chống chạy trùng lượt thường — từ đợt này __ensureAdvTopic
+       có thể dựng lượt thường cho từng chủ đề (đường Lớp 7–9), lượt chạy
+       theo lớp sau đó phải bỏ qua chủ đề đã dựng, không nạp chồng bộ sinh. */
+    if (t.__bStdDone) return;
     var key = grade + "|" + subj.id + "|" + t.id;
     var n0 = labelN0(t);
     var strict1 = grade >= 6; /* Lớp ≥6: chỉ dùng bộ sinh ĐƠN Ý (sửa chất lượng 2026-10-12) */
@@ -10317,6 +10655,1573 @@ window.__ensureGrade = function (g, cb) {
     try { var regF7 = facts; var rfP7 = t.pools && t.pools.referenceFacts; if (rfP7 && rfP7.length) { regF7 = facts.concat(rfP7.map(function (x) { return { q: x[0], a: x[1] }; })); } twRegisterSupply(grade, subj.id, t.id, regF7); } catch (e) {} /* Mục 7: đăng ký nguồn cung (gộp referenceFacts) */
   }
 
+  /* ================= ĐỢT 1 V24 (2026-10-22) — 6 HỌ BỘ SINH SUY LUẬN TOÁN (T1–T6) =================
+     Họ bộ sinh tham số MỚI cho mọi chủ đề Toán, gắn qua processTopicAdv
+     (xem điểm gắn bên dưới) để bộ điều tiết Đợt 0 (regulateAdv24) quản
+     thành phần. Mỗi họ dùng KHÔNG GIAN THAM SỐ RIÊNG (không tái dùng dữ
+     kiện tầng thường) → câu phân biệt mới cho Kiểm tra/RCV. Mọi câu tự
+     kiểm bằng cách giải lại từ tham số ngay trong bộ sinh: đáp án tính
+     từ tham số gốc, đáp án nhiễu khử trùng theo GIÁ TRỊ (valKey24: phân
+     số theo giá trị rút gọn, thập phân phẩy = chấm) nên không có đáp án
+     thứ hai đúng. Quy tắc phân số của anh vu: kết quả rút gọn (frac24),
+     giá trị nguyên viết nguyên; xác suất luôn rút gọn. Đáp án đúng là
+     số/phân số ngắn hoặc câu chữ ≤60 ký tự (kiểm ở cổng tái giải).
+     Phân băng: T1 mọi lớp · T2 chỉ Lớp ≥3 (cổng tuổi dữ kiện thừa —
+     Lớp 1–2 KHÔNG dữ kiện thừa, như cổng của extraDataGen) · T3 mọi lớp
+     (Lớp 1 chỉ so sánh tổng cùng số hạng) · T4 Lớp ≥3 (kèm dạng Đ/S ở
+     ngăn games từ Lớp 3) · T5 mọi lớp · T6 chỉ Lớp 10–12. */
+  function gcd24(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a || 1; }
+  function frac24(n, d) {
+    if (d < 0) { n = -n; d = -d; }
+    var g = gcd24(n, d); n = n / g; d = d / g;
+    return d === 1 ? String(n) : (n + "/" + d);
+  }
+  function fmtDec24(x) { /* số thập phân ngắn, phẩy thập phân, bỏ phần lẻ 0 */
+    var r = Math.round(x * 100) / 100;
+    if (r === Math.floor(r)) return String(r);
+    return String(r).replace(".", ",");
+  }
+  function valKey24(s) {
+    var t = String(s == null ? "" : s).replace(/<[^>]*>/g, " ").trim(), m;
+    if ((m = /^(-?\d+(?:[.,]\d+)?)\s*%/.exec(t))) return "n|" + (parseFloat(m[1].replace(",", ".")) / 100);
+    if ((m = /^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/.exec(t))) return "n|" + ((+m[1]) + (+m[2]) / (+m[3]));
+    if ((m = /^(-?\d+)\s*\/\s*(\d+)$/.exec(t))) return "n|" + ((+m[1]) / (+m[2]));
+    if ((m = /^(-?\d+(?:[.,]\d+)?)/.exec(t))) return "n|" + parseFloat(m[1].replace(",", "."));
+    return "t|" + t.toLowerCase();
+  }
+  function uniqOpts24(ans, wrongs) {
+    var seen = {}; seen[valKey24(ans)] = 1; var out = [];
+    (wrongs || []).forEach(function (w) {
+      if (w == null) return;
+      var k = valKey24(w);
+      if (seen[k]) return;
+      seen[k] = 1; out.push(w);
+    });
+    return out;
+  }
+  var BADGE24 = { T1: "🧠 Lời văn hai bước", T2: "🧠 Lọc dữ kiện thừa", T3: "🧠 So sánh thông minh", T4: "🧠 Tìm lỗi sai", T5: "🧠 Hình học hai bước", T6: "🧠 Đếm và xác suất" };
+  function mkAdv24(prompt, ans, wrongs, explain, badge) {
+    var q = mcqQ(prompt, uniqOpts24(ans, wrongs), ans, explain);
+    q.badge = badge;
+    return q;
+  }
+  function mkBlank24(prompt, ans, wrongs, explain, badge) {
+    var w = uniqOpts24(ans, wrongs).slice(0, 2);
+    var all = shuffle([ans].concat(w));
+    return { kind: "blank", badge: badge, prompt: prompt, blankText: String(ans),
+      visual: '<div class="sentence">Đáp án: <span class="blank-slot">?</span></div>',
+      options: all.map(function (o) { return { html: '<span class="opt-text">' + o + "</span>" }; }),
+      answer: all.indexOf(ans), cols: 3, explain: explain };
+  }
+  function withUnit24(v, unit) { return unit ? (v + " " + unit) : String(v); }
+  function wrapForm24(item, form, badge) {
+    if (form === "blank") return mkBlank24(item.prompt, item.ans, item.wrongs, item.explain, badge);
+    return mkAdv24(item.prompt, item.ans, item.wrongs, item.explain, badge);
+  }
+  var NAMES24 = ["Lan", "Minh", "Hoa", "Tuấn", "Mai", "An", "Bình", "Chi"];
+
+  /* ---------- T1: lời văn hai bước (bước 2 dùng kết quả bước 1) ---------- */
+  function t1Item24(grade) {
+    var band = grade <= 5 ? 0 : (grade <= 9 ? 1 : 2), kind;
+    if (band === 0) {
+      kind = pick(grade <= 1 ? ["packs", "packs"] : grade === 2 ? ["boxes", "packs"] : grade <= 3 ? ["boxes", "packs", "money"] : ["boxes", "packs", "money", "motion"]);
+    } else if (band === 1) kind = pick(["fracRest", "discount", "temp", "motion"]);
+    else kind = pick(["motion", "growth", "seqSum", "tank"]);
+    var it = null;
+    if (kind === "boxes") {
+      var B = grade <= 2 ? rand(6, 12) : rand(12, 36), P = grade <= 2 ? rand(2, 5) : rand(3, 12), S = rand(2, B - 4);
+      var rest = B - S, ans = rest * P;
+      it = { prompt: "Một cửa hàng có " + B + " hộp bánh, mỗi hộp có " + P + " cái bánh. Buổi sáng cửa hàng bán được " + S + " hộp. Hỏi cửa hàng còn lại bao nhiêu cái bánh?",
+        ans: ans + " cái bánh", wrongs: [(B * P) + " cái bánh", (S * P) + " cái bánh", (rest + P) + " cái bánh", (ans + P) + " cái bánh"],
+        explain: "Bước 1: còn " + B + " − " + S + " = " + rest + " hộp. Bước 2: " + rest + " × " + P + " = " + ans + " cái bánh." };
+    } else if (kind === "packs") {
+      var nm = pick(NAMES24), A0 = rand(4, 30), k = rand(2, 5), P2 = grade <= 1 ? rand(2, 5) : rand(3, 9), ans2 = A0 + k * P2;
+      it = { prompt: nm + " có " + A0 + " viên bi. " + nm + " mua thêm " + k + " gói, mỗi gói có " + P2 + " viên bi. Hỏi " + nm + " có tất cả bao nhiêu viên bi?",
+        ans: ans2 + " viên bi", wrongs: [(A0 + P2) + " viên bi", (k * P2) + " viên bi", (A0 + k + P2) + " viên bi", (ans2 + P2) + " viên bi"],
+        explain: "Bước 1: mua thêm " + k + " × " + P2 + " = " + (k * P2) + " viên bi. Bước 2: " + A0 + " + " + (k * P2) + " = " + ans2 + " viên bi." };
+    } else if (kind === "money") {
+      var k3 = rand(2, 9), p3 = pick([2000, 3000, 4000, 5000, 6000, 8000, 9000]), total = k3 * p3;
+      var bill = Math.ceil(total / 10000) * 10000 + rand(0, 1) * 10000;
+      if (bill <= total) bill += 10000;
+      var ans3 = bill - total;
+      it = { prompt: "Mẹ mua " + k3 + " quyển vở, mỗi quyển giá " + p3 + " đồng. Mẹ đưa tờ " + bill + " đồng. Hỏi mẹ được trả lại bao nhiêu đồng?",
+        ans: ans3 + " đồng", wrongs: [total + " đồng", (ans3 + 1000) + " đồng", (ans3 + 2000) + " đồng", (bill - p3) + " đồng"],
+        explain: "Bước 1: tiền mua vở là " + k3 + " × " + p3 + " = " + total + " đồng. Bước 2: trả lại " + bill + " − " + total + " = " + ans3 + " đồng." };
+    } else if (kind === "motion") {
+      var h1 = pick([2, 2, 3]), v1 = band === 2 ? rand(40, 80) : rand(30, 60), h2 = pick([1, 2]), v2 = band === 2 ? rand(45, 90) : rand(35, 70);
+      if (v2 === v1) v2 += 5;
+      var d1 = v1 * h1, ans4 = d1 + v2 * h2;
+      it = { prompt: "Một ô tô đi " + h1 + " giờ đầu với vận tốc " + v1 + " km/giờ, sau đó đi thêm " + h2 + " giờ với vận tốc " + v2 + " km/giờ. Hỏi ô tô đã đi được tất cả bao nhiêu ki-lô-mét?",
+        ans: ans4 + " km", wrongs: [(d1 + v2) + " km", ((v1 + v2) * h1) + " km", (v2 * h2) + " km", (ans4 + v1) + " km"],
+        explain: "Bước 1: " + h1 + " giờ đầu đi được " + v1 + " × " + h1 + " = " + d1 + " km. Bước 2: thêm " + v2 + " × " + h2 + " = " + (v2 * h2) + " km, tất cả là " + ans4 + " km." };
+    } else if (kind === "fracRest") {
+      var d = pick([4, 5, 6, 8, 10]), n = rand(1, d - 1);
+      while (gcd24(n, d) > 1) n = rand(1, d - 1); /* phân số cho trong đề cũng rút gọn */
+      var kk = rand(6, 20), T = d * kk, used = T * n / d, ans5 = T - used;
+      it = { prompt: "Một cửa hàng có " + T + " kg gạo. Buổi sáng cửa hàng bán được " + n + "/" + d + " số gạo. Hỏi cửa hàng còn lại bao nhiêu ki-lô-gam gạo?",
+        ans: ans5 + " kg", wrongs: [used + " kg", (ans5 + 10) + " kg", T + " kg", Math.max(1, ans5 - 10) + " kg"],
+        explain: "Bước 1: đã bán " + T + " × " + n + "/" + d + " = " + used + " kg. Bước 2: còn lại " + T + " − " + used + " = " + ans5 + " kg." };
+    } else if (kind === "discount") {
+      var P = pick([20000, 40000, 50000, 80000, 100000, 120000]), dd = pick([10, 20, 25, 50]), unit = P * (100 - dd) / 100, k6 = rand(2, 6), ans6 = unit * k6;
+      it = { prompt: "Một chiếc áo giá " + P + " đồng được giảm giá " + dd + "%. Hỏi mua " + k6 + " chiếc áo như thế phải trả bao nhiêu đồng?",
+        ans: ans6 + " đồng", wrongs: [(P * k6) + " đồng", unit + " đồng", (ans6 + P) + " đồng", (unit * (k6 + 1)) + " đồng"],
+        explain: "Bước 1: giá sau giảm là " + P + " × " + (100 - dd) + "% = " + unit + " đồng. Bước 2: mua " + k6 + " chiếc hết " + unit + " × " + k6 + " = " + ans6 + " đồng." };
+    } else if (kind === "temp") {
+      var s = rand(-5, 10), r = rand(3, 12), f = rand(2, 9), mid = s + r, ans7 = mid - f;
+      var sT = s < 0 ? "−" + (-s) : String(s);
+      it = { prompt: "Buổi sáng nhiệt độ là " + sT + "°C. Đến trưa nhiệt độ tăng " + r + "°C, đến chiều nhiệt độ giảm " + f + "°C. Hỏi nhiệt độ buổi chiều là bao nhiêu độ C?",
+        ans: fmtDec24(ans7) + "°C", wrongs: [fmtDec24(mid) + "°C", fmtDec24(s - f) + "°C", fmtDec24(ans7 + r) + "°C", fmtDec24(ans7 - 2) + "°C"],
+        explain: "Bước 1: trưa là " + sT + " + " + r + " = " + mid + "°C. Bước 2: chiều là " + mid + " − " + f + " = " + ans7 + "°C." };
+    } else if (kind === "growth") {
+      var combo = pick([[100, 10], [200, 10], [500, 10], [25, 20], [50, 20], [75, 20], [100, 20]]);
+      var P0 = combo[0], rr = combo[1], i1 = P0 * rr / 100, P1 = P0 + i1, i2 = P1 * rr / 100, ans8 = P1 + i2;
+      it = { prompt: "Một người gửi " + P0 + " triệu đồng với lãi suất " + rr + "% một năm, lãi năm sau tính trên cả gốc và lãi năm trước. Hỏi sau 2 năm người đó có tất cả bao nhiêu triệu đồng?",
+        ans: ans8 + " triệu đồng", wrongs: [(P0 + 2 * i1) + " triệu đồng", P1 + " triệu đồng", (ans8 + i2) + " triệu đồng", (P0 + i1 + i1) + " triệu đồng"],
+        explain: "Bước 1: sau năm đầu có " + P0 + " + " + i1 + " = " + P1 + " triệu đồng. Bước 2: lãi năm hai là " + i2 + " triệu, tất cả là " + P1 + " + " + i2 + " = " + ans8 + " triệu đồng." };
+    } else if (kind === "seqSum") {
+      var a = rand(2, 20), df = rand(2, 9), nn = pick([8, 10, 12, 20]), last = a + (nn - 1) * df, S = nn * (a + last) / 2;
+      it = { prompt: "Một dãy số cách đều có số đầu là " + a + ", mỗi số hơn số trước " + df + " đơn vị. Hỏi tổng của " + nn + " số đầu tiên của dãy là bao nhiêu?",
+        ans: String(S), wrongs: [String(nn * a), String(last), String(S + df), String(S - a)],
+        explain: "Bước 1: số thứ " + nn + " là " + a + " + " + (nn - 1) + " × " + df + " = " + last + ". Bước 2: tổng là " + nn + " × (" + a + " + " + last + ") : 2 = " + S + "." };
+    } else { /* tank */
+      var r1 = rand(5, 20), t1 = rand(3, 9), r2 = rand(4, 18), t2 = rand(2, 8), w1 = r1 * t1, ans9 = w1 + r2 * t2;
+      it = { prompt: "Vòi thứ nhất chảy được " + r1 + " lít mỗi phút trong " + t1 + " phút, vòi thứ hai chảy được " + r2 + " lít mỗi phút trong " + t2 + " phút. Hỏi cả hai vòi chảy được tất cả bao nhiêu lít nước?",
+        ans: ans9 + " lít", wrongs: [w1 + " lít", (r2 * t2) + " lít", ((r1 + r2) * t1) + " lít", (ans9 + r1) + " lít"],
+        explain: "Bước 1: vòi thứ nhất chảy " + r1 + " × " + t1 + " = " + w1 + " lít. Bước 2: vòi thứ hai chảy " + (r2 * t2) + " lít, tất cả là " + ans9 + " lít." };
+    }
+    it.prompt = "Lời văn hai bước: " + it.prompt;
+    return it;
+  }
+  function mathT1Gen24(grade, form) {
+    return function () { return wrapForm24(t1Item24(grade), form, BADGE24.T1); };
+  }
+
+  /* ---------- T2: lọc dữ kiện thừa trong lời văn (chỉ Lớp ≥3) ---------- */
+  function t2Item24(grade) {
+    var kind = pick(grade <= 5 ? ["story", "story", "garden"] : grade <= 9 ? ["story", "classFrac", "carExtra"] : ["classFrac", "carExtra", "average"]);
+    var it;
+    if (kind === "story") {
+      var skin = pick([["quyển truyện", "quyển truyện", "người bạn thân"], ["quả cam", "quả cam", "người bạn"]]);
+      var a = rand(12, 60), b = rand(5, 40), z = rand(2, 9), ans = a + b, nm = pick(NAMES24);
+      it = { prompt: nm + " có " + a + " " + skin[0] + ". Mẹ cho " + nm + " thêm " + b + " " + skin[1] + ". " + nm + " có " + z + " " + skin[2] + ". Hỏi " + nm + " có tất cả bao nhiêu " + skin[0] + "?",
+        ans: ans + " " + skin[0], wrongs: [(ans + z) + " " + skin[0], (a + z) + " " + skin[0], (b + z) + " " + skin[0], (ans + 5) + " " + skin[0]],
+        explain: "Dữ kiện thừa là " + z + " " + skin[2] + " — không cần dùng. Ta tính: " + a + " + " + b + " = " + ans + " (" + skin[0] + ")." };
+    } else if (kind === "classFrac") {
+      var d = pick([4, 5, 8, 10]), n = rand(1, d - 1);
+      while (gcd24(n, d) > 1) n = rand(1, d - 1); /* phân số cho trong đề cũng rút gọn */
+      var kk = rand(5, 12), T = d * kk, gv = pick([1, 2, 3]);
+      var female = T * n / d, ans2 = T - female;
+      it = { prompt: "Một lớp có " + T + " học sinh, trong đó " + n + "/" + d + " số học sinh là nữ. Lớp có " + gv + " giáo viên phụ trách sinh hoạt. Hỏi lớp có bao nhiêu học sinh nam?",
+        ans: String(ans2), wrongs: [String(female), String(ans2 + gv), String(ans2 + 2), String(female + gv)],
+        explain: "Dữ kiện thừa là số giáo viên. Bước 1: nữ có " + T + " × " + n + "/" + d + " = " + female + " bạn. Bước 2: nam có " + T + " − " + female + " = " + ans2 + " bạn." };
+    } else if (kind === "carExtra") {
+      var h = rand(2, 6), v = rand(35, 80), p = rand(2, 30), ans3 = v * h;
+      it = { prompt: "Một ô tô đi trong " + h + " giờ với vận tốc " + v + " km/giờ. Trên xe có " + p + " hành khách. Hỏi ô tô đã đi được bao nhiêu ki-lô-mét?",
+        ans: ans3 + " km", wrongs: [((v + p) * h) + " km", (v * (h + 1)) + " km", (ans3 - v) + " km", (ans3 + p) + " km"],
+        explain: "Dữ kiện thừa là số hành khách. Quãng đường là " + v + " × " + h + " = " + ans3 + " km." };
+    } else if (kind === "garden") {
+      var L = rand(6, 20), W = rand(3, L - 1), trees = rand(3, 15), ans4 = 2 * (L + W);
+      it = { prompt: "Một mảnh vườn hình chữ nhật có chiều dài " + L + " m, chiều rộng " + W + " m. Trong vườn có " + trees + " cây ăn quả. Hỏi chu vi mảnh vườn là bao nhiêu mét?",
+        ans: ans4 + " m", wrongs: [(L * W) + " m", (ans4 + trees) + " m", (L + W) + " m", (ans4 + 4) + " m"],
+        explain: "Dữ kiện thừa là số cây. Chu vi là 2 × (" + L + " + " + W + ") = " + ans4 + " m." };
+    } else { /* average — ba điểm có tổng đúng 3A nhờ bộ lệch tổng 0 */
+      var A = rand(6, 8), off = pick([[0, 0, 0], [1, -1, 0], [2, -1, -1], [1, 1, -2], [-1, 0, 1], [-2, 1, 1]]);
+      var p1 = A + off[0], p2 = A + off[1], p3 = A + off[2], cls = rand(1, 9);
+      it = { prompt: "Điểm kiểm tra của An: Toán " + p1 + ", Văn " + p2 + ", Anh " + p3 + ". An là học sinh lớp 10A" + cls + ". Hỏi điểm trung bình ba môn của An là bao nhiêu?",
+        ans: String(A), wrongs: [String(3 * A), String(A + 1), String(A - 1), fmtDec24((p1 + p2) / 2)],
+        explain: "Dữ kiện thừa là tên lớp. Điểm trung bình là (" + p1 + " + " + p2 + " + " + p3 + ") : 3 = " + A + "." };
+    }
+    it.prompt = "Lời văn chọn dữ kiện: " + it.prompt;
+    return it;
+  }
+  function mathT2Gen24(grade) {
+    return function () { var it = t2Item24(grade); return mkAdv24(it.prompt, it.ans, it.wrongs, it.explain, BADGE24.T2); };
+  }
+
+  /* ---------- T3: so sánh không cần tính hết ---------- */
+  function t3Item24(grade) {
+    var kind;
+    if (grade <= 1) kind = "sameAdd";
+    else if (grade === 2) kind = pick(["sameAdd", "compSum", "dblHalf"]);
+    else if (grade <= 5) kind = pick(["dblHalf", "compSum", "sameNum", "complement"]);
+    else if (grade <= 7) kind = pick(["dblHalf", "compSum", "sameNum", "complement"]);
+    else kind = pick(["dblHalf", "compSum", "sameNum", "complement", "squareTrick"]);
+    var VERD = ["A lớn hơn", "B lớn hơn", "Bằng nhau"], it;
+    function verdictPrompt24(body, vi, explain) {
+      return { prompt: "So sánh không tính hết: " + body, ans: VERD[vi], wrongs: VERD.filter(function (x, j) { return j !== vi; }), explain: explain };
+    }
+    if (kind === "sameAdd") {
+      var p = rand(3, grade <= 1 ? 12 : 40), q = rand(2, 15), r = rand(2, 15);
+      while (r === q) r = rand(2, 15);
+      var vi = q > r ? 0 : 1;
+      it = verdictPrompt24("So sánh hai tổng: A = " + p + " + " + q + " và B = " + p + " + " + r + ". Tổng nào lớn hơn?",
+        vi, "Hai tổng cùng có số hạng " + p + ". So sánh số hạng còn lại: " + q + (q > r ? " > " : " < ") + r + " nên " + VERD[vi] + ".");
+    } else if (kind === "compSum") {
+      var p2 = rand(20, 80), q2 = rand(20, 80), k = rand(2, 15), dl = pick([-1, 0, 1]);
+      var b1 = p2 + k, b2 = q2 - k + dl, vi2 = dl === 0 ? 2 : (dl > 0 ? 1 : 0);
+      it = verdictPrompt24("So sánh hai biểu thức: A = " + p2 + " + " + q2 + " và B = " + b1 + " + " + b2 + ". Biểu thức nào lớn hơn?",
+        vi2, "B được tạo từ A bằng cách chuyển " + k + " đơn vị từ số hạng thứ hai sang số hạng thứ nhất" + (dl === 0 ? " nên tổng không đổi." : (dl > 0 ? " rồi cộng thêm 1 nên B lớn hơn 1 đơn vị." : " rồi bớt 1 nên B bé hơn 1 đơn vị.")));
+    } else if (kind === "dblHalf") {
+      var m = rand(6, 30), n = rand(11, 40), dl2 = pick([-2, -1, 0, 1, 2]);
+      var vi3 = dl2 === 0 ? 2 : (dl2 > 0 ? 1 : 0);
+      it = verdictPrompt24("So sánh hai biểu thức: A = " + (2 * m) + " × " + n + " và B = " + m + " × " + (2 * n + dl2) + ". Biểu thức nào lớn hơn?",
+        vi3, "Gấp đôi–một nửa: " + (2 * m) + " × " + n + " = " + m + " × " + (2 * n) + ". So với A, thừa số thứ hai của B " + (dl2 === 0 ? "bằng đúng " + (2 * n) + " nên hai biểu thức bằng nhau." : (dl2 > 0 ? "lớn hơn nên B lớn hơn." : "bé hơn nên A lớn hơn.")));
+    } else if (kind === "sameNum") {
+      var b = rand(3, 12), c = b + rand(1, 6), a = rand(2, 9), guardA = 0;
+      while ((gcd24(a, b) > 1 || gcd24(a, c) > 1) && guardA++ < 20) a = rand(2, 9);
+      if (gcd24(a, b) > 1 || gcd24(a, c) > 1) a = 1; /* phân số đem so sánh ở dạng rút gọn */
+      var swap = Math.random() < 0.5, first = swap ? (a + "/" + c) : (a + "/" + b), second = swap ? (a + "/" + b) : (a + "/" + c);
+      it = { prompt: "So sánh không tính hết: Phân số nào lớn hơn: " + first + " hay " + second + "?",
+        ans: a + "/" + b, wrongs: [a + "/" + c, "Bằng nhau"],
+        explain: "Hai phân số cùng tử số " + a + ". Mẫu số càng bé thì phân số càng lớn: " + b + " < " + c + " nên " + a + "/" + b + " lớn hơn." };
+    } else if (kind === "complement") {
+      var nn = rand(4, 15), mm = nn + rand(1, 5);
+      var f1 = (nn - 1) + "/" + nn, f2 = (mm - 1) + "/" + mm, swap2 = Math.random() < 0.5;
+      var first2 = swap2 ? f2 : f1, second2 = swap2 ? f1 : f2;
+      it = { prompt: "So sánh không tính hết: Phân số nào lớn hơn: " + first2 + " hay " + second2 + "?",
+        ans: f2, wrongs: [f1, "Bằng nhau"],
+        explain: "Bù 1 đơn vị: " + f1 + " = 1 − 1/" + nn + " và " + f2 + " = 1 − 1/" + mm + ". Vì 1/" + mm + " < 1/" + nn + " nên " + f2 + " lớn hơn." };
+    } else { /* squareTrick */
+      var n2 = rand(5, 30);
+      it = verdictPrompt24("So sánh hai biểu thức: A = " + n2 + "² và B = " + (n2 - 1) + " × " + (n2 + 1) + ". Biểu thức nào lớn hơn?",
+        0, "(" + (n2 - 1) + ") × (" + (n2 + 1) + ") = " + n2 + "² − 1, bé hơn " + n2 + "² đúng 1 đơn vị nên A lớn hơn.");
+    }
+    return it;
+  }
+  function mathT3Gen24(grade) {
+    return function () { var it = t3Item24(grade); return mkAdv24(it.prompt, it.ans, it.wrongs, it.explain, BADGE24.T3); };
+  }
+
+  /* ---------- T4: bẫy lỗi thường gặp ---------- */
+  function t4Item24(grade) {
+    var kinds;
+    if (grade <= 3) kinds = ["order", "unit"];
+    else if (grade <= 5) kinds = grade === 5 ? ["fracAdd", "order", "unit", "decMul"] : ["fracAdd", "order", "unit"];
+    else if (grade <= 7) kinds = ["fracAdd", "powSign", "order", "unit"];
+    else if (grade <= 9) kinds = ["powSign", "sqSum", "fracAdd", "order"];
+    else kinds = ["powSign", "sqSum", "sqrtSum", "powMul"];
+    var kind = pick(kinds), it;
+    if (kind === "fracAdd") {
+      var pr = pick([[2, 4], [3, 4], [2, 3], [4, 6], [3, 6], [2, 6]]);
+      var b = pr[0], d = pr[1], a = rand(1, b - 1), c = rand(1, d - 1);
+      var lcm = b * d / gcd24(b, d), correct = frac24(a * (lcm / b) + c * (lcm / d), lcm);
+      var shown = (a + c) + "/" + (b + d);
+      it = { prompt: "Bạn An tính: " + a + "/" + b + " + " + c + "/" + d + " = " + shown + ". Cách tính của An sai ở đâu?",
+        ans: "Cộng tử với tử, mẫu với mẫu",
+        wrongs: ["Chưa rút gọn phân số kết quả", "Đổi vị trí hai phân số"],
+        explain: "Phải quy đồng mẫu số trước: " + a + "/" + b + " + " + c + "/" + d + " = " + correct + ". An đã cộng tử với tử, mẫu với mẫu." };
+    } else if (kind === "powSign") {
+      var n = rand(2, 9), sq = n * n;
+      it = { prompt: "Bạn Nam tính: (−" + n + ")² = −" + sq + ". Bạn Nam tính đúng hay sai? Vì sao?",
+        ans: "Sai, vì (−" + n + ")² = " + sq,
+        wrongs: ["Đúng, vì bình phương vẫn giữ dấu âm", "Sai, vì (−" + n + ")² = −" + n],
+        explain: "(−" + n + ")² = (−" + n + ") × (−" + n + ") = " + sq + " (số âm nhân số âm được số dương)." };
+    } else if (kind === "order") {
+      var a2 = rand(2, 12), b2 = rand(2, 9), c2 = rand(2, 9), shown2 = (a2 + b2) * c2, correct2 = a2 + b2 * c2;
+      it = { prompt: "Bạn Mai tính: " + a2 + " + " + b2 + " × " + c2 + " = " + shown2 + ". Bạn Mai tính đúng hay sai? Vì sao?",
+        ans: "Sai, vì phải nhân trước: " + a2 + " + " + b2 + " × " + c2 + " = " + correct2,
+        wrongs: ["Đúng, vì cứ tính từ trái sang phải", "Sai, vì phải cộng trước nên kết quả là " + shown2],
+        explain: "Thứ tự phép tính: nhân (chia) trước, cộng (trừ) sau. " + b2 + " × " + c2 + " = " + (b2 * c2) + ", rồi " + a2 + " + " + (b2 * c2) + " = " + correct2 + "." };
+    } else if (kind === "unit") {
+      var x = grade <= 3 ? pick([2, 3, 4, 5]) : pick([2, 3, 5, 12, 15]);
+      it = { prompt: "Bạn Hà đổi đơn vị: " + x + " m = " + (x * 10) + " cm. Bạn Hà đổi đúng hay sai? Vì sao?",
+        ans: "Sai, vì 1 m = 100 cm nên " + x + " m = " + (x * 100) + " cm",
+        wrongs: ["Đúng, vì 1 m = 10 cm", "Sai, vì " + x + " m = " + (x * 1000) + " cm"],
+        explain: "1 m = 100 cm (không phải 10 cm — đó là đề-xi-mét). Vậy " + x + " m = " + (x * 100) + " cm." };
+    } else if (kind === "decMul") {
+      var dv = pick([["1,5", 15], ["2,5", 25], ["3,5", 35], ["1,2", 12], ["2,4", 24]]);
+      it = { prompt: "Bạn Lan tính: " + dv[0] + " × 10 = " + dv[0] + "0. Bạn Lan tính đúng hay sai? Vì sao?",
+        ans: "Sai, vì " + dv[0] + " × 10 = " + dv[1],
+        wrongs: ["Đúng, nhân với 10 thì thêm số 0 vào cuối", "Sai, vì " + dv[0] + " × 10 = " + (dv[1] * 10)],
+        explain: "Nhân số thập phân với 10 thì dịch dấu phẩy sang phải một chữ số: " + dv[0] + " × 10 = " + dv[1] + ". Thêm 0 vào cuối phần thập phân không làm thay đổi giá trị." };
+    } else if (kind === "sqSum") {
+      var a3 = rand(2, 9), b3 = rand(2, 9), shown3 = a3 * a3 + b3 * b3, correct3 = (a3 + b3) * (a3 + b3);
+      it = { prompt: "Bạn Bình tính: (" + a3 + " + " + b3 + ")² = " + shown3 + ". Bạn Bình tính đúng hay sai? Vì sao?",
+        ans: "Sai, vì (" + a3 + " + " + b3 + ")² = " + correct3,
+        wrongs: ["Đúng, bình phương của tổng bằng tổng hai bình phương", "Sai, vì (" + a3 + " + " + b3 + ")² = " + (shown3 + a3 * b3)],
+        explain: "(" + a3 + " + " + b3 + ")² = " + a3 + "² + 2 × " + a3 + " × " + b3 + " + " + b3 + "² = " + shown3 + " + " + (2 * a3 * b3) + " = " + correct3 + ". Bình đã quên số hạng giữa 2ab." };
+    } else if (kind === "sqrtSum") {
+      var pr2 = pick([[9, 16], [16, 9], [36, 64], [64, 36]]);
+      var xs = pr2[0], ys = pr2[1], s = xs + ys, root = Math.round(Math.sqrt(s)), sumRoot = Math.round(Math.sqrt(xs)) + Math.round(Math.sqrt(ys));
+      it = { prompt: "Bạn Tuấn tính: √(" + xs + " + " + ys + ") = " + sumRoot + ". Bạn Tuấn tính đúng hay sai? Vì sao?",
+        ans: "Sai, vì √" + s + " = " + root + " chứ không phải " + sumRoot,
+        wrongs: ["Đúng, căn bậc hai của tổng bằng tổng hai căn", "Sai, vì √" + s + " = " + (sumRoot + 1)],
+        explain: "√(" + xs + " + " + ys + ") = √" + s + " = " + root + ". Không được tách căn của một tổng thành tổng hai căn." };
+    } else { /* powMul — cặp cố định có số mũ trên (², ³, ⁵) */
+      it = { prompt: "Bạn Sơn tính: 2² × 2³ = 4⁵. Bạn Sơn tính đúng hay sai? Vì sao?",
+        ans: "Sai, vì 2² × 2³ = 2⁵ = 32",
+        wrongs: ["Đúng, nhân hai lũy thừa thì nhân cả cơ số", "Sai, vì 2² × 2³ = 2⁶ = 64"],
+        explain: "Nhân hai lũy thừa cùng cơ số thì giữ nguyên cơ số và cộng số mũ: 2² × 2³ = 2⁵ = 32. Sơn đã nhân cả cơ số." };
+    }
+    return it;
+  }
+  function mathT4Gen24(grade) {
+    return function () { var it = t4Item24(grade); return mkAdv24(it.prompt, it.ans, it.wrongs, it.explain, BADGE24.T4); };
+  }
+  function t4Stmt24(grade) {
+    var kinds = ["mulTab", "order", "unit"];
+    if (grade >= 5) kinds.push("fracAdd");
+    if (grade >= 6) kinds.push("powSign", "cube");
+    if (grade >= 8) kinds.push("sqSum");
+    var kind = pick(kinds), truth = Math.random() < 0.5, trueText, falseText, explain;
+    if (kind === "mulTab") {
+      var a = rand(3, 9), b = rand(3, 9), v = a * b;
+      trueText = a + " × " + b + " = " + v; falseText = a + " × " + b + " = " + (v + a);
+      explain = a + " × " + b + " = " + v + ".";
+    } else if (kind === "order") {
+      var a2 = rand(2, 12), b2 = rand(2, 9), c2 = rand(2, 9), v2 = a2 + b2 * c2;
+      trueText = a2 + " + " + b2 + " × " + c2 + " = " + v2; falseText = a2 + " + " + b2 + " × " + c2 + " = " + ((a2 + b2) * c2);
+      explain = "Nhân trước: " + b2 + " × " + c2 + " = " + (b2 * c2) + ", rồi cộng " + a2 + " được " + v2 + ".";
+    } else if (kind === "unit") {
+      var x = pick([2, 3, 4, 5, 6]);
+      trueText = x + " m = " + (x * 100) + " cm"; falseText = x + " m = " + (x * 10) + " cm";
+      explain = "1 m = 100 cm nên " + x + " m = " + (x * 100) + " cm.";
+    } else if (kind === "fracAdd") {
+      var pr = pick([[2, 4], [3, 4], [2, 3], [4, 6]]), bb = pr[0], dd = pr[1], aa = rand(1, bb - 1), cc = rand(1, dd - 1);
+      var lcm = bb * dd / gcd24(bb, dd), cv = frac24(aa * (lcm / bb) + cc * (lcm / dd), lcm);
+      trueText = aa + "/" + bb + " + " + cc + "/" + dd + " = " + cv;
+      falseText = aa + "/" + bb + " + " + cc + "/" + dd + " = " + (aa + cc) + "/" + (bb + dd);
+      explain = "Quy đồng mẫu số: " + aa + "/" + bb + " + " + cc + "/" + dd + " = " + cv + " (không cộng tử với tử, mẫu với mẫu).";
+    } else if (kind === "powSign") {
+      var n = rand(2, 9), sq = n * n;
+      trueText = "(−" + n + ")² = " + sq; falseText = "(−" + n + ")² = −" + sq;
+      explain = "(−" + n + ")² = (−" + n + ") × (−" + n + ") = " + sq + ".";
+    } else if (kind === "cube") {
+      var n3 = rand(2, 5), cb = n3 * n3 * n3;
+      trueText = n3 + "³ = " + cb; falseText = n3 + "³ = " + (3 * n3);
+      explain = n3 + "³ = " + n3 + " × " + n3 + " × " + n3 + " = " + cb + " (không phải " + n3 + " × 3).";
+    } else { /* sqSum */
+      var a3 = rand(2, 9), b3 = rand(2, 9), cv2 = (a3 + b3) * (a3 + b3);
+      trueText = "(" + a3 + " + " + b3 + ")² = " + cv2; falseText = "(" + a3 + " + " + b3 + ")² = " + (a3 * a3 + b3 * b3);
+      explain = "(" + a3 + " + " + b3 + ")² = " + (a3 * a3) + " + " + (2 * a3 * b3) + " + " + (b3 * b3) + " = " + cv2 + ".";
+    }
+    return { shown: truth ? trueText : falseText, altShown: truth ? falseText : trueText, correct: trueText, truth: truth, explain: explain };
+  }
+  function mathT4TFGen24(grade) {
+    return function () {
+      var items = [];
+      for (var i = 0; i < 3; i++) {
+        var st = t4Stmt24(grade), guard = 0;
+        while (items.some(function (x) { return x.correct === st.correct; }) && guard++ < 10) st = t4Stmt24(grade);
+        items.push(st);
+      }
+      /* Cân bằng phán quyết: cả 3 vòng cùng phán quyết thì lật vòng cuối
+         bằng chính khẳng định ngược đã dựng sẵn (altShown) — đáp án gốc
+         (correct/explain) của vòng không đổi. */
+      if (items.length >= 2 && items.every(function (x) { return x.truth === items[0].truth; })) {
+        var last = items[items.length - 1];
+        last.shown = last.altShown; last.truth = !last.truth;
+      }
+      var rounds = items.map(function (it) {
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">Bạn học sinh tính: ' + escB(it.shown) + "</div>", truth: it.truth, explain: it.explain };
+      });
+      var q = tfQ("Đúng hay sai? Kiểm tra các phép tính nhé!", rounds);
+      q.badge = BADGE24.T4;
+      return q;
+    };
+  }
+
+  /* ---------- T5: hình học / hàm số hai bước theo tham số ---------- */
+  function t5Item24(grade) {
+    var kind;
+    if (grade <= 1) kind = "corners";
+    else if (grade === 2) kind = pick(["rectPA", "squarePA"]);
+    else if (grade <= 5) kind = pick(["rectPA", "squarePA"]);
+    else if (grade <= 9) kind = pick(["pythMedian", "pythLeg", "circleArea"]);
+    else kind = pick(["maxArea", "funcComp", "vertex"]);
+    var it;
+    if (kind === "corners") {
+      var k = pick([2, 3]), m = pick([2, 3]), ans = 3 * k + 4 * m;
+      it = { prompt: "Em có " + k + " hình tam giác và " + m + " hình vuông. Hỏi tất cả các hình có bao nhiêu cạnh?",
+        ans: ans + " cạnh", wrongs: [(3 * k) + " cạnh", (4 * m) + " cạnh", (ans + 3) + " cạnh", (k + m + 7) + " cạnh"],
+        explain: "Bước 1: " + k + " hình tam giác có " + k + " × 3 = " + (3 * k) + " cạnh. Bước 2: " + m + " hình vuông có " + (4 * m) + " cạnh; tất cả là " + ans + " cạnh." };
+    } else if (kind === "rectPA") {
+      var a = rand(5, 14), b = rand(3, a), P = 2 * (a + b), ans2 = a * b;
+      it = { prompt: "Một mảnh vườn hình chữ nhật có chu vi " + P + " m và chiều dài " + a + " m. Hỏi diện tích mảnh vườn là bao nhiêu?",
+        ans: ans2 + " m²", wrongs: [P + " m²", (a + b) + " m²", (ans2 + a) + " m²", (ans2 - b) + " m²"],
+        explain: "Bước 1: nửa chu vi là " + P + " : 2 = " + (a + b) + " m, chiều rộng là " + (a + b) + " − " + a + " = " + b + " m. Bước 2: diện tích là " + a + " × " + b + " = " + ans2 + " m²." };
+    } else if (kind === "squarePA") {
+      var s = rand(3, 15), P2 = 4 * s, ans3 = s * s;
+      it = { prompt: "Một hình vuông có chu vi " + P2 + " m. Hỏi diện tích hình vuông là bao nhiêu?",
+        ans: ans3 + " m²", wrongs: [P2 + " m²", ((s + 1) * (s + 1)) + " m²", (ans3 - s) + " m²", (2 * s) + " m²"],
+        explain: "Bước 1: cạnh hình vuông là " + P2 + " : 4 = " + s + " m. Bước 2: diện tích là " + s + " × " + s + " = " + ans3 + " m²." };
+    } else if (kind === "pythMedian") {
+      var tr = pick([[6, 8, 10], [9, 12, 15], [12, 16, 20], [8, 15, 17], [5, 12, 13], [7, 24, 25]]);
+      var la = tr[0], lb = tr[1], hyp = tr[2], ans4 = hyp / 2;
+      it = { prompt: "Tam giác ABC vuông tại A có AB = " + la + " cm, AC = " + lb + " cm. Đường trung tuyến kẻ từ A xuống cạnh huyền dài bao nhiêu?",
+        ans: fmtDec24(ans4) + " cm", wrongs: [hyp + " cm", fmtDec24((la + lb) / 2) + " cm", fmtDec24(ans4 + 1) + " cm", fmtDec24(ans4 - 1) + " cm"],
+        explain: "Bước 1: cạnh huyền BC = √(" + la + "² + " + lb + "²) = " + hyp + " cm. Bước 2: trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền: " + hyp + " : 2 = " + fmtDec24(ans4) + " cm." };
+    } else if (kind === "pythLeg") {
+      var tr2 = pick([[6, 8, 10], [9, 12, 15], [12, 16, 20], [8, 15, 17], [5, 12, 13], [7, 24, 25]]);
+      var hyp2 = tr2[2], legA = tr2[0], legB = tr2[1];
+      it = { prompt: "Một tam giác vuông có cạnh huyền " + hyp2 + " cm và một cạnh góc vuông " + legA + " cm. Hỏi cạnh góc vuông còn lại dài bao nhiêu?",
+        ans: legB + " cm", wrongs: [(hyp2 - legA) + " cm", legA + " cm", (legB + 2) + " cm", (legB - 2) + " cm"],
+        explain: "Bước 1: bình phương cạnh còn lại là " + hyp2 + "² − " + legA + "² = " + (hyp2 * hyp2 - legA * legA) + ". Bước 2: cạnh còn lại là √" + (hyp2 * hyp2 - legA * legA) + " = " + legB + " cm." };
+    } else if (kind === "circleArea") {
+      var dd = pick([10, 20]), r = dd / 2, area = 314 * r * r / 100;
+      it = { prompt: "Một hình tròn có đường kính " + dd + " cm. Lấy π = 3,14, diện tích hình tròn là bao nhiêu?",
+        ans: fmtDec24(area) + " cm²", wrongs: [fmtDec24(314 * dd * dd / 100) + " cm²", fmtDec24(314 * dd / 100) + " cm²", fmtDec24(area + 10) + " cm²"],
+        explain: "Bước 1: bán kính là " + dd + " : 2 = " + r + " cm. Bước 2: diện tích là 3,14 × " + r + "² = " + fmtDec24(area) + " cm²." };
+    } else if (kind === "maxArea") {
+      var P3 = pick([24, 32, 40, 48, 60, 80]), s3 = P3 / 4, ans5 = s3 * s3;
+      it = { prompt: "Một mảnh vườn hình chữ nhật có chu vi " + P3 + " m. Diện tích lớn nhất có thể của mảnh vườn là bao nhiêu?",
+        ans: ans5 + " m²", wrongs: [((s3 - 2) * (s3 + 2)) + " m²", ((s3 - 1) * (s3 + 1)) + " m²", P3 + " m²", (ans5 - 9) + " m²"],
+        explain: "Bước 1: nửa chu vi là " + (P3 / 2) + " m; diện tích lớn nhất khi hai cạnh bằng nhau (hình vuông) với cạnh " + s3 + " m. Bước 2: diện tích là " + s3 + " × " + s3 + " = " + ans5 + " m²." };
+    } else if (kind === "funcComp") {
+      var fa = pick([2, 3]), fb = rand(1, 4), fu = rand(2, 6), inner = fa * fu - fb, ans6 = fa * inner - fb;
+      it = { prompt: "Cho hàm số f(x) = " + fa + "x − " + fb + ". Hỏi f(f(" + fu + ")) bằng bao nhiêu?",
+        ans: String(ans6), wrongs: [String(inner), String(fa * fa * fu - fb), String(ans6 + fb), String(ans6 - fa)],
+        explain: "Bước 1: f(" + fu + ") = " + fa + " × " + fu + " − " + fb + " = " + inner + ". Bước 2: f(" + inner + ") = " + fa + " × " + inner + " − " + fb + " = " + ans6 + "." };
+    } else { /* vertex */
+      var p = rand(2, 7), cc = rand(1, 30), B = 2 * p, val = cc - p * p;
+      it = { prompt: "Cho hàm số y = x² − " + B + "x + " + cc + ". Giá trị nhỏ nhất của hàm số là bao nhiêu?",
+        ans: String(val), wrongs: [String(cc), String(p), String(val + p), String(val - 2)],
+        explain: "Bước 1: hoành độ đỉnh là x = " + B + " : 2 = " + p + ". Bước 2: giá trị tại đỉnh là " + p + "² − " + B + " × " + p + " + " + cc + " = " + val + ", đó là giá trị nhỏ nhất." };
+    }
+    return it;
+  }
+  function mathT5Gen24(grade, form) {
+    return function () { return wrapForm24(t5Item24(grade), form, BADGE24.T5); };
+  }
+
+  /* ---------- T6: đếm / xác suất + đọc dữ kiện (chỉ Lớp 10–12) ---------- */
+  function comb2_24(n) { return n * (n - 1) / 2; }
+  function comb3_24(n) { return n * (n - 1) * (n - 2) / 6; }
+  function t6Item24(grade) {
+    var kind = pick(["probFemale", "probBalls", "diceSum", "committee", "dataAvg", "permute"]);
+    var it;
+    if (kind === "probFemale") {
+      var B = rand(8, 18), G = rand(10, 20), N = B + G, ans = frac24(comb2_24(G), comb2_24(N));
+      it = { prompt: "Một lớp có " + B + " bạn nam và " + G + " bạn nữ. Chọn ngẫu nhiên 2 bạn. Xác suất để cả hai bạn được chọn đều là nữ là bao nhiêu?",
+        ans: ans, wrongs: [frac24(G, N), comb2_24(G) + "/" + comb2_24(N), frac24(comb2_24(B), comb2_24(N)), frac24(comb2_24(G), comb2_24(N) + 10)],
+        explain: "Bước 1: số cách chọn 2 bạn nữ là C(" + G + ",2) = " + comb2_24(G) + "; tổng số cách chọn 2 bạn là C(" + N + ",2) = " + comb2_24(N) + ". Bước 2: xác suất là " + comb2_24(G) + "/" + comb2_24(N) + " = " + ans + " (đã rút gọn)." };
+    } else if (kind === "probBalls") {
+      var R = rand(4, 9), X = rand(3, 8), N2 = R + X, ans2 = frac24(comb2_24(R), comb2_24(N2));
+      it = { prompt: "Một hộp có " + R + " viên bi đỏ và " + X + " viên bi xanh. Lấy ngẫu nhiên 2 viên bi. Xác suất để cả hai viên đều là bi đỏ là bao nhiêu?",
+        ans: ans2, wrongs: [frac24(R, N2), comb2_24(R) + "/" + comb2_24(N2), frac24(comb2_24(X), comb2_24(N2)), frac24(comb2_24(R) + 1, comb2_24(N2))],
+        explain: "Bước 1: số cách lấy 2 bi đỏ là C(" + R + ",2) = " + comb2_24(R) + "; tổng số cách lấy 2 viên là C(" + N2 + ",2) = " + comb2_24(N2) + ". Bước 2: xác suất là " + ans2 + " (đã rút gọn)." };
+    } else if (kind === "diceSum") {
+      var s = pick([5, 6, 7, 8, 9]), cnt = 6 - Math.abs(s - 7), ans3 = frac24(cnt, 36);
+      it = { prompt: "Gieo hai con xúc xắc cân đối. Xác suất để tổng số chấm bằng " + s + " là bao nhiêu?",
+        ans: ans3, wrongs: [frac24(cnt + 1, 36), frac24(cnt, 30), frac24(1, 6), frac24(cnt - 1, 36)],
+        explain: "Bước 1: có " + cnt + " cặp kết quả cho tổng bằng " + s + " trong 36 kết quả có thể. Bước 2: xác suất là " + cnt + "/36 = " + ans3 + " (đã rút gọn)." };
+    } else if (kind === "committee") {
+      var n = rand(6, 10), ans4 = comb3_24(n);
+      it = { prompt: "Một nhóm có " + n + " học sinh. Số cách chọn ra 3 học sinh để trực nhật là bao nhiêu?",
+        ans: String(ans4), wrongs: [String(n * (n - 1) * (n - 2)), String(comb2_24(n)), String(ans4 + n), String(ans4 - 3)],
+        explain: "Bước 1: chọn 3 học sinh không phân thứ tự là tổ hợp C(" + n + ",3). Bước 2: C(" + n + ",3) = " + n + " × " + (n - 1) + " × " + (n - 2) + " : 6 = " + ans4 + "." };
+    } else if (kind === "dataAvg") {
+      var A = rand(20, 30), d1 = pick([-3, -2, -1, 0, 1, 2, 3]), d2 = pick([-2, -1, 0, 1, 2]);
+      var v1 = A + d1, v2 = A + d2, v3 = A - d1 - d2, v4 = A + pick([-4, 3, 5]), v5 = A + pick([-5, 2, 4]);
+      var sum3 = v1 + v2 + v3;
+      it = { prompt: "Nhiệt độ lúc 12 giờ trong 5 ngày liên tiếp lần lượt là: " + v1 + "°C, " + v2 + "°C, " + v3 + "°C, " + v4 + "°C, " + v5 + "°C. Hỏi nhiệt độ trung bình của 3 ngày đầu là bao nhiêu?",
+        ans: A + "°C", wrongs: [sum3 + "°C", (A + 1) + "°C", (A - 1) + "°C", Math.round((v1 + v2 + v3 + v4 + v5) / 5) + "°C"],
+        explain: "Bước 1: tổng nhiệt độ 3 ngày đầu là " + v1 + " + " + v2 + " + " + v3 + " = " + sum3 + "°C. Bước 2: trung bình là " + sum3 + " : 3 = " + A + "°C." };
+    } else { /* permute */
+      var n2 = pick([4, 5, 6]), fact = 1; for (var fi = 2; fi <= n2; fi++) fact *= fi;
+      var factPrev = fact / n2;
+      it = { prompt: "Có bao nhiêu cách xếp " + n2 + " quyển sách khác nhau thành một hàng trên kệ?",
+        ans: String(fact), wrongs: [String(n2 * (n2 - 1)), String(factPrev), String(n2 * n2), String(fact + n2)],
+        explain: "Bước 1: vị trí đầu có " + n2 + " cách chọn, vị trí sau ít dần một cách. Bước 2: tất cả có " + n2 + "! = " + fact + " cách xếp." };
+    }
+    return it;
+  }
+  function mathT6Gen24(grade) {
+    return function () { var it = t6Item24(grade); return mkAdv24(it.prompt, it.ans, it.wrongs, it.explain, BADGE24.T6); };
+  }
+
+  /* ================= ĐỢT 2 V24 (2026-10-22) — BANK TĨNH SUY LUẬN KHTN/KHXH/NGỮ VĂN LỚP 6–12 + BỘ SINH "ĐÁNH GIÁ KHẲNG ĐỊNH" =================
+     Bank tĩnh viết tay theo cụm chương (4.144 câu / 396 chủ đề) nằm trong
+     các file lớp dưới biến window.__ADV2BANKS24 (mỗi chủ đề một mảng câu
+     {f,p,a,w,e}); đã duyệt tay 100% theo luật Q5 trước khi tích vào
+     (biên bản kiem-chung-v24/sau-dot2/DUYET-*.md + FIX-*.md).
+     Họ câu: K2 phương pháp khoa học · K3 đọc số liệu rút kết luận ·
+     X1 tình huống mới · X2 phân tích sử liệu · X3 số liệu và nhận xét ·
+     V1 đọc đoạn mới suy luận · V2 tu từ và tác dụng. Mọi câu mang 🧠
+     (suy luận thật theo thước mục 1.1); bộ điều tiết phân loại qua
+     advMechOf24 (real-k2/k3/x1/x2/x3/v1/v2). */
+  var ADV2_BADGE24 = { K2: "🧠 Phương pháp khoa học", K3: "🧠 Đọc số liệu, rút kết luận", X1: "🧠 Tình huống mới", X2: "🧠 Phân tích sử liệu", X3: "🧠 Số liệu và nhận xét", V1: "🧠 Đọc đoạn, suy luận", V2: "🧠 Tu từ và tác dụng" };
+  function adv2Gen24(items) {
+    return function () {
+      var it = items[Math.floor(Math.random() * items.length)];
+      return mkAdv24(it.p, it.a, it.w, it.e, ADV2_BADGE24[it.f] || "🧠 Suy luận");
+    };
+  }
+    /* Bộ sinh "đánh giá khẳng định" (Đợt 2; VÒNG SỬA 2026-10-22 sau cổng tái
+     giải độc lập — biên bản kiem-chung-v24/sau-dot3/final/TAI-GIAI-JUDGE.md:
+     mẫu phân tầng 336 đơn vị, KHÔNG ĐẠT 40 = 11,9% theo 5 cơ chế M1–M5):
+     3 khẳng định ĐÚNG dựng từ dữ kiện bài học + 1 khẳng định CHƯA suy ra
+     đúng. Vòng sửa áp đúng 5 điều kiện tối thiểu của biên bản:
+       (M1) BỎ HẲN cơ chế đảo quan hệ "X là Y" → "Y là X": quan hệ trong
+            ngân hàng phần lớn là đồng nhất/định nghĩa hai chiều nên câu đảo
+            vẫn đúng (cơ chế này chỉ chiếm 26/1.830 đơn vị sản lượng nhưng
+            6/40 ca lỗi). Chỉ còn cơ chế tráo gloss qua cổng siết chặt dưới
+            đây.
+       (M2) G1: giá trị ghép không được nằm gần trọn trong chính chủ thể
+            đích (chồng lấp từ vựng ≥ 50%) — chặn đồng nhất vòng tròn kiểu
+            "Ứng dụng của phản xạ toàn phần là phản xạ toàn phần"; G1b: giá
+            trị ghép không gần đồng nghĩa với chủ thể đích.
+       (M3) G2: donor có chủ thể mang tính TỔNG QUÁT (điểm chung / công
+            thức / chủ yếu / "các, mọi, tất cả, những…") bị loại — giá trị
+            của chúng là thuộc tính lớp cha, ghép xuống chủ thể cụ thể vẫn
+            đúng. G5: siết gần-đồng-nghĩa giá trị ghép ↔ giá trị đúng (chứa
+            ≥ 60% vế ngắn hơn hoặc Jaccard ≥ 0,45) — chặn định nghĩa lớp cha
+            chỉ thiếu điều kiện. G7: giá trị ghép không dùng chung tên riêng
+            với chủ thể đích (dấu hiệu cùng một thực thể, diễn đạt khác).
+       (M4) G3/G4: chủ thể dạng TÌNH HUỐNG (Khi…/Nếu…/việc làm đúng/thái độ
+            đúng/lợi ích/bí quyết…) không làm đích ghép, cũng không làm
+            donor — phát biểu chung và hành vi biểu hiện của tình huống rất
+            dễ vẫn đúng theo nghĩa rộng (GDCD là chính). G8: giá trị ghép
+            phải CỤ THỂ (chứa số, tên riêng hoặc công thức/kí hiệu) — thuộc
+            tính chung chung không điểm neo cụ thể là nguồn M3/M4 còn lại.
+       (M5) Dữ kiện gốc sai/rút gọn đã sửa tại nguồn dữ kiện (kh-amthanh:
+            cặp "Tần số → Độ cao của âm"; m9-c9: hai cặp ngoại tiếp thiếu
+            chữ "Tâm"; rà cùng họ: biên độ, chân không, cáp quang kh9-p2).
+     Donor phải qua TOÀN BỘ cổng gốc của d5DonorFor (sao chép nguyên vẹn
+     trong judge24PickDonor) CỘNG các cổng G ở trên; bộ sinh thử lần lượt
+     cả 3 khẳng định đã rút làm đích. Không đích/donor nào qua cổng → lùi
+     về blankVarGen như oddStmtGen. Phân loại real-oddstmt (suy luận NHẸ;
+     trần một nửa tỉ trọng suy luận theo Q2 do bộ đo cổng cuối kiểm). */
+  var JUDGE24_SITU_WORDS = ["việc làm đúng", "cách làm đúng", "thái độ đúng", "cách quản lí", "cách quản lý", "cách xử lí", "cách xử lý", "việc nên làm", "lợi ích", "bí quyết", "nguyên tắc an toàn", "bước hợp lí", "bước hợp lý"];
+  function judge24IsSituHead(head) {
+    var h = d5NormText(head);
+    if (/^(khi|nếu|em|bạn|muốn)\s/.test(h)) return true;
+    for (var i = 0; i < JUDGE24_SITU_WORDS.length; i++) if (h.indexOf(JUDGE24_SITU_WORDS[i]) !== -1) return true;
+    return false;
+  }
+  var JUDGE24_GENERIC_WORDS = ["điểm chung", "chung của", "chủ yếu", "công thức", "nói chung"];
+  function judge24GenericSubj(subjNorm) {
+    if (/^(các|mọi|tất cả|những)\s/.test(subjNorm)) return true;
+    for (var i = 0; i < JUDGE24_GENERIC_WORDS.length; i++) if (subjNorm.indexOf(JUDGE24_GENERIC_WORDS[i]) !== -1) return true;
+    return false;
+  }
+  /* Vòng sửa 2 (tái giải 640 đơn vị sau vòng 1: đạt 611, không đạt 29):
+     cơ chế sót M6 — GIÁ TRỊ GHÉP VẪN ĐÚNG với chủ thể đích. Các cổng:
+     G11a donor là chủ thể "siêu" (thể loại của / kiểu văn bản của /
+     chủ đề của / đơn vị của / nhược điểm / ưu điểm / biểu hiện của /
+     tiêu biểu / cư dân): giá trị của nó đúng cho CẢ HỌ khái niệm liên
+     quan (mọi tác phẩm cùng thể loại, mọi dạng năng lượng cùng đơn vị,
+     mọi văn bản trong cùng bài, thuộc tính của chính khái niệm đích).
+     G11b donor là chủ thể GHÉP hai thực thể ("Hoàng Sa – Trường Sa"):
+     giá trị đúng cho từng thực thể thành phần. G10: chủ thể donor chính
+     là giá trị đúng của đích (donor nói về đúng thực thể đích định
+     nghĩa). G9: giá trị donor chứa ≥50% token chủ thể đích (giá trị mô
+     tả/nhắc chính đích — vd "(cầu dao, áp-tô-mát)"). G13: giá trị dạng
+     "bài viết về…" (nói về một văn bản thứ cấp). G12: đích là phạm trù
+     (hoạt động / biểu hiện / phong trào / quản lí / lí tưởng) thì cấm
+     donor mang giá trị dạng DANH SÁCH ví dụ, giá trị chứa số (thông số
+     của một phương pháp cụ thể) và donor là thực thể riêng có tên —
+     vì thành viên/ví dụ nào của phạm trù ghép vào cũng vẫn đúng. Đích
+     có đầu "…ví dụ…" bị loại hẳn: bất kỳ ví dụ hợp lí nào ghép vào
+     cũng bảo vệ được là đúng. */
+  var JUDGE24_META_WORDS = ["thể loại", "kiểu văn bản", "chủ đề", "đơn vị", "nhược điểm", "ưu điểm", "biểu hiện của", "tiêu biểu", "cư dân"];
+  function judge24MetaSubj(subjFold) {
+    for (var i = 0; i < JUDGE24_META_WORDS.length; i++) if (subjFold.indexOf(d5FoldText(JUDGE24_META_WORDS[i])) !== -1) return true;
+    return false;
+  }
+  var JUDGE24_CATEGORY_WORDS = ["hoat dong", "bieu hien", "phong trao", "quan li", "quan ly", "li tuong"];
+  function judge24CategoryHead(headFold) {
+    for (var i = 0; i < JUDGE24_CATEGORY_WORDS.length; i++) if (headFold.indexOf(JUDGE24_CATEGORY_WORDS[i]) !== -1) return true;
+    return false;
+  }
+  function judge24ProperSubj(subj) {
+    var words = String(subj || "").split(/\s+/);
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i].replace(/^["“”'(]+/, "").replace(/["“”'),.:;]+$/, "");
+      if (!w) continue;
+      if (w.length >= 2 && /[A-Za-zÀ-ỹ]/.test(w) && w === w.toUpperCase() && w !== w.toLowerCase()) return true;  /* kí hiệu viết hoa toàn bộ (LHQ, THCS…) */
+      if (i > 0 && judge24CapTok(w)) return true;   /* tên riêng giữa chủ thể */
+    }
+    return false;
+  }
+  function judge24TokCount(set) { return Object.keys(set).length; }
+  function judge24Inter(a, b) { var n = 0; for (var k in a) if (b[k]) n++; return n; }
+  function judge24Contain(a, b) { var n = judge24TokCount(a); return n ? judge24Inter(a, b) / n : 0; }
+  function judge24Jaccard(a, b) { var i = judge24Inter(a, b), u = judge24TokCount(a) + judge24TokCount(b) - i; return u ? i / u : 0; }
+  function judge24FoldTokSet(s) {
+    var set = {}, toks = d5FoldText(String(s || "").replace(/-/g, "")).split(/[^0-9a-z]+/i).filter(function (x) { return x.length > 0; });
+    toks.forEach(function (x) { set[x] = 1; });
+    return set;
+  }
+  function judge24CapTok(w) {
+    var c0 = w.charAt(0);
+    return !!c0 && /[A-Za-zÀ-ỹ]/.test(c0) && c0 === c0.toUpperCase() && c0 !== c0.toLowerCase();
+  }
+  function judge24Specific(val) {
+    var v = String(val || "").trim();
+    if (!v) return false;
+    if (/\d/.test(v)) return true;
+    if (/[%°=×/^√π()]/.test(v)) return true;
+    var words = v.split(/\s+/);
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i].replace(/^["“”'(]+/, "").replace(/["“”')]$/, "");
+      if (!w) continue;
+      if (i === 0 && words.length > 1) continue;   /* chữ đầu giá trị viết hoa theo câu, không phải tên riêng */
+      if (judge24CapTok(w)) return true;          /* tên riêng / kí hiệu viết hoa giữa câu (vd Hz, Quang Trung) */
+    }
+    return false;
+  }
+  function judge24ProperToks(s, includeFirst) {
+    var out = {}, words = String(s || "").split(/\s+/);
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i].replace(/^["“”'(]+/, "").replace(/["“”'),.:;]+$/, "");
+      if (!w) continue;
+      if (i === 0 && !includeFirst && words.length > 1) continue;
+      if (judge24CapTok(w)) out[d5FoldText(w)] = 1;
+    }
+    return out;
+  }
+  function judge24SharedName(val, head) {
+    var pv = judge24ProperToks(val, false), ph = judge24ProperToks(head, true);
+    for (var k in pv) if (ph[k]) return true;
+    return false;
+  }
+  function judge24PickDonor(stmts, target) {
+    var tSubj = d5SubjectOf(target.head), tVal = d5NormText(target.val);
+    var tHeadFold = d5FoldText(target.head);
+    if (tHeadFold.indexOf("vi du") !== -1) return null;   /* đích dạng "…ví dụ…": loại hẳn (M6) */
+    if (target.head.indexOf(":") !== -1) return null;     /* G16 (vòng 3): đầu tình huống "Con lắc dao động: …" — công thức/diễn biến đúng tại tình huống sẽ lọt */
+    if (tHeadFold.indexOf("phu hop") !== -1) return null; /* G18 (vòng 4): khe đánh giá "phù hợp" — nhiều giá trị lấp vào vẫn bảo vệ được theo SGK */
+    var tSubjFold = d5FoldText(tSubj);
+    if (tSubjFold.indexOf("nhuoc diem") !== -1 || tSubjFold.indexOf("uu diem") !== -1 || tSubjFold.indexOf("tieu bieu") !== -1) return null;   /* G15 (vòng 3): khe thuộc tính/siêu hạng — nhiều thực thể cùng lấp đúng */
+    var tSubjToks = d5TokSet(tSubj);
+    var tCategory = judge24CategoryHead(tHeadFold);
+    var tValToks = d5TokSet(target.val), tHeadToks = d5TokSet(target.head);
+    var letterM = /^([a-z]) \1$/.exec(d5FoldText(tSubj)) || /^([a-z])$/.exec(d5FoldText(tSubj));
+    var letterHead = letterM ? letterM[1] : "";
+    var aliasVals = d5AliasValSet(stmts, tVal);
+    var entSet = d5EntitySet(stmts, [tSubj, tVal]);
+    var order = shuffle(stmts.slice());
+    for (var i = 0; i < order.length; i++) {
+      var cand = order[i];
+      /* --- toàn bộ cổng gốc của d5DonorFor (giữ nguyên an toàn đợt P0) --- */
+      if (cand === target || cand.head === target.head) continue;
+      if (d5NormText(cand.val) === tVal) continue;
+      var cSubj = d5SubjectOf(cand.head);
+      if (cSubj === tSubj || d5NearSynonym(cSubj, tSubj)) continue;
+      var cVal = d5NormText(cand.val);
+      if (cVal === tSubj || cVal.indexOf(tSubj + " ") === 0 || cVal.indexOf(tSubj + ",") === 0) continue;
+      if (d5NearSynonym(cVal, tVal)) continue;
+      if (letterHead && d5FoldFirst(cand.val) === letterHead) continue;
+      var clash = stmts.some(function (y) { return y.head === target.head && d5NormVal(y.val) === d5NormVal(cand.val); });
+      if (clash) continue;
+      var produced = d5NormText(target.head + " " + cand.val);
+      var inBank = stmts.some(function (y) { return d5NormText(y.stmt) === produced; });
+      if (inBank) continue;
+      var semClash = stmts.some(function (y) { return d5SubjectOf(y.head) === tSubj && d5NormText(y.val) === cVal; });
+      if (semClash) continue;
+      /* VÁ D2: donor cùng THỰC THỂ với đích hoặc mang giá trị là DẠNG TÊN
+         KHÁC của giá trị đúng (ca kh9-s1/ls8-h1 — phiên âm ↔ nguyên dạng);
+         giá trị dạng ghi chú meta "Cách gọi/Tên gọi…" trỏ về chính thực thể
+         đích thì câu ghép vẫn đúng (ca judge-g6-32 nv6-b9) — cấm cả hai. */
+      if (d5SubjEquiv(cSubj, tSubj)) continue;
+      if (aliasVals[cVal]) continue;
+      if (/^(cach goi|ten goi|cach xung ho|danh xung|biet danh|ten rieng)\b/.test(d5FoldText(cand.val))) continue;
+      if (entSet[cSubj] || entSet[cVal]) continue;   /* bí danh hai bước trong đồ thị thực thể */
+      if (d5DonorAliasHit(target, cand)) continue;   /* VÁ D2 vòng 2: bí danh phiên âm xuyên cặp (ca Guterres/Gu-tê-rét) */
+      if (d5GlossCross(target, cand)) continue;      /* ghép chéo giữa hai bi danh cùng thực thể */
+      if (d5ClassShare(target, cand)) continue;      /* giá trị của lớp ghép vào thành viên lớp */
+      /* --- cổng riêng của vòng sửa judge (M2/M3/M4) --- */
+      if (!judge24Specific(cand.val)) continue;                                   /* G8: giá trị phải cụ thể */
+      if (judge24IsSituHead(cand.head)) continue;                                 /* G4: donor không phải tình huống */
+      if (judge24GenericSubj(cSubj)) continue;                                    /* G2: donor không phải chủ thể tổng quát */
+      var vToks = d5TokSet(cand.val);
+      if (judge24Contain(vToks, tHeadToks) >= 0.5) continue;                      /* G1: chống vòng tròn với chủ thể */
+      if (d5NearSynonym(cand.val, tSubj)) continue;                               /* G1b */
+      if (judge24Contain(vToks, tValToks) >= 0.6 || judge24Jaccard(vToks, tValToks) >= 0.45) continue;  /* G5 */
+      /* G17 (vòng 4): donor CHỨA TRỌN giá trị đúng của đích (kèm mọi token số
+         của giá trị đúng) → câu ghép vẫn khẳng định đúng giá trị đó, chỉ thêm
+         mô tả đúng đi kèm (vd "…nhận giá trị 0 hoặc 1" ⊃ "0 hoặc 1"). Khác
+         hẳn ca số đo khác số (12 vs 200 hải lí): token số của giá trị đúng
+         KHÔNG nằm trong donor thì không chặn. */
+      var g17contain = judge24Contain(tValToks, vToks);
+      if (g17contain >= 0.9) continue;
+      if (g17contain >= 0.6) {
+        /* nhánh 2: độ chứa vừa nhưng MỌI token số của giá trị đúng đều nằm
+           trong donor (vd đúng "0 và 1" vs donor "…0 hoặc 1") → vẫn lọt
+           khẳng định đúng; ca khác-số (ngày tháng, 12 vs 200 hải lí) có
+           token số của giá trị đúng KHÔNG nằm trong donor nên không chặn. */
+        var hasNum = false, nOk = true, kk;
+        for (kk in tValToks) if (/\d/.test(kk)) { hasNum = true; if (!vToks[kk]) { nOk = false; break; } }
+        if (hasNum && nOk) continue;
+      }
+      /* G9b (vòng 4): G9 đo trên token ĐÃ BỎ DẤU + BỎ GẠCH NỐI — biến thể
+         chính tả "Aptomat" (đích) vs "áp-tô-mát" (trong giá trị donor)
+         từng làm G9 mù ở vòng 3. */
+      var tSubjFoldToks = judge24FoldTokSet(tSubj), vFoldToks = judge24FoldTokSet(cand.val);
+      if (judge24Contain(tSubjFoldToks, vFoldToks) >= 0.5) continue;
+      if (judge24SharedName(cand.val, target.head)) continue;                     /* G7 */
+      /* --- cổng vòng sửa 2 (M6: giá trị ghép vẫn đúng với chủ thể đích) --- */
+      var cSubjFold = d5FoldText(cSubj);
+      if (judge24MetaSubj(cSubjFold)) continue;                                   /* G11a: chủ thể "siêu" */
+      if (cSubj.indexOf(" – ") !== -1 || cSubj.indexOf(" — ") !== -1) continue;    /* G11b: chủ thể ghép hai thực thể */
+      if (d5NearSynonym(cSubj, target.val)) continue;                              /* G10: donor nói về đúng thực thể đích */
+      if (judge24Contain(tSubjToks, vToks) >= 0.5) continue;                       /* G9: giá trị nhắc ≥50% token chủ thể đích */
+      if (d5FoldText(cand.val).indexOf("bai viet ve") !== -1) continue;            /* G13: giá trị "bài viết về…" */
+      if (tCategory) {                                                             /* G12: đích là phạm trù */
+        if (cand.val.indexOf(",") !== -1) continue;
+        if (/\d/.test(cand.val)) continue;
+        if (judge24ProperSubj(cand.head)) continue;   /* head giữ chữ hoa; cSubj đã bị d5SubjectOf viết thường */
+      }
+      if (/^\s*\d/.test(cand.val)) continue;                                       /* G14 (vòng 3): giá trị mở đầu bằng số = số đo/mốc lượng — trùng bề rộng của khái niệm anh em (vd 200 hải lí) */
+      return cand;
+    }
+    return null;
+  }
+  function judgeInferGen24(facts, pairs, noSwap, grade) {
+    /* VÁ D2(c): chặn mệnh đề phạm trù khỏi ngân hàng judge (ca judge-g9-44). */
+    var stmts = noSwap ? [] : d5BuildStmts(facts, pairs).filter(function (s) { return !s.__catErr; });
+    var stems = ["Khẳng định nào dưới đây suy ra CHƯA đúng từ bài học?", "Khẳng định nào sau đây KHÔNG suy ra được từ bài học?", "Trong các khẳng định dưới đây, khẳng định nào suy ra chưa đúng?"];
+    return function () {
+      if (stmts.length >= 3) {
+        var pool = shuffle(stmts.slice());
+        var chosen = pool.slice(0, 3);
+        for (var ci = 0; ci < chosen.length; ci++) {
+          var target = chosen[ci];
+          if (judge24IsSituHead(target.head)) continue;               /* G3: đích không phải tình huống */
+          var donor = judge24PickDonor(stmts, target);
+          if (!donor) continue;
+          var falseStmt = target.head + " " + donor.val + ".";
+          if (falseStmt.length > 140) continue;
+          var dupC = chosen.some(function (s) { return d5NormVal(s.stmt) === d5NormVal(falseStmt); });
+          if (dupC) continue;
+          var wrongsJ = chosen.filter(function (s) { return s !== target; }).map(function (s) { return s.stmt; });
+          var q = mcqQ(pick(stems), wrongsJ, falseStmt,
+            "Khẳng định chưa đúng là: “" + falseStmt + "” (câu này ghép giá trị của một dữ kiện khác vào, không còn suy ra đúng từ khẳng định “" + target.stmt + "”).");
+          q.badge = "🧠 Đánh giá khẳng định";
+          q.roundIdentity = { type: "bundle", facts: chosen.map(function (s) { return s.head; }) };
+          return q;
+        }
+      }
+      if (facts && facts.length) return blankVarGen(facts, true, { grade: grade, facts: facts })();
+      if (pairs && pairs.length >= 4) return matchRevGen(pairs, true)();
+      return tfCalcGen()();
+    };
+  }
+
+
+/* ================= ĐỢT 3 V24 (2026-10-22) — BANK TĨNH SUY LUẬN TIẾNG ANH (3 BĂNG) + TIỂU HỌC NGOÀI TOÁN =================
+     Bank tĩnh viết tay (window.__ADV3BANKS24 trong các file lớp; đã duyệt
+     tay 100% theo Q5 — biên bản kiem-chung-v24/sau-dot3/DUYET-*.md).
+     Họ: A1 suy luận từ ngữ cảnh · A2 hội thoại hợp ngữ cảnh · A3 diễn đạt
+     lại ý (Lớp 10–12) · K1 dự đoán hiện tượng · PIC so sánh qua tranh
+     (mô tả bằng lời, Lớp 1–2) · dùng lại X1/V1/X3 của Đợt 2. */
+  var ADV3_BADGE24 = { A1: "🧠 Suy luận từ ngữ cảnh", A2: "🧠 Hội thoại hợp ngữ cảnh", A3: "🧠 Diễn đạt lại ý", K1: "🧠 Dự đoán hiện tượng", PIC: "🧠 So sánh qua tranh", X1: "🧠 Tình huống mới", V1: "🧠 Đọc đoạn, suy luận", X3: "🧠 Số liệu và nhận xét" };
+  function adv3Gen24(items) {
+    return function () {
+      var it = items[Math.floor(Math.random() * items.length)];
+      return mkAdv24(it.p, it.a, it.w, it.e, ADV3_BADGE24[it.f] || "🧠 Suy luận");
+    };
+  }
+
+
+  /* ================= ĐỢT 4 V24 (2026-10-22) — HỌ SUY LUẬN CHO NGĂN GAMES/BLANK/MATCH CỦA MÔN NGOÀI TOÁN =================
+     Đợt 0–3 để lại trần cấu trúc: nội dung suy luận viết tay (Đợt 2/3) chỉ
+     vào được ngăn choose (16/40 lượt rút), còn games/blank/match của môn
+     ngoài Toán không có bộ sinh suy luận nào nên bộ điều tiết buộc phải
+     giữ dạng bọc ở đó. Đợt 4 lấp đúng các ngăn ấy bằng 4 họ tham số, mọi
+     họ đều neo dữ kiện CỦA CHỦ ĐỀ (facts/pairs của tầng thường — chỉ ĐỌC,
+     không đổi dữ kiện gốc) và áp sẵn 5 lớp chắn của vòng sửa judgeInferGen24:
+       - mệnh đề "sai" bằng tráo giá trị LUÔN qua judge24PickDonor (toàn bộ
+         cổng G của vòng sửa: cấm đảo-tương-đương M1 [cơ chế đã xoá hẳn],
+         cấm đồng nhất vòng tròn M2, cấm thuộc tính lớp cha vẫn đúng M3,
+         cấm phát biểu chung đúng nghĩa rộng cho câu tình huống M4, cổng
+         G8/G17 đòi giá trị donor đủ cụ thể) — KHÔNG dùng d5DonorFor yếu;
+       - mệnh đề quan hệ SỐ (so sánh hai số liệu cùng đơn vị / hai năm của
+         chính chủ đề) và mệnh đề CHUỖI hai bước (A là B, B là C ⇒ A là C):
+         đúng/sai TÍNH từ dữ kiện, không tráo — suy luận thật C1/C4;
+       - khử trùng trong màn: một màn Đ/S không hai mệnh đề trùng chủ thể
+         hay trùng nội dung (họ lỗi m3-bang/gTFVan), màn ghép cặp phân
+         biệt theo giá trị ở cả hai cột (cổng pairsMatch/pickDistinctPairs);
+       - chủ đề noSwap (nhạy cảm): cả 4 họ KHÔNG gắn — không bịa mệnh đề
+         sai trên các chủ đề ấy.
+     Huy hiệu → cơ chế (advMechOf24): "Đúng sai suy luận" → real-tf4 ·
+     "Điền kết luận" → real-blank4 · "Ghép quan hệ" → real-match4 ·
+     "Bắt khẳng định đúng" → real-catch4. Riêng phần mệnh đề judge trong
+     real-tf4/real-catch4 là suy luận NHẸ cùng họ judgeInfer (báo cáo đợt
+     tách tỉ lệ đo được ở vòng tái giải); phần số/chuỗi là suy luận thật. */
+
+  function dot4ParseNum(raw) {
+    var t = String(raw).replace(/\s/g, "");
+    var ld = t.lastIndexOf("."), lc = t.lastIndexOf(",");
+    if (ld >= 0 && lc >= 0) {
+      if (lc > ld) return parseFloat(t.replace(/\./g, "").replace(",", "."));
+      return parseFloat(t.replace(/,/g, ""));
+    }
+    if (lc >= 0) {
+      var pc = t.split(",");
+      if (pc.length === 2 && pc[1].length === 3 && pc[0].length <= 3) return parseFloat(pc.join(""));
+      return parseFloat(t.replace(",", "."));
+    }
+    if (ld >= 0) {
+      var pd = t.split(".");
+      if (pd.length === 2 && pd[1].length === 3 && pd[0].length <= 3) return parseFloat(pd.join(""));
+      return parseFloat(t);
+    }
+    return parseFloat(t);
+  }
+  /* Trích MỘT số đo được từ giá trị của một khẳng định (val). Trả null nếu
+     val không có đúng một số, hoặc số không có đơn vị/năm rõ ràng — chỉ số
+     "đo được" mới được đem ra so sánh suy luận. */
+  function dot4NumOf(val) {
+    var s = String(val || "").replace(/\s+/g, " ").trim();
+    /* VÁ ĐỢT 4 (phân xử tái giải): giá trị dạng CÔNG THỨC (vd "t = 2π√(m/k)")
+       không phải số đo — trích số đầu tiên trong công thức rồi so "bằng nhau"
+       từng sinh khẳng định sai (ca vl11-c1: hai công thức chu kì khác nhau bị
+       phán "bằng"). Chặn mọi giá trị chứa dấu công thức. */
+    if (/[=√π^]/.test(s)) return null;
+    var ms = s.match(/\d{1,3}(?:[. ]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?/g);
+    if (!ms || ms.length !== 1) return null;
+    var raw = ms[0], num = dot4ParseNum(raw);
+    if (num == null || !isFinite(num)) return null;
+    var idx = s.indexOf(raw);
+    /* VÁ D3 (vòng vá QA v24, ca cn11-cdck2 g11-1678/1679): số DÍNH trong
+       token chữ–số ("3D", "5S", "2D") hoặc dạng PHIÊN BẢN thập phân nguyên
+       ("4.0") không phải số đo — trước đây tách "3" + "đơn vị D" rồi sinh
+       câu so sánh "bằng" vô nghĩa giữa hai giá trị cùng chứa "3D". Chỉ số
+       đứng độc lập, hoặc dính hậu tố là ĐƠN VỊ ĐO THẬT trong danh sách
+       trắng phân biệt hoa/thường (220V, 5m, 10kg, 50Hz…), mới là đại lượng. */
+    if (idx > 0 && /[0-9A-Za-zÀ-ỹ]/.test(s.charAt(idx - 1))) return null;
+    var afterCh = s.charAt(idx + raw.length);
+    if (/[A-Za-zÀ-ỹ]/.test(afterCh)) {
+      var gluedUnit = (s.slice(idx + raw.length).match(/^[A-Za-zÀ-ỹ]+/) || [""])[0];
+      var GLUE_UNITS = { "V": 1, "W": 1, "A": 1, "Hz": 1, "kHz": 1, "MHz": 1, "GHz": 1, "m": 1, "cm": 1, "mm": 1, "km": 1, "kg": 1, "g": 1, "mg": 1, "l": 1, "ml": 1, "J": 1, "N": 1, "Pa": 1, "s": 1, "t": 1 };
+      if (!GLUE_UNITS[gluedUnit]) return null;
+    }
+    if (/^\d+[.,]0{1,2}$/.test(raw)) return null;   /* "4.0"/"4,0" = phiên bản, không phải lượng đo (nhóm 3 số 0 kiểu "1.000" là nghìn, giữ nguyên) */
+    var before = s.slice(0, idx).trim(), after = s.slice(idx + raw.length).trim();
+    var unit = (after.split(/[\s,;()«»""]/) [0] || "").replace(/[.:]+$/, "");
+    var isYear = (num >= 100 && num <= 2099) && (/(^|\s)năm$/i.test(before) || unit.toLowerCase() === "năm");
+    if (!isYear && !unit) return null;
+    /* Đơn vị phải là chữ (hoặc ký hiệu đo lường thuần): mảnh ký tự toán học
+       (vd "π√" sót lại từ công thức) không được lọt qua làm "đơn vị". */
+    if (!isYear && !/^([A-Za-zÀ-ỹ][A-Za-zÀ-ỹ0-9/%°‰]*|‰|%|°C|°F|°)$/.test(unit)) return null;
+    return { num: num, unit: isYear ? "năm" : unit, isYear: isYear };
+  }
+  function dot4HeadText(st) { return String(st.head || "").replace(/\s+(là|có nghĩa là|nghĩa là|gọi là|có)$/g, "").trim(); }
+  /* Khoá chủ thể để SO SÁNH/KHỬ TRÙNG: bỏ dấu ngoặc kép để hai cách viết của
+     cùng một dữ kiện (có/không ngoặc) không bị tính là hai chủ thể khác nhau
+     (ca dl6: mệnh đề tự so sánh "X (24 giờ) bằng "X" (24 giờ)"). */
+  function dot4HeadKey(st) { return d5NormText(dot4HeadText(st)).replace(/[“”"«»]/g, "").replace(/\s+/g, " ").trim(); }
+  function dot4NumGroups(stmts) {
+    var groups = {};
+    (stmts || []).forEach(function (st) {
+      if (String(st.val || "").length > 45) return;
+      var nu = dot4NumOf(st.val);
+      if (!nu) return;
+      var key = nu.isYear ? "__year" : nu.unit.toLowerCase();
+      (groups[key] = groups[key] || []).push({ st: st, num: nu.num, isYear: nu.isYear });
+    });
+    var out = [];
+    Object.keys(groups).forEach(function (k) {
+      var arr = groups[k], seen = {}, items = [];
+      arr.forEach(function (x) {
+        var kk = dot4HeadKey(x.st) + "|" + x.num;
+        if (seen[kk]) return; seen[kk] = 1; items.push(x);
+      });
+      if (items.length >= 2) out.push({ key: k, isYear: k === "__year", items: items });
+    });
+    return out;
+  }
+  /* Chuỗi hai bước: khẳng định A (val = tên của B) + khẳng định B (val C)
+     ⇒ kết luận A là C. Loại chuỗi khi: giá trị trung gian chứa dấu liệt kê,
+     chủ đề TỰ khẳng định trực tiếp A là giá trị khác (mâu thuẫn dữ kiện),
+     hoặc C gần đồng nghĩa với giá trị trung gian (kết luận tầm thường). */
+  function dot4Chains(stmts) {
+    var bySubj = {};
+    (stmts || []).forEach(function (st) { var s = d5SubjectOf(st.head); if (s && !bySubj[s]) bySubj[s] = st; });
+    var out = [];
+    (stmts || []).forEach(function (a) {
+      var vSubj = d5NormText(a.val);
+      if (!vSubj || a.val.length > 32 || /[,:;()]/.test(a.val)) return;
+      /* VÁ D1 (vòng vá QA v24): chủ thể A thuộc quan hệ BIỂU THỊ (kí hiệu /
+         viết tắt / tên thật / phiên âm / bí danh…) không được làm ĐẦU chuỗi:
+         bước qua tên riêng sẽ kết luận "tên gọi của X là chính X" (ca QA:
+         "Kí hiệu hoá học của nguyên tố đồng là đồng" — đúng phải là Cu;
+         "Hải Thượng Lãn Ông tên thật là Hải Thượng Lãn Ông"). */
+      if (/(ki hieu|viet tat|ten that|phien am|bi danh|biet danh|ten goi khac)/.test(d5FoldText(a.head))) return;
+      var b = bySubj[vSubj];
+      if (!b || b === a) return;
+      if (a.__ambDir || b.__ambDir) return;   /* vá Đợt 4: không chuỗi qua khẳng định hai-chiều-thừa */
+      /* VÁ D1(b): cạnh B→C phải là ĐỊNH NGHĨA thật (__def, dựng từ câu hỏi
+         dữ kiện) mới được kết luận bằng "là". Cạnh dựng từ cặp nối mang
+         quan hệ bất kỳ — tác-giả-của, thủ-đô-của, bộ-phận-của — kết luận
+         "là" là sai quan hệ (ca QA: "Mê-hi-cô là Mê-hi-cô Xi-ti") và bản vá
+         __ambDir của Đợt 4 hụt vì chỉ gắn thẻ khẳng định từ CẶP, không áp
+         cho khẳng định từ DỮ KIỆN — nay chặn tại tầng cạnh của chuỗi. */
+      if (!b.__def) return;
+      if (d5SubjectOf(b.head) === d5SubjectOf(a.head)) return;
+      if (!b.val || b.val.length > 45 || d5NearSynonym(b.val, a.val)) return;
+      var clash = (stmts || []).some(function (c) { return c !== a && c.head === a.head && d5NormText(c.val) !== d5NormText(b.val); });
+      if (clash) return;
+      /* VÁ D1(a): thực thể CUỐI (C) không được trùng hoặc chứa/nằm trong
+         thực thể ĐẦU (chủ thể của A) theo token hai chiều — chuỗi quay về
+         điểm xuất phát sinh đồng nhất thức vô nghĩa. */
+      var aSubj = d5SubjectOf(a.head);
+      if (aSubj) {
+        var aToks = d5TokSet(aSubj), cToks = d5TokSet(b.val);
+        var nA = Object.keys(aToks).length, nC = Object.keys(cToks).length, interC = 0, kk2;
+        for (kk2 in cToks) if (aToks[kk2]) interC++;
+        if ((nC && interC === nC) || (nA && interC === nA)) return;
+        if (d5NearSynonym(b.val, aSubj)) return;
+      }
+      /* VÁ D1 bổ sung (phân xử tái giải vòng vá, ca mt1-lines): đầu A mang
+         quan hệ ĐẶT TÊN ("… gọi là") mà giá trị cuối là MÔ TẢ dài (không
+         phải một tên) thì kết luận giữ nguyên "gọi là" sẽ thành "X gọi là
+         <định nghĩa của X>" — sai mẫu quan hệ. Kết luận đúng phải chuyển
+         sang quan hệ định nghĩa "là": "X là <mô tả>". Giá trị cuối là tên
+         ngắn thì giữ "gọi là" như cũ. */
+      var dHead = a.head;
+      if (/\sgọi là$/.test(dHead)) {
+        var bvShort = String(b.val || "").trim();
+        var isShortName = bvShort.length <= 30 && !/[,;]/.test(bvShort) && bvShort.split(/\s+/).length <= 4;
+        if (!isShortName) dHead = dHead.replace(/\sgọi là$/, " là");
+      }
+      out.push({ a: a, b: b, derived: { head: dHead, val: b.val, stmt: dHead + " " + b.val + "." } });
+    });
+    return out;
+  }
+  function dot4BuildCtx(facts, pairs, grade) {
+    /* VÁ D2(c): mệnh đề phạm trù từ cặp nối không vào ngân hàng dot4 —
+       chúng từng làm khẳng định Đúng của tf4 ("Mê-hi-cô là Mê-hi-cô Xi-ti"
+       khóa ĐÚNG) và đầu chuỗi D1. */
+    var stmts = d5BuildStmts(facts, pairs).filter(function (s) { return !s.__catErr; });
+    /* VÁ ĐỢT 4 (phân xử tái giải, ca nv1 Lớp 7): ngân hàng cặp nối liệt kê cả
+       hai chiều [A,B] và [B,A]; d5BuildStmts chỉ giữ chiều gặp đầu tiên nên
+       chiều của khẳng định suy từ một cặp có cả hai chiều là tùy thời điểm
+       dựng pool. Gắn thẻ __ambDir cho các khẳng định như vậy: chuỗi hai bước
+       và khẳng định phán đoán không được dùng chúng (kết luận suy ra có thể
+       vô nghĩa, vd "Tác giả truyện X" -> tên tác giả -> chính tác phẩm X). */
+    var dirSeen = {};
+    (pairs || []).forEach(function (p) {
+      var L = String(p[0] || "").replace(/\s+/g, " ").trim(), R = String(p[1] || "").replace(/\s+/g, " ").trim();
+      if (L && R) dirSeen[d5NormVal(L) + "\u0001" + d5NormVal(R)] = 1;
+    });
+    stmts.forEach(function (st) {
+      var prs = pairs || [];
+      for (var i = 0; i < prs.length; i++) {
+        var L = String(prs[i][0] || "").replace(/\s+/g, " ").trim(), R = String(prs[i][1] || "").replace(/\s+/g, " ").trim();
+        if (!L || !R) continue;
+        if (st.head === d5Cap(L) + " là" && d5NormText(st.val) === d5NormText(d5Decap(R))) {
+          if (dirSeen[d5NormVal(R) + "\u0001" + d5NormVal(L)]) st.__ambDir = 1;
+          break;
+        }
+      }
+    });
+    if (grade != null && grade <= 3 && stmts.length >= 2) {
+      var capLen = grade <= 2 ? 70 : 90;
+      var sorted = stmts.slice().sort(function (x, y) { return x.stmt.length - y.stmt.length; });
+      var short = sorted.filter(function (s) { return s.stmt.length <= capLen; });
+      stmts = short.length >= 2 ? short : sorted.slice(0, 2);
+    }
+    return { stmts: stmts, groups: dot4NumGroups(stmts), chains: dot4Chains(stmts) };
+  }
+  function dot4PickDonors(stmts, target, n) {
+    var pool = stmts.slice(), out = [], guard = 0;
+    while (out.length < n && guard++ < 8) {
+      var d = dot4Donor(pool, target);
+      if (!d) break;
+      out.push(d);
+      pool = pool.filter(function (s) { return s !== d; });
+    }
+    return out;
+  }
+  /* Đường donor TRUNG cho các chủ đề định nghĩa/thuật ngữ — nơi cổng G8
+     của judge (đòi giá trị donor chứa số/tên riêng/công thức) làm cạn
+     donor và màn Đ/S thành toàn Đúng. Nền là d5DonorFor (cơ chế donor
+     của oddStmtGen/tfStmtGen, đã chạy từ v13) cộng các chắn chống ghép
+     rút từ vòng sửa judge: cấm đích/donor là đầu câu tình huống (M4),
+     cấm chủ thể chung chung và đầu câu meta (G2/G11), cấm donor chứa
+     ≥60% token của chủ thể đích và cấm giá trị donor chứa ≥90% token
+     của giá trị đúng (chống "ghép vẫn đúng" M6/G17). Mệnh đề dựng qua
+     đường này thuộc tầng suy luận NHẸ (cùng họ judge) và là đối tượng
+     ưu tiên của vòng tái giải mù của đợt. */
+  function dot4DonorMid(stmts, target) {
+    var tSubj = d5SubjectOf(target.head);
+    if (!tSubj || judge24IsSituHead(target.head) || judge24GenericSubj(tSubj) || judge24MetaSubj(tSubj)) return null;
+    if (String(target.head).indexOf(":") !== -1) return null;
+    var tToks = d5TokSet(tSubj), tValToks = d5TokSet(target.val);
+    var pool = shuffle(stmts.slice());
+    for (var tries = 0; tries < 3; tries++) {
+      var d = d5DonorFor(pool, target);
+      if (!d) return null;
+      var ok = true;
+      if (judge24IsSituHead(d.head)) ok = false;
+      var dValToks = d5TokSet(d.val), hit = 0, hitV = 0;
+      var nSubj = Object.keys(tToks).length, nVal = Object.keys(tValToks).length;
+      Object.keys(dValToks).forEach(function (t) { if (tToks[t]) hit++; if (tValToks[t]) hitV++; });
+      if (nSubj && hit / nSubj >= 0.6) ok = false;
+      if (nVal && hitV / nVal >= 0.9) ok = false;
+      if (String(d.val || "").length < 4) ok = false;
+      if (ok) return d;
+      pool = pool.filter(function (x) { return x !== d; });
+      if (!pool.length) return null;
+    }
+    return null;
+  }
+  function dot4DonorGuard(stmts, target, d) {
+    if (!d) return null;
+    var tSubj = d5SubjectOf(target.head), dv = d5NormText(d.val), i, y;
+    /* VÁ D2: donor cùng THỰC THỂ với đích, hoặc giá trị là dạng tên khác
+       của giá trị đúng, hoặc ghi chú meta "Cách gọi…" của chính đích →
+       mệnh đề ghép vẫn đúng theo dữ kiện của chủ đề, cấm qua cổng này
+       (phủ cả đường donor TRUNG dot4DonorMid vốn chỉ qua d5DonorFor). */
+    if (d5SubjEquiv(d5SubjectOf(d.head), tSubj)) return null;
+    if (d5AliasValSet(stmts, d5NormText(target.val))[dv]) return null;
+    if (/^(cach goi|ten goi|cach xung ho|danh xung|biet danh|ten rieng)\b/.test(d5FoldText(d.val))) return null;
+    var entD = d5EntitySet(stmts, [tSubj, d5NormText(target.val)]);
+    if (entD[d5SubjectOf(d.head)] || entD[dv]) return null;
+    if (d5DonorAliasHit(target, d)) return null;   /* VÁ D2 vòng 2: bí danh phiên âm xuyên cặp */
+    if (d5GlossCross(target, d)) return null;
+    if (d5ClassShare(target, d)) return null;
+    for (i = 0; i < stmts.length; i++) { y = stmts[i]; if (d5SubjectOf(y.head) === tSubj && d5NormText(y.val) === dv) return null; }
+    var bSubj = d5NormText(target.val);
+    for (i = 0; i < stmts.length; i++) { y = stmts[i]; if (d5SubjectOf(y.head) === bSubj && d5NormText(y.val) === dv) return null; }
+    return d;
+  }
+  function dot4Donor(stmts, target) {
+    var d = judge24PickDonor(stmts, target);
+    if (d && dot4DonorGuard(stmts, target, d)) return d;
+    var m = dot4DonorMid(stmts, target);
+    if (m && dot4DonorGuard(stmts, target, m)) return m;
+    return null;
+  }
+  /* Dựng một mệnh đề quan hệ số từ một nhóm: hai chủ thể khác nhau, hai
+     số liệu của chính chủ đề. Đúng = quan hệ đúng theo số; sai = quan hệ
+     đảo. Cả hai bản chữ được giữ để tfBalanceItems lật khi cần. */
+  function dot4NumClaim(ctx, usedSubj) {
+    var gs = shuffle(ctx.groups.slice());
+    for (var gi = 0; gi < gs.length; gi++) {
+      var g = gs[gi], items = shuffle(g.items.slice());
+      var A = null, B = null;
+      for (var i = 0; i < items.length; i++) {
+        var sj = dot4HeadKey(items[i].st);
+        if (usedSubj && usedSubj[sj]) continue;
+        if (!A) { A = items[i]; continue; }
+        if (sj !== dot4HeadKey(A.st)) { B = items[i]; break; }
+      }
+      if (!A || !B) continue;
+      var big = A.num >= B.num ? A : B, small = big === A ? B : A;
+      var hb = dot4HeadText(big.st), hs = dot4HeadText(small.st), eq = A.num === B.num;
+      var tT, tF, ex;
+      if (g.isYear) {
+        tT = eq ? ("“" + hb + "” (" + big.num + ") và “" + hs + "” (" + small.num + ") diễn ra cùng năm.")
+          : ("“" + hs + "” (" + small.num + ") diễn ra sớm hơn “" + hb + "” (" + big.num + ").");
+        tF = eq ? ("“" + hs + "” (" + small.num + ") diễn ra sớm hơn “" + hb + "” (" + big.num + ").")
+          : ("“" + hs + "” (" + small.num + ") diễn ra muộn hơn “" + hb + "” (" + big.num + ").");
+        ex = "So sánh năm: " + small.num + (eq ? " = " : " < ") + big.num + " — " + tT.replace(/^[“"]|[.”"]$/g, "");
+      } else {
+        tT = eq ? ("“" + hb + "” (" + big.st.val + ") bằng “" + hs + "” (" + small.st.val + ").")
+          : ("“" + hb + "” (" + big.st.val + ") lớn hơn “" + hs + "” (" + small.st.val + ").");
+        tF = eq ? ("“" + hb + "” (" + big.st.val + ") lớn hơn “" + hs + "” (" + small.st.val + ").")
+          : ("“" + hb + "” (" + big.st.val + ") nhỏ hơn “" + hs + "” (" + small.st.val + ").");
+        ex = "So sánh số liệu: “" + hb + "” là " + big.st.val + ", “" + hs + "” là " + small.st.val + ".";
+      }
+      var alt2;
+      if (g.isYear) alt2 = eq ? ("“" + hs + "” (" + small.num + ") diễn ra muộn hơn “" + hb + "” (" + big.num + ").")
+        : ("“" + hs + "” (" + small.num + ") và “" + hb + "” (" + big.num + ") diễn ra cùng năm.");
+      else alt2 = eq ? ("“" + hb + "” (" + big.st.val + ") nhỏ hơn “" + hs + "” (" + small.st.val + ").")
+        : ("“" + hb + "” (" + big.st.val + ") bằng “" + hs + "” (" + small.st.val + ").");
+      var wantTrue = Math.random() < 0.5;
+      return { shown: wantTrue ? tT : tF, altShown: tF, alt2: alt2, truth: wantTrue, correct: tT, explain: ex, head: small.st.head, kind: "num" };
+    }
+    return null;
+  }
+  function dot4ChainClaim(ctx, wantTruth) {
+    if (!ctx.chains.length) return null;
+    var c = pick(ctx.chains);
+    if (wantTruth) return { shown: c.derived.stmt, altShown: null, truth: true, correct: c.derived.stmt, explain: c.a.stmt + " " + c.b.stmt, head: c.a.head, kind: "chain", target: c.derived };
+    var d = dot4Donor(ctx.stmts, c.derived);
+    if (!d) return null;
+    return { shown: c.derived.head + " " + d.val + ".", altShown: null, truth: false, correct: c.derived.stmt, explain: c.a.stmt + " " + c.b.stmt, head: c.a.head, kind: "chain", target: c.derived };
+  }
+  function dot4JudgeClaim(ctx, st, wantTruth) {
+    if (st.__ambDir) return null;   /* vá Đợt 4: khẳng định hai-chiều-thừa không làm mệnh đề phán đoán */
+    if (wantTruth) return { shown: st.stmt, altShown: null, truth: true, correct: st.stmt, explain: st.stmt, head: st.head, kind: "judge", target: st };
+    var d = dot4Donor(ctx.stmts, st);
+    if (!d) return null;
+    return { shown: st.head + " " + d.val + ".", altShown: null, truth: false, correct: st.stmt, explain: st.stmt, head: st.head, kind: "judge", target: st };
+  }
+  /* wrongOf cho tfBalanceItems: mệnh đề ĐÚNG bị lật thành bản SAI tương
+     ứng (số: bản đảo đã dựng sẵn; chuỗi/judge: tráo donor qua cổng judge). */
+  function dot4WrongOf(ctx) {
+    return function (it) {
+      if (it.altShown) return it.altShown;
+      if (!it.target) return null;
+      var d = dot4Donor(ctx.stmts, it.target);
+      if (!d) return null;
+      var t = it.target.head + " " + d.val + ".";
+      return d5NormText(t) === d5NormText(it.shown) ? null : t;
+    };
+  }
+  function dot4TFRounds(ctx, claims) {
+    tfBalanceItems(claims, dot4WrongOf(ctx));
+    return claims.map(function (c) {
+      return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(c.shown) + "</div>", truth: c.truth, explain: c.explain };
+    });
+  }
+
+  /* ----- F1: Đúng/Sai suy luận (ngăn games) ----- */
+  function tfInferGen24(facts, pairs, grade, ctx) {
+    return function () {
+      var claims = [], usedH = {}, usedT = {};
+      function tryAdd(c) {
+        if (!c) return false;
+        var ht = dot4HeadKey({ head: c.head }), tx = d5NormText(c.shown);
+        if (usedH[ht] || usedT[tx]) return false;
+        usedH[ht] = 1; usedT[tx] = 1; claims.push(c); return true;
+      }
+      tryAdd(dot4NumClaim(ctx, null));
+      if (ctx.chains.length && Math.random() < 0.6) tryAdd(dot4ChainClaim(ctx, Math.random() < 0.5));
+      var pool = shuffle(ctx.stmts.slice()), pi = 0, guard = 0;
+      while (claims.length < 3 && pi < pool.length && guard++ < 16) {
+        var st = pool[pi++];
+        if (usedH[dot4HeadKey(st)]) continue;
+        var nT = claims.filter(function (c) { return c.truth; }).length, nF = claims.length - nT;
+        var c = dot4JudgeClaim(ctx, st, nT <= nF) || dot4JudgeClaim(ctx, st, nT > nF);
+        tryAdd(c);
+      }
+      guard = 0;
+      while (claims.length < 3 && guard++ < 6) { if (!tryAdd(dot4NumClaim(ctx, usedH)) && !tryAdd(dot4ChainClaim(ctx, Math.random() < 0.5))) break; }
+      if (claims.length < 2) return tfStmtGen(facts, pairs, 3, false, grade)();
+      var q = tfQ("Đúng hay sai? Suy luận từ bài học rồi phán đoán từng khẳng định nhé!", dot4TFRounds(ctx, claims));
+      q.badge = "🧠 Đúng sai suy luận";
+      q.roundIdentity = { type: "bundle", facts: claims.map(function (c) { return d5NormText(dot4HeadText({ head: c.head })); }) };
+      return q;
+    };
+  }
+
+  /* ----- F2: Điền kết luận (ngăn blank) ----- */
+  function blankInferGen24(facts, pairs, grade, ctx) {
+    return function () {
+      var modes = [];
+      if (ctx.groups.length) { modes.push("rel"); if (grade == null || grade >= 3) modes.push("diff"); }
+      if (ctx.chains.length) modes.push("chain");
+      var mode = pick(modes);
+      if (mode === "rel" || mode === "diff") {
+        var g = pick(ctx.groups), items = shuffle(g.items.slice());
+        var A = items[0], B = null;
+        for (var i = 1; i < items.length; i++) {
+          if (dot4HeadKey(items[i].st) === dot4HeadKey(A.st)) continue;
+          if (mode === "diff" && items[i].num === A.num) continue;
+          B = items[i]; break;
+        }
+        if (!B) mode = "chain";
+        else if (mode === "rel") {
+          var ha = dot4HeadText(A.st), hb2 = dot4HeadText(B.st), ans, opts;
+          if (g.isYear) {
+            ans = A.num === B.num ? "diễn ra cùng năm" : (A.num < B.num ? "diễn ra sớm hơn" : "diễn ra muộn hơn");
+            opts = ["diễn ra sớm hơn", "diễn ra muộn hơn", "diễn ra cùng năm"];
+          } else {
+            ans = A.num === B.num ? "bằng" : (A.num > B.num ? "lớn hơn" : "nhỏ hơn");
+            opts = ["lớn hơn", "nhỏ hơn", "bằng"];
+          }
+          return mkBlank24("“" + ha + "” có giá trị «" + A.st.val + "»; “" + hb2 + "” có giá trị «" + B.st.val + "». Vậy “" + ha + "” … “" + hb2 + "”.",
+            ans, opts.filter(function (o) { return o !== ans; }),
+            "So sánh hai giá trị: " + A.st.val + " và " + B.st.val + " → “" + ha + "” " + ans + " “" + hb2 + "”.", "🧠 Điền kết luận");
+        } else {
+          var diff = Math.abs(A.num - B.num);
+          if (diff !== Math.round(diff) || diff < 1) mode = "chain";
+          else {
+            var unit = g.isYear ? "năm" : (dot4NumOf(A.st.val) || {}).unit || "";
+            var dd = Math.max(1, Math.round(diff * 0.1));
+            var cand = [diff + dd, diff + 2 * dd, diff + 1, diff - dd, diff - 1, diff + 10].filter(function (x) { return x > 0 && x !== diff; });
+            var wrongs = [], seenW = {};
+            cand.forEach(function (x) { if (!seenW[x] && wrongs.length < 2) { seenW[x] = 1; wrongs.push(fmtDec24(x) + (unit ? " " + unit : "")); } });
+            var ha2 = dot4HeadText(A.st), hb3 = dot4HeadText(B.st);
+            return mkBlank24("“" + ha2 + "” có giá trị «" + A.st.val + "»; “" + hb3 + "” có giá trị «" + B.st.val + "». Hai giá trị này chênh nhau bao nhiêu" + (unit ? " " + unit : "") + "?",
+              fmtDec24(diff) + (unit ? " " + unit : ""), wrongs,
+              "Lấy giá trị lớn trừ giá trị nhỏ: " + Math.max(A.num, B.num) + " − " + Math.min(A.num, B.num) + " = " + fmtDec24(diff) + (unit ? " " + unit : "") + ".", "🧠 Điền kết luận");
+          }
+        }
+      }
+      if (mode === "chain" && ctx.chains.length) {
+        var c = pick(ctx.chains);
+        var donors = dot4PickDonors(ctx.stmts, c.derived, 2);
+        if (donors.length >= 1) {
+          return mkBlank24(c.a.stmt + " " + c.b.stmt + " Vậy: " + c.derived.head + " …",
+            c.b.val, donors.map(function (d) { return d.val; }),
+            "Từ hai dữ kiện: " + c.a.stmt + " " + c.b.stmt + " Suy ra " + c.derived.stmt, "🧠 Điền kết luận");
+        }
+      }
+      /* Không dựng được dạng suy luận ở lượt này → lùi về bộ sinh của F1
+         (vẫn là suy luận) thay vì sinh câu bọc. */
+      return tfInferGen24(facts, pairs, grade, ctx)();
+    };
+  }
+
+  /* ----- F3: Ghép quan hệ (ngăn match) ----- */
+  var DOT4_REL_MARK = ["để", "giúp", "nhằm", "làm cho", "khiến", "nhờ", "phòng", "tránh", "tạo ra", "sinh ra", "dẫn đến", "gây ra", "bảo vệ", "ngăn", "chống", "thuộc về", "nằm ở", "bắt nguồn", "do đó", "vì vậy", "nhờ đó", "qua đó", "từ đó", "bằng cách", "thông qua", "sau khi", "trước khi", "khi đó"];
+  function dot4TokJac(a, b) {
+    var A = d5TokSet(a), B = d5TokSet(b), inter = 0;
+    var ka = Object.keys(A), kb = Object.keys(B);
+    ka.forEach(function (t) { if (B[t]) inter++; });
+    return inter / Math.max(1, ka.length + kb.length - inter);
+  }
+  function dot4RelPairs(pairs) {
+    var cand = [];
+    (pairs || []).forEach(function (p) {
+      var L = String(p[0] || "").replace(/\s+/g, " ").trim(), R = String(p[1] || "").replace(/\s+/g, " ").trim();
+      if (!L || !R || L.length > 42 || R.length > 78 || R.length < 8) return;
+      if (L.indexOf("?") !== -1 || R.indexOf("?") !== -1) return;
+      var rl = " " + R.toLowerCase() + " ";
+      var hit = DOT4_REL_MARK.some(function (m) { return rl.indexOf(" " + m) !== -1 || rl.indexOf(m + " ") !== -1; });
+      if (!hit) return;
+      cand.push([L, R]);
+    });
+    var sel = [];
+    shuffle(cand.slice()).forEach(function (pr) {
+      if (sel.length >= 8) return;
+      for (var i = 0; i < sel.length; i++) {
+        if (pairValKey(sel[i][0]) === pairValKey(pr[0]) || pairValKey(sel[i][1]) === pairValKey(pr[1])) return;
+        if (dot4TokJac(sel[i][1], pr[1]) > 0.45 || dot4TokJac(sel[i][0], pr[0]) > 0.6) return;
+      }
+      sel.push(pr);
+    });
+    return sel.length >= 3 ? sel : null;
+  }
+  function dot4ChainPairs(chains) {
+    var sel = [];
+    shuffle(chains.slice()).forEach(function (c) {
+      if (sel.length >= 8) return;
+      var pr = [dot4HeadText(c.a), c.b.val];
+      if (pr[0].length > 42 || pr[1].length > 45) return;
+      for (var i = 0; i < sel.length; i++) {
+        if (pairValKey(sel[i][0]) === pairValKey(pr[0]) || pairValKey(sel[i][1]) === pairValKey(pr[1])) return;
+        if (dot4TokJac(sel[i][1], pr[1]) > 0.5) return;
+      }
+      sel.push(pr);
+    });
+    return sel.length >= 3 ? sel : null;
+  }
+  function matchInferGen24(pool, prompt) {
+    return function () {
+      var sub = shuffle(pool.slice()).slice(0, 4);
+      var q = pairsMatch(prompt, sub);
+      q.badge = "🧠 Ghép quan hệ";
+      return q;
+    };
+  }
+
+  /* ----- F4: Bắt khẳng định đúng (ngăn games) ----- */
+  function catchInferGen24(facts, pairs, grade, ctx) {
+    return function () {
+      if (ctx.groups.length && Math.random() < 0.5) {
+        var nc = dot4NumClaim(ctx, null);
+        if (nc) {
+          var items = [{ html: optHtml(nc.correct), ok: true }];
+          if (nc.altShown) items.push({ html: optHtml(nc.altShown), ok: false });
+          if (nc.alt2) items.push({ html: optHtml(nc.alt2), ok: false });
+          var qn = catchQ("Đọc kĩ dữ kiện trong bài rồi bắt lấy kết luận ĐÚNG nhé!", shuffle(items), { explain: nc.explain });
+          qn.badge = "🧠 Bắt khẳng định đúng";
+          qn.roundIdentity = { type: "fact", facts: [d5NormText(dot4HeadText({ head: nc.head }))] };
+          return qn;
+        }
+      }
+      var pool = shuffle(ctx.stmts.slice());
+      for (var i = 0; i < pool.length; i++) {
+        var st = pool[i];
+        var donors = dot4PickDonors(ctx.stmts, st, 2);
+        if (donors.length < 2) continue;
+        var items2 = [{ html: optHtml(st.val), ok: true }].concat(donors.map(function (d) { return { html: optHtml(d.val), ok: false }; }));
+        var q2 = catchQ("Bắt lấy phần ĐÚNG để hoàn thành khẳng định: “" + st.head + " …”", shuffle(items2), { explain: st.stmt });
+        q2.badge = "🧠 Bắt khẳng định đúng";
+        q2.roundIdentity = { type: "fact", facts: [d5NormText(dot4HeadText(st))] };
+        return q2;
+      }
+      return advCatchGen(facts, { grade: grade, facts: facts })();
+    };
+  }
+
+  /* ----- Bank viết tay Đợt 4 (Tin/Công nghệ Lớp 10) — registry
+     window.__ADV4BANKS24 trong lop10.js; duyệt tay Q5 trước khi tính
+     suy luận. f: TH1 quy trình/tình huống → real-proc4 · TH2 dự đoán hệ
+     quả → real-pred4 · X1 tình huống mới → real-proc4. tf/blank/match
+     dùng chung huy hiệu với F1/F2/F3. ----- */
+  var ADV4_CHOOSE_BADGE24 = { TH1: "🧠 Tình huống và quy trình", TH2: "🧠 Dự đoán hệ quả", X1: "🧠 Vận dụng tình huống" };
+  function adv4ChooseGen24(items) {
+    return function () {
+      var it = items[Math.floor(Math.random() * items.length)];
+      return mkAdv24(it.p, it.a, it.w, it.e, ADV4_CHOOSE_BADGE24[it.f] || "🧠 Vận dụng tình huống");
+    };
+  }
+  function adv4TFGen24(items) {
+    return function () {
+      var trues = shuffle(items.filter(function (x) { return x.t; }).slice());
+      var falses = shuffle(items.filter(function (x) { return !x.t; }).slice());
+      var sel = [];
+      if (trues.length) sel.push(trues.pop());
+      if (falses.length) sel.push(falses.pop());
+      var rest = shuffle(trues.concat(falses));
+      while (sel.length < 3 && rest.length) sel.push(rest.pop());
+      var rounds = shuffle(sel).map(function (it) {
+        return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(it.s) + "</div>", truth: !!it.t, explain: it.e || "" };
+      });
+      var q = tfQ("Đúng hay sai? Suy luận rồi phán đoán từng khẳng định nhé!", rounds);
+      q.badge = "🧠 Đúng sai suy luận";
+      return q;
+    };
+  }
+  function adv4BlankGen24(items) {
+    return function () {
+      var it = items[Math.floor(Math.random() * items.length)];
+      return mkBlank24(it.p, it.a, it.w, it.e, "🧠 Điền kết luận");
+    };
+  }
+  function adv4MatchGen24(matchPairs) {
+    return function () {
+      var q = pairsMatch("Ghép mỗi ý với nội dung đúng nhé!", shuffle(matchPairs.slice()).slice(0, 5));
+      q.badge = "🧠 Ghép quan hệ";
+      return q;
+    };
+  }
+
+  /* ================= ĐỢT 0 V24 (2026-10-22) — BỘ ĐIỀU TIẾT THÀNH PHẦN TẦNG NÂNG CAO =================
+     Áp quy tắc thành phần mục 3.1 của phiếu thiết kế (gói A) ở cấp pool
+     từng chủ đề, đo bằng ĐÚNG thước của phiếu: lấy mẫu đầu ra của từng bộ
+     sinh, phân loại theo CƠ CHẾ sinh (advMechOf24 — cùng định nghĩa mục
+     1.1: bọc-Đ/S, bọc-hỏi đảo, bọc-điền, bọc-ghép, bọc-bắt đáp án, filler
+     tính nhẩm, suy luận thật real-*, bank tĩnh chưa duyệt own-unreviewed),
+     trọng số lượt rút theo PLAN của harness (choose 16 / blank 8 / games
+     10 / match 6), vòng Đ/S tính theo số mệnh đề.
+     Trần áp ngay ở Đợt 0: tổng bọc ≤40% · hỏi đảo ≤15% · Đ/S ≤15% · điền
+     ≤10% · ghép ≤10% · bắt đáp án ≤5% · filler ≤5% (chỉ Toán) · bank tĩnh
+     chưa duyệt ≤20% · missingGen = 0 (đã gỡ ở điểm dựng pool).
+     Cách hạ khi vượt trần (theo thứ tự): (1) bỏ bớt bộ sinh bọc thừa của
+     dạng vượt trần nhất (giữ ít nhất 1 bộ sinh cho mỗi ngăn pool còn chơi
+     được; dạng là bộ sinh DUY NHẤT của ngăn chỉ bị bỏ khi vượt trần gấp
+     đôi); (2) nếu không bỏ được, nhân thêm lượt của bộ sinh SUY LUẬN cùng
+     ngăn để pha loãng (tối đa 4 bản/bộ sinh, 10 bộ sinh/ngăn); (3) vẫn
+     không hạ được → ghi lý do "bị chặn" và chủ đề vào DANH SÁCH NỢ nếu
+     tỉ lệ suy luận <25% (sàn từng chủ đề, mục 3.2). Cổng nguồn câu: không
+     hạ nếu số câu phân biệt ước lượng của pool rơi xuống dưới
+     min(số gốc, 16) — thà vượt trần còn hơn gãy Kiểm tra/RCV. */
+  var ADV24_CAPS = { "wrap-rev": 0.15, "wrap-tf": 0.15, "wrap-blank": 0.10, "wrap-match": 0.10, "wrap-catch": 0.05, "filler-tfcalc": 0.05, "own-unreviewed": 0.20, "dup-missing": 0 };
+  var ADV24_WRAP_TOTAL = 0.40;
+  var ADV24_PLAN = { choose: 16, blank: 8, games: 10, match: 6 };
+  var ADV24_ODD_STEMS = ["Câu nào nói chưa đúng?", "Ý nào dưới đây chưa đúng?", "Câu nào dưới đây chưa đúng?",
+    "Câu nào dưới đây không đúng?", "Khẳng định nào dưới đây SAI?", "Khẳng định nào sau đây không đúng?",
+    "Câu nào dưới đây SAI?", "Trong các khẳng định dưới đây, khẳng định nào chưa đúng?"];
+  var ADV24_ARITH = /^\s*\d[\d ]*\s*[+\-−×:]\s*\d[\d ]*\s*=\s*-?\d[\d ]*\s*$/;
+  function advMechOf24(q, isStatic) {
+    if (!q) return "other";
+    if (isStatic) return "own-unreviewed";
+    var badge = q.badge || "";
+    if (badge.indexOf("Đúng sai suy luận") !== -1) return "real-tf4";
+    if (badge.indexOf("Điền kết luận") !== -1) return "real-blank4";
+    if (badge.indexOf("Ghép quan hệ") !== -1) return "real-match4";
+    if (badge.indexOf("Bắt khẳng định đúng") !== -1) return "real-catch4";
+    if (badge.indexOf("Tình huống và quy trình") !== -1) return "real-proc4";
+    if (badge.indexOf("Dự đoán hệ quả") !== -1) return "real-pred4";
+    if (badge.indexOf("Vận dụng tình huống") !== -1) return "real-proc4";
+    if (badge.indexOf("Tìm số còn thiếu") !== -1) return "dup-missing";
+    if (badge.indexOf("Tìm quy luật") !== -1) return "real-seq";
+    if (badge.indexOf("Lời văn hai bước") !== -1) return "real-t1";
+    if (badge.indexOf("Lọc dữ kiện thừa") !== -1) return "real-t2";
+    if (badge.indexOf("So sánh thông minh") !== -1) return "real-t3";
+    if (badge.indexOf("Tìm lỗi sai") !== -1) return "real-t4";
+    if (badge.indexOf("Hình học hai bước") !== -1) return "real-t5";
+    if (badge.indexOf("Đếm và xác suất") !== -1) return "real-t6";
+    if (badge.indexOf("Phương pháp khoa học") !== -1) return "real-k2";
+    if (badge.indexOf("Đọc số liệu, rút kết luận") !== -1) return "real-k3";
+    if (badge.indexOf("Tình huống mới") !== -1) return "real-x1";
+    if (badge.indexOf("Phân tích sử liệu") !== -1) return "real-x2";
+    if (badge.indexOf("Số liệu và nhận xét") !== -1) return "real-x3";
+    if (badge.indexOf("Đọc đoạn, suy luận") !== -1) return "real-v1";
+    if (badge.indexOf("Tu từ và tác dụng") !== -1) return "real-v2";
+    if (badge.indexOf("Đánh giá khẳng định") !== -1) return "real-oddstmt";
+    if (badge.indexOf("Suy luận từ ngữ cảnh") !== -1) return "real-a1";
+    if (badge.indexOf("Hội thoại hợp ngữ cảnh") !== -1) return "real-a2";
+    if (badge.indexOf("Diễn đạt lại ý") !== -1) return "real-a3";
+    if (badge.indexOf("Dự đoán hiện tượng") !== -1) return "real-k1";
+    if (badge.indexOf("So sánh qua tranh") !== -1) return "real-pic";
+    var prompt = stripB(q.prompt || "");
+    var kind = q.kind || (q.rounds ? "tf" : (q.pairs ? "match" : "choose"));
+    if (kind === "tf" || q.rounds) {
+      if (prompt.indexOf("Tính nhẩm") !== -1 || prompt.indexOf("Kiểm tra phép tính") !== -1) return "filler-tfcalc";
+      var vs = (q.rounds || []).map(function (r) { return stripB(r.visual || ""); });
+      if (vs.length && vs.every(function (v) { return ADV24_ARITH.test(v); })) return "filler-tfcalc";
+      return "wrap-tf";
+    }
+    if (kind === "catch") return "wrap-catch";
+    if (kind === "match" || q.pairs) return "wrap-match";
+    if (kind === "memory") return "wrap-match";
+    if (kind === "blank") return "wrap-blank";
+    for (var i = 0; i < ADV24_ODD_STEMS.length; i++) if (prompt.indexOf(ADV24_ODD_STEMS[i]) === 0) return "real-oddstmt";
+    if (prompt.indexOf("Điền dấu phép tính nào vào ô trống") === 0) return "real-opmissing";
+    if (prompt.indexOf("Phép tính nào có kết quả LỚN hơn?") === 0) return "real-compare";
+    if (prompt.indexOf("Suy luận: phép tính nào có kết quả lớn hơn?") === 0) return "real-compare";
+    if (prompt.indexOf("Bài toán hai bước") === 0) return "real-twostep";
+    if (prompt.indexOf("Bài toán có dữ kiện thừa") === 0 || prompt.indexOf("Bài toán có lời văn") === 0) return "real-extradata";
+    return "wrap-rev";
+  }
+  function regulateAdv24(adv, statics, meta) {
+    var types = ["choose", "blank", "match", "games"];
+    var SAMPLES = 8;
+    /* --- dựng danh sách mục (entry) + ước lượng cơ chế bằng lấy mẫu --- */
+    var work = {};
+    types.forEach(function (pk) {
+      work[pk] = [];
+      (adv[pk] || []).forEach(function (gen) { work[pk].push({ gen: gen, src: "shell", pk: pk }); });
+      (statics[pk] || []).forEach(function (gen) { work[pk].push({ gen: gen, src: "static", pk: pk }); });
+    });
+    var allEntries = [];
+    types.forEach(function (pk) { work[pk].forEach(function (e) { allEntries.push(e); }); });
+    if (!allEntries.length) return null;
+    allEntries.forEach(function (e) {
+      e.unitsByMech = {}; e.sigs = {}; e.copies = 1;
+      for (var i = 0; i < SAMPLES; i++) {
+        var q = null;
+        try { q = e.gen(); } catch (err) {}
+        if (!q) continue;
+        var m = advMechOf24(q, e.src === "static");
+        var u = q.rounds ? q.rounds.length : 1;
+        e.unitsByMech[m] = (e.unitsByMech[m] || 0) + u / SAMPLES;
+        try { e.sigs[sigB(q)] = 1; } catch (err) {}
+      }
+      var best = null, bu = -1;
+      Object.keys(e.unitsByMech).forEach(function (m) { if (e.unitsByMech[m] > bu) { bu = e.unitsByMech[m]; best = m; } });
+      e.primary = best || "other";
+    });
+    function isWrapM(m) { return m.indexOf("wrap-") === 0; }
+    function isRealM(m) { return m.indexOf("real-") === 0; }
+    function sharesOf() {
+      var tot = 0, by = {};
+      types.forEach(function (pk) {
+        var n = work[pk].length; if (!n) return;
+        var wCall = (ADV24_PLAN[pk] || 0) / n;
+        work[pk].forEach(function (e) {
+          Object.keys(e.unitsByMech).forEach(function (m) {
+            var v = wCall * e.unitsByMech[m];
+            by[m] = (by[m] || 0) + v; tot += v;
+          });
+        });
+      });
+      var sh = {};
+      Object.keys(by).forEach(function (m) { sh[m] = tot ? by[m] / tot : 0; });
+      return { sh: sh, tot: tot };
+    }
+    function distinctOf(srcFilter) {
+      var seen = {};
+      allEntries.forEach(function (e) {
+        if (e.dropped) return;
+        if (srcFilter && e.src !== srcFilter) return;
+        if (e.replicaOf) return; /* bản nhân thêm không tạo câu phân biệt mới */
+        Object.keys(e.sigs).forEach(function (s) { seen[s] = 1; });
+      });
+      return Object.keys(seen).length;
+    }
+    var distinct0 = distinctOf(null);
+    var distinctFloor = Math.min(distinct0, 16);
+    var blocked = {}, removed = 0, replicated = 0;
+    function copiesInType(pk, gen) {
+      return work[pk].filter(function (e) { return !e.dropped && e.gen === gen; }).length;
+    }
+    function tryReduce(mech) {
+      var cands = allEntries.filter(function (e) { return !e.dropped && e.primary === mech; });
+      if (!cands.length) return false;
+      function tryRemove(cand) {
+        cand.dropped = true;
+        if (distinctOf(null) >= distinctFloor) { removed++; return true; }
+        cand.dropped = false; /* cổng nguồn câu: hoàn lại */
+        return false;
+      }
+      /* (1) dạng có ≥2 bộ sinh trong cùng ngăn: bỏ bớt một bộ sinh thừa
+         (ưu tiên bộ sinh ít câu phân biệt nhất). */
+      var sorted = cands.slice().sort(function (a, b) {
+        return Object.keys(a.sigs).length - Object.keys(b.sigs).length;
+      });
+      for (var ci = 0; ci < sorted.length; ci++) {
+        var cand = sorted[ci];
+        var inType = work[cand.pk].filter(function (e) { return !e.dropped; });
+        if (inType.length <= 1) continue; /* giữ ngăn pool không rỗng */
+        var sameForm = inType.filter(function (e) { return e.primary === mech; });
+        if (sameForm.length < 2) continue;
+        if (tryRemove(cand)) return true;
+      }
+      /* (2) pha loãng: nhân thêm lượt bộ sinh SUY LUẬN cùng ngăn (tối đa
+         4 lượt cho một bộ sinh trong một ngăn, tối đa 10 bộ sinh/ngăn) —
+         giữ nguyên dạng bọc ở mức trần thay vì xoá hẳn dạng. */
+      var pkSet = {};
+      cands.forEach(function (e) { pkSet[e.pk] = 1; });
+      var doneRep = false;
+      Object.keys(pkSet).forEach(function (pk) {
+        if (doneRep) return;
+        var inType = work[pk].filter(function (e) { return !e.dropped; });
+        if (inType.length >= 10) return;
+        var reals = inType.filter(function (e) { return isRealM(e.primary); })
+          .sort(function (a, b) { return copiesInType(pk, a.gen) - copiesInType(pk, b.gen); });
+        if (!reals.length) return;
+        var srcE = reals[0];
+        if (copiesInType(pk, srcE.gen) >= 4) return;
+        var rep = { gen: srcE.gen, src: srcE.src, pk: pk, unitsByMech: srcE.unitsByMech, sigs: srcE.sigs, primary: srcE.primary, copies: 0, replicaOf: srcE };
+        work[pk].push(rep); allEntries.push(rep);
+        replicated++; doneRep = true;
+      });
+      if (doneRep) return true;
+      /* (3) dạng DUY NHẤT trong ngăn mà vẫn vượt trần gấp đôi và ngăn còn
+         bộ sinh khác giữ nhịp chơi: bỏ hẳn bộ sinh đó. */
+      var cur = sharesOf().sh;
+      if ((cur[mech] || 0) > (ADV24_CAPS[mech] || 0) * 2) {
+        for (var cj = 0; cj < sorted.length; cj++) {
+          var cand2 = sorted[cj];
+          var inType2 = work[cand2.pk].filter(function (e) { return !e.dropped; });
+          if (inType2.length <= 1) continue;
+          if (tryRemove(cand2)) return true;
+        }
+      }
+      return false;
+    }
+    for (var step = 0; step < 16; step++) {
+      var curS = sharesOf().sh;
+      var viol = [];
+      Object.keys(ADV24_CAPS).forEach(function (m) {
+        if (blocked[m]) return;
+        if ((curS[m] || 0) > ADV24_CAPS[m] + 0.01) viol.push({ m: m, over: (curS[m] || 0) - ADV24_CAPS[m] });
+      });
+      var wrapTot = Object.keys(curS).filter(isWrapM).reduce(function (a, m) { return a + curS[m]; }, 0);
+      var target = null, isTotalTrim = false;
+      if (viol.length) { viol.sort(function (a, b) { return b.over - a.over; }); target = viol[0].m; }
+      else if (wrapTot > ADV24_WRAP_TOTAL + 0.01 && !blocked["__wrapTotal"]) {
+        var wm = Object.keys(curS).filter(isWrapM).sort(function (a, b) { return curS[b] - curS[a]; });
+        if (wm.length) { target = wm[0]; isTotalTrim = true; }
+      }
+      if (!target) break;
+      if (!tryReduce(target)) {
+        if (isTotalTrim) { blocked["__wrapTotal"] = 1; blocked[target] = 1; }
+        else blocked[target] = 1;
+      }
+    }
+    /* --- ghi lại pool đã điều tiết (chỉ khi thành công tới đây) --- */
+    var newAdv = {}, newStatics = {};
+    types.forEach(function (pk) {
+      newAdv[pk] = []; newStatics[pk] = [];
+      work[pk].forEach(function (e) {
+        if (e.dropped) return;
+        if (e.src === "static") newStatics[pk].push(e.gen); else newAdv[pk].push(e.gen);
+      });
+    });
+    types.forEach(function (pk) { adv[pk] = newAdv[pk]; statics[pk] = newStatics[pk]; });
+    var fin = sharesOf().sh;
+    var realPct = Object.keys(fin).filter(isRealM).reduce(function (a, m) { return a + fin[m]; }, 0);
+    var realEntries = allEntries.filter(function (e) { return !e.dropped && isRealM(e.primary); });
+    var realMechs = {};
+    realEntries.forEach(function (e) { realMechs[e.primary] = 1; });
+    var reasons = [];
+    if (!realEntries.length && allEntries.some(function (e) { return !e.dropped && e.primary === "own-unreviewed"; }))
+      reasons.push("chỉ có bank tĩnh chưa duyệt theo chương (Q5)");
+    else if (!realEntries.length)
+      reasons.push("không bộ sinh suy luận nào gắn được vào chủ đề");
+    else if (Object.keys(realMechs).length === 1 && realMechs["real-oddstmt"])
+      reasons.push("chỉ gắn được oddStmtGen (suy luận nhẹ)");
+    if (Object.keys(blocked).length)
+      reasons.push("trần bọc chưa hạ hết: " + Object.keys(blocked).join(", ") + " (giữ đa dạng dạng câu / cổng nguồn câu phân biệt)");
+    var shRound = {};
+    Object.keys(fin).forEach(function (m) { shRound[m] = Math.round(fin[m] * 1000) / 1000; });
+    return { shares: shRound, realPct: Math.round(realPct * 1000) / 1000, blocked: Object.keys(blocked),
+      removed: removed, replicated: replicated, distinctShell: distinctOf("shell"), distinctAll: distinctOf(null), reasons: reasons };
+  }
+
   function processTopicAdv(grade, subj, t) {
     if (t.__bAdvDone) return;
     var S = t.__bSrc; if (!S) return;
@@ -10329,11 +12234,34 @@ window.__ensureGrade = function (g, cb) {
     var ctxF = { grade: grade, subjId: subj.id, facts: facts }, ctxA = { grade: grade, subjId: subj.id, facts: advSrc };
     /* ----- tầng nâng cao "Thử thách tư duy" ----- */
     var adv = { choose: [], blank: [], match: [], games: [] };
+    var isMathT = /toán|math/i.test(String(subj.name || "")) || /math/i.test(String(subj.id || ""));
+    /* ĐỢT 2 V24: bank tĩnh suy luận viết tay (đã duyệt tay Q5) — gắn theo
+       registry nằm trong file lớp (window.__ADV2BANKS24); bộ sinh rút
+       ngẫu nhiên trong bank của chủ đề và qua bộ điều tiết như mọi bộ
+       sinh khác. */
+    var adv2Items24 = (typeof window !== "undefined" && window.__ADV2BANKS24) ? window.__ADV2BANKS24[t.id] : null;
+    if (adv2Items24 && adv2Items24.length) adv.choose.push(adv2Gen24(adv2Items24));
+    var adv3Items24 = (typeof window !== "undefined" && window.__ADV3BANKS24) ? window.__ADV3BANKS24[t.id] : null;
+    if (adv3Items24 && adv3Items24.length) adv.choose.push(adv3Gen24(adv3Items24));
+    var addedSeq24 = false, addedOpM24 = false;
     if (hasF) {
       if (strict1) {
         adv.choose.push(revGen(facts, grade, ctxF), revGen2(facts, ctxF));
         adv.games.push(advTF1Gen(facts), advCatchGen(facts, ctxF));
         adv.blank.push(blankVarGen(facts, true, ctxF));
+        /* ĐỢT 0 V24 (mở rộng gắn kết): oddStmtGen cho nhánh strict1 — trước
+           đây nhánh Lớp ≥6 không có bộ sinh khẳng định nào. Khẳng định dựng
+           qua d5BuildStmts (câu văn hoàn chỉnh, đã qua cổng an toàn tráo
+           gloss + giới hạn độ dài), stems theo băng tuổi "old" sẵn có của
+           oddStmtGen; cổng cấm Lớp 1 giữ nguyên trong bộ sinh. Khi ngân
+           hàng khẳng định không dựng được, bộ sinh tự lùi về điền đáp án
+           như nhánh Lớp 1–5. */
+        adv.choose.push(oddStmtGen(facts, pairs, true, noSwap, grade));
+        /* ĐỢT 2 V24: bộ sinh "đánh giá khẳng định" cho Lớp 6–9 — khẳng
+           định phải SUY RA từ bài học (đảo quan hệ / tráo gloss qua cổng
+           an toàn d5), phân loại suy luận nhẹ real-oddstmt. Chủ đề
+           Chuyên đề (cd-*) không gắn. */
+        if (grade >= 6 && grade <= 9 && String(t.id || "").indexOf("cd-") !== 0) adv.choose.push(judgeInferGen24(facts, pairs, noSwap, grade));
       } else {
         /* Đợt 5: tầng nâng cao Lớp 1–5 chỉ dùng dữ kiện ĐỦ ĐIỀU KIỆN (advSrc)
            và bộ sinh khẳng định văn xuôi — không còn khung meta của
@@ -10346,42 +12274,121 @@ window.__ensureGrade = function (g, cb) {
     }
     if (nums.length) {
       adv.choose.push(twoStepGen(nums), compareGen(nums), extraDataGen(nums, grade));
-      adv.blank.push(missingGen(nums, true));
+      /* ĐỢT 0 V24 (mục 3.3, Q3=A): missingGen GỠ khỏi tầng nâng cao — ở tầng
+         nâng cao nó trùng hệt tầng thường, chỉ khác huy hiệu. Giữ nguyên ở
+         tầng thường (processTopicStd). Khe điền nâng cao nhường cho
+         seqGen/opMissingGen ở khối Toán ngay dưới. */
     }
     if (strict1 && subj && subj.id === "g6-math") {
-      /* Toán 6: bổ sung các bộ sinh số học ĐƠN Ý cho tầng nâng cao (điền số
-         còn thiếu, dãy số, so sánh biểu thức, tính nhanh đúng/sai) — đúng
-         nhóm bộ sinh đơn ý được giữ lại theo bản đồ sửa chất lượng. */
-      adv.choose.push(opMissingGen(), logicCompareGen());
-      adv.blank.push(seqGen());
+      /* Toán 6: bổ sung các bộ sinh số học ĐƠN Ý cho tầng nâng cao (dãy số,
+         điền dấu, so sánh biểu thức, tính nhanh đúng/sai) — đúng nhóm bộ
+         sinh đơn ý được giữ lại theo bản đồ sửa chất lượng. */
+      adv.choose.push(opMissingGen(), logicCompareGen()); addedOpM24 = true;
+      adv.blank.push(seqGen()); addedSeq24 = true;
       adv.games.push(tfCalcGen("Đúng hay sai? Tính nhẩm thật nhanh nhé!"));
+    } else if (isMathT && nums.length) {
+      /* ĐỢT 0 V24 (mở rộng gắn kết): seqGen/opMissingGen gắn được cho chủ
+         đề SỐ HỌC các lớp khi dữ kiện số cho phép — không chỉ Toán Lớp 6.
+         Giữ nguyên cơ chế sinh, chỉ mở phạm vi gắn. */
+      adv.choose.push(opMissingGen()); addedOpM24 = true;
+      adv.blank.push(seqGen()); addedSeq24 = true;
     }
     if (pairs.length >= 4) adv.match.push(matchRevGen(pairs, true));
-    var isMathT = /toán|math/i.test(String(subj.name || "")) || /math/i.test(String(subj.id || ""));
+    /* ĐỢT 1 V24: gắn 6 họ suy luận Toán (T1–T6) — mọi chủ đề Toán gắn
+       được ≥2 họ; cổng tuổi: T2/T4 chỉ từ Lớp 3, T6 chỉ Lớp 10–12.
+       Câu của các họ này dùng tham số riêng, mang 🧠 đúng luật (suy luận
+       thật) và được regulateAdv24 điều tiết như mọi bộ sinh khác. */
+    if (isMathT) {
+      adv.choose.push(mathT1Gen24(grade, "choose"));
+      adv.blank.push(mathT1Gen24(grade, "blank"));
+      adv.choose.push(mathT3Gen24(grade));
+      adv.choose.push(mathT5Gen24(grade, "choose"));
+      adv.blank.push(mathT5Gen24(grade, "blank"));
+      if (grade >= 3) {
+        adv.choose.push(mathT2Gen24(grade));
+        adv.choose.push(mathT4Gen24(grade));
+        adv.games.push(mathT4TFGen24(grade));
+      }
+      if (grade >= 10) adv.choose.push(mathT6Gen24(grade));
+    }
+    /* ĐỢT 4 V24: gắn 4 họ suy luận cho ngăn games/blank/match của môn
+       NGOÀI Toán + bank viết tay Tin/CN (registry __ADV4BANKS24). Chủ đề
+       noSwap không gắn họ nào (không bịa mệnh đề sai trên chủ đề nhạy
+       cảm); ngữ cảnh dot4 dựng một lần từ đúng nguồn dữ kiện của các
+       nhánh hiện hữu (strict1: facts · còn lại: advSrc). */
+    if (!isMathT && hasF && !noSwap) {
+      var srcF4 = strict1 ? facts : advSrc;
+      var ctx4 = dot4BuildCtx(srcF4, pairs, grade);
+      var donorOK4 = 0;
+      for (var di4 = 0; di4 < ctx4.stmts.length && donorOK4 < 3; di4++) if (dot4Donor(ctx4.stmts, ctx4.stmts[di4])) donorOK4++;
+      if (ctx4.stmts.length >= 4 && (donorOK4 >= 2 || ctx4.groups.length || ctx4.chains.length)) {
+        adv.games.push(tfInferGen24(srcF4, pairs, grade, ctx4));
+        adv.games.push(catchInferGen24(srcF4, pairs, grade, ctx4));
+      }
+      if (ctx4.groups.length || ctx4.chains.length) adv.blank.push(blankInferGen24(srcF4, pairs, grade, ctx4));
+      var relP4 = dot4RelPairs(pairs);
+      if (relP4) adv.match.push(matchInferGen24(relP4, "Ghép mỗi ý với hệ quả / mục đích đúng nhé!"));
+      else if (ctx4.chains.length >= 3) { var cp4 = dot4ChainPairs(ctx4.chains); if (cp4) adv.match.push(matchInferGen24(cp4, "Ghép mỗi ý với kết luận suy ra đúng nhé!")); }
+    }
+    var adv4Bank24 = window.__ADV4BANKS24 ? window.__ADV4BANKS24[t.id] : null;
+    if (adv4Bank24) {
+      if (adv4Bank24.choose && adv4Bank24.choose.length) adv.choose.push(adv4ChooseGen24(adv4Bank24.choose));
+      if (adv4Bank24.tf && adv4Bank24.tf.length >= 3) adv.games.push(adv4TFGen24(adv4Bank24.tf));
+      if (adv4Bank24.blank && adv4Bank24.blank.length) adv.blank.push(adv4BlankGen24(adv4Bank24.blank));
+      if (adv4Bank24.match && adv4Bank24.match.length >= 4) adv.match.push(adv4MatchGen24(adv4Bank24.match));
+    }
     if (facts.length < 3 && !nums.length) {
       /* Đợt 5 (vòng 2): bộ sinh số học dự phòng chỉ hợp lệ cho môn Toán;
          môn khác không lấp tầng nâng cao bằng số học lạc đề (mã L5). */
       if (isMathT) {
-        adv.choose.push(opMissingGen(), logicCompareGen());
-        adv.blank.push(seqGen());
+        if (!addedOpM24) { adv.choose.push(opMissingGen(), logicCompareGen()); addedOpM24 = true; }
+        else adv.choose.push(logicCompareGen());
+        if (!addedSeq24) { adv.blank.push(seqGen()); addedSeq24 = true; }
         adv.games.push(tfCalcGen("Đúng hay sai? Tính nhẩm thật nhanh nhé!"));
       }
     } else if (adv.choose.length < 2 && isMathT) {
-      adv.choose.push(opMissingGen());
-      adv.blank.push(seqGen());
+      if (!addedOpM24) { adv.choose.push(opMissingGen()); addedOpM24 = true; }
+      if (!addedSeq24) { adv.blank.push(seqGen()); addedSeq24 = true; }
     }
     var advAll = adv.choose.concat(adv.blank, adv.match, adv.games);
     var sigsA = countGens(advAll, 12);
+    /* ĐỢT 0 V24 (mục 3.2): vòng nạp-thêm-đủ-24 ĐẢO THỨ TỰ — bộ sinh SUY
+       LUẬN nạp TRƯỚC, bọc lại nạp SAU (bản cũ nạp Đ/S bọc đầu tiên nên
+       pool đầy bọc trước khi tới lượt suy luận). tfCalcGen (filler tính
+       nhẩm) chỉ còn nạp cho môn Toán và nạp CUỐI (trần filler 5%). Trần
+       từng dạng do bộ điều tiết regulateAdv24 áp ngay sau vòng này. */
     var advFactories = [];
-    if (hasF) advFactories.push(function () { var g = strict1 ? advTF1Gen(facts) : tfStmtGen(advSrc, pairs, null, noSwap, grade); adv.games.push(g); return g; });
+    if (hasF) advFactories.push(function () { var g = oddStmtGen(strict1 ? facts : advSrc, pairs, true, noSwap, grade); adv.choose.push(g); return g; });
     if (strict1 || isMathT) advFactories.push(function () { var g = seqGen(); adv.blank.push(g); return g; });
-    else advFactories.push(function () { var g = blankVarGen(advSrc, true, ctxA); adv.blank.push(g); return g; });
-    if (hasF) advFactories.push(function () { if (strict1) { var g = advTF1Gen(facts, 4); adv.games.push(g); return g; } var g2 = oddStmtGen(advSrc, pairs, true, noSwap, grade); adv.choose.push(g2); return g2; });
-    advFactories.push(function () { var g = tfCalcGen("Đúng hay sai? Kiểm tra phép tính nhé!"); adv.games.push(g); return g; });
+    if (isMathT) advFactories.push(function () { var g = opMissingGen(); adv.choose.push(g); return g; });
+    if (hasF && !isMathT && !noSwap) advFactories.push(function () { var srcF = strict1 ? facts : advSrc; var g = tfInferGen24(srcF, pairs, grade, dot4BuildCtx(srcF, pairs, grade)); adv.games.push(g); return g; });
+    if (hasF) advFactories.push(function () { var g = strict1 ? advTF1Gen(facts) : tfStmtGen(advSrc, pairs, null, noSwap, grade); adv.games.push(g); return g; });
+    if (!(strict1 || isMathT)) advFactories.push(function () { var g = blankVarGen(advSrc, true, ctxA); adv.blank.push(g); return g; });
+    if (hasF) advFactories.push(function () { if (strict1) { var g = advTF1Gen(facts, 4); adv.games.push(g); return g; } var g2 = tfStmtGen(advSrc, pairs, null, noSwap, grade); adv.games.push(g2); return g2; });
     if (hasF) advFactories.push(function () { var g = strict1 ? advCatchGen(facts, ctxF) : advCatchGen(advSrc, ctxA); adv.games.push(g); return g; });
+    if (isMathT) advFactories.push(function () { var g = tfCalcGen("Đúng hay sai? Kiểm tra phép tính nhé!"); adv.games.push(g); return g; });
     var ai = 0;
     while (Object.keys(sigsA).length < 24 && ai < advFactories.length) { addSigs(sigsA, advFactories[ai++](), 12); }
     var advN = Object.keys(sigsA).length;
+
+    /* ĐỢT 0 V24: áp BỘ ĐIỀU TIẾT lên pool vừa dựng (kèm bank tĩnh riêng
+       của chủ đề nếu có — ô "chưa duyệt" trần 20%). Lỗi điều tiết không
+       được làm gãy dựng pool: bắt lỗi và giữ pool gốc. */
+    var statics24 = { choose: [], blank: [], match: [], games: [] };
+    if (S.advBase) ["choose", "blank", "match", "games"].forEach(function (pk) {
+      (S.advBase[pk] || []).forEach(function (gen) { try { gen.__advStatic24 = 1; } catch (e) {} statics24[pk].push(gen); });
+    });
+    var reg24 = null;
+    try { reg24 = regulateAdv24(adv, statics24, { grade: grade, subj: subj, t: t, isMathT: isMathT }); } catch (e) { reg24 = null; }
+    if (reg24) {
+      advN = reg24.distinctShell;
+      t.__advReg24 = { realPct: reg24.realPct, shares: reg24.shares, removed: reg24.removed, replicated: reg24.replicated, blocked: reg24.blocked, distinct: reg24.distinctAll };
+      if (reg24.realPct < 0.25) {
+        try {
+          (window.__advDebt24 = window.__advDebt24 || []).push({ grade: grade, subj: subj.id, topic: t.id, realPct: reg24.realPct, shares: reg24.shares, reasons: reg24.reasons });
+        } catch (e) {}
+      }
+    }
 
     /* ----- chống lặp + nhãn thẻ ----- */
     t.advPools = adv;
@@ -10394,9 +12401,11 @@ window.__ensureGrade = function (g, cb) {
     /* v18 P3: chủ đề có sẵn bộ sinh nâng cao TĨNH từ tệp dữ liệu (các khối
        tĩnh Lớp 1) — nối chúng vào SAU phần của vỏ, giữ nguyên như bản cũ
        (khối tĩnh luôn chạy sau Phase B và nối thêm vào advPools đã bọc).
-       Số đếm BANKB/advBankB ở trên chỉ đo phần của vỏ, đúng như bản cũ. */
+       Số đếm BANKB/advBankB ở trên chỉ đo phần của vỏ, đúng như bản cũ.
+       ĐỢT 0 V24: phần nối vào là statics24 — bank tĩnh ĐÃ qua bộ điều tiết
+       (trần 20% ô chưa duyệt), không còn nối thẳng S.advBase như bản cũ. */
     if (S.advBase) ["choose", "blank", "match", "games"].forEach(function (pk) {
-      if (S.advBase[pk] && S.advBase[pk].length) adv[pk] = adv[pk].concat(S.advBase[pk]);
+      if (statics24[pk] && statics24[pk].length) adv[pk] = adv[pk].concat(statics24[pk]);
     });
     t.sub = String(t.sub).replace(/ • \d+\+ câu.*$/, "") + " • " + bankN + "+ câu · " + advN + "+ nâng cao";
     t.__bAdvDone = true;
@@ -10761,7 +12770,14 @@ window.__ensureGrade = function (g, cb) {
   window.__ensureAdvGrade = function (g) {
     if (window.__phaseBDone[g] === true) return true;
     var st = advPending[g];
-    if (!st) return false;
+    if (!st) {
+      /* ĐỢT 0 V24 (Q7): chưa có danh sách chờ vì Phase B của lớp chưa từng
+         được khởi động (Lớp 7–9) — khởi động ngay tại đây rồi xả đồng bộ
+         như cũ, để Kiểm tra/RCV luôn nhận tầng nâng cao của processTopicAdv. */
+      try { window.__phaseBProcessGrade(g); } catch (e) {}
+      st = advPending[g];
+      if (!st) return window.__phaseBDone[g] === true;
+    }
     var fz = bFreezeStart();
     try {
       while (st.idx < st.list.length) {
@@ -10774,16 +12790,22 @@ window.__ensureGrade = function (g, cb) {
   /* Hoàn tất ĐỒNG BỘ tầng nâng cao của đúng một chủ đề. */
   window.__ensureAdvTopic = function (subj, t) {
     if (!t || t.__bAdvDone) return !!(t && t.advPools);
-    if (!t.__bSrc) return false;
-    var g = 0;
+    var g = 0, foundSubj = null;
     for (var gi = 1; gi <= 12; gi++) {
       var G = GRADES[gi]; if (!G) continue;
-      for (var si = 0; si < G.subjects.length; si++) if (G.subjects[si].topics.indexOf(t) !== -1) { g = gi; break; }
+      for (var si = 0; si < G.subjects.length; si++) if (G.subjects[si].topics.indexOf(t) !== -1) { g = gi; foundSubj = G.subjects[si]; break; }
       if (g) break;
     }
     if (!g) return false;
     var fz = bFreezeStart();
-    try { processTopicAdv(g, subj, t); } catch (e) {}
+    /* ĐỢT 0 V24 (Q7): chủ đề chưa qua lượt thường (điển hình Lớp 7–9, nơi
+       tệp lớp không gọi __phaseBProcessGrade) thì dựng lượt thường ngay
+       tại đây — trước đây hàm trả false và tầng nâng cao của các chủ đề
+       đó do createBank (họ sf*) dựng thay trong Phase C; nay đường dựng
+       nâng cao thống nhất qua processTopicAdv nên lượt thường là điều
+       kiện tiên quyết ở mọi đường gọi. */
+    if (!t.__bSrc) { try { processTopicStd(g, foundSubj || subj, t); } catch (e) {} }
+    try { processTopicAdv(g, foundSubj || subj, t); } catch (e) {}
     bFreezeEnd(fz);
     return !!t.advPools;
   };
@@ -10882,7 +12904,10 @@ window.__ensureGrade = function (g, cb) {
     modalSubj = subj; modalTopic = t;
     modalB.querySelector(".pb-title").textContent = (t.emoji || "📘") + " " + t.name;
     modalB.querySelector(".pb-nor-sub").textContent = "10 màn luyện tập như mọi khi • Ngân hàng " + (t.bankB || 100) + "+ câu";
-    modalB.querySelector(".pb-adv-sub").textContent = "10 màn câu nâng cao: suy luận ngược, nhiều bước, tìm quy luật, dữ kiện thừa • " + (t.advBankB || 20) + "+ câu";
+    /* ĐỢT 0 V24 (nhãn trung thực 3.5): dòng mô tả không liệt kê các dạng
+       suy luận như lời hứa bao phủ nữa — pool nâng cao đã điều tiết vẫn
+       còn phần bọc lại theo trần; mô tả trung tính theo đúng pool. */
+    modalB.querySelector(".pb-adv-sub").textContent = "10 màn câu nâng cao của chủ đề này • " + (t.advBankB || 20) + "+ câu nâng cao";
     modalB.classList.add("on");
   };
 })();
@@ -11129,7 +13154,9 @@ window.__ensureGrade = function (g, cb) {
     return function () {
       var f = pick(facts);
       var q = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || "");
-      if (adv) q.badge = "🧠 Thử thách tư duy";
+      /* ĐỢT 0 V24 (Q7 + nhãn trung thực 3.5): họ sf* không còn dựng tầng
+         nâng cao và KHÔNG gắn huy hiệu 🧠 cho câu dữ kiện thuần túy nữa —
+         tham số adv giữ để tương thích chữ ký, không còn tác dụng gắn nhãn. */
       return identifyRoundFact(q, f.q);
     };
   }
@@ -11143,11 +13170,11 @@ window.__ensureGrade = function (g, cb) {
          của revGen2 ("Câu hỏi nào dưới đây có đáp án là “X”?") — khuôn vòng
          vo cũ đã LOẠI HẲN, không giữ ở bất kỳ tỉ lệ lượt rút nào. Khi không
          đủ 2 câu hỏi khác làm nhiễu, bộ sinh lùi về hỏi thẳng như cũ. */
-      if (Math.random() >= 0.25) { var qd = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || ""); if (adv) qd.badge = "🧠 Thử thách tư duy"; return identifyRoundFact(qd, f.q); }
+      if (Math.random() >= 0.25) { var qd = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || ""); return identifyRoundFact(qd, f.q); }
       var others = shuffle(facts.filter(function (x) { return x.q !== f.q && x.a !== f.a; })).slice(0, 2).map(function (x) { return x.q; });
-      if (others.length < 2) { var q0 = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || ""); if (adv) q0.badge = "🧠 Thử thách tư duy"; return identifyRoundFact(q0, f.q); }
+      if (others.length < 2) { var q0 = mcqQ(f.q, sfWrongs(facts, f, 3, ctx), f.a, f.ex || "", f.visual || ""); return identifyRoundFact(q0, f.q); }
       var q = mcqQ("Câu hỏi nào dưới đây có đáp án là “" + f.a + "”?", others, f.q, f.ex || ("Đáp án “" + f.a + "” thuộc câu hỏi: “" + f.q + "”."));
-      if (adv) q.badge = "🧠 Thử thách tư duy";
+      /* ĐỢT 0 V24: bỏ gán huy hiệu 🧠 ở đây như sfChooseGen (xem trên). */
       return identifyRoundFact(q, f.q);
     };
   }
@@ -11155,7 +13182,8 @@ window.__ensureGrade = function (g, cb) {
     return function () {
       var f = pick(facts);
       var os = shuffle([f.a].concat(sfWrongs(facts, f, 2, ctx)));
-      return { roundIdentity: { type: "fact", facts: [f.q] }, kind: "blank", badge: adv ? "🧠 Điền vào chỗ trống" : "✏️ Điền vào chỗ trống",
+      /* ĐỢT 0 V24 (nhãn trung thực): như blankVarGen — huy hiệu ✏️ trung tính. */
+      return { roundIdentity: { type: "fact", facts: [f.q] }, kind: "blank", badge: "✏️ Điền vào chỗ trống",
         prompt: adv ? "Suy nghĩ kĩ rồi điền đáp án đúng nhé!" : "Điền đáp án đúng vào chỗ trống nhé!",
         blankText: f.a, explain: f.ex || ("Đáp án đúng là: " + f.a + "."),
         visual: (f.visual || "") + '<div class="sentence">' + escText(f.q) + '</div><div class="sentence">Đáp án: ' + blankSlot() + "</div>",
@@ -11227,24 +13255,27 @@ window.__ensureGrade = function (g, cb) {
     if (facts.length < 3) return; /* Quá ít dữ kiện độc lập: giữ nguyên ngân hàng gốc, không gán số ảo. */
     var seed = +parseInt(roundHistoryHash(t.id).split(':')[0], 16) || 1;
     var mine = { choose: [sfChooseGen(facts, false, ctx), sfRevGen(facts, false, ctx)], blank: [sfBlankGen(facts, false, ctx)], games: [sfTFGen(facts, false), sfCatchGen(facts, false, ctx)], match: [] };
-    var mineAdv = { choose: [sfRevGen(facts, true, ctx), sfChooseGen(facts, true, ctx)], blank: [sfBlankGen(facts, true, ctx)], games: [sfTFGen(facts, true), sfCatchGen(facts, true, ctx)], match: [] };
+    /* ĐỢT 0 V24 (Q7=A — thống nhất đường dựng): mineAdv ĐÃ GỠ. createBank
+       (họ sf*) chỉ còn cứu ngân hàng THƯỜNG cho chủ đề mỏng; tầng nâng cao
+       của MỌI lớp chỉ do processTopicAdv + bộ điều tiết dựng (đường duy
+       nhất). t.advPools không bị hàm này chạm vào nữa. */
     if (data.pairs.length >= 4) {
       mine.match.push(function () { return pairsMatch("Nối khái niệm với nội dung đúng.", shuffle(data.pairs.slice()).slice(0, 4)); });
-      mineAdv.match.push(function () { return pairsMatch("Nối mỗi ý với nội dung đúng nhé!", shuffle(data.pairs.slice()).slice(0, 4)); });
       mine.games.push(function () { return pairsMemory(shuffle(data.pairs.slice()).slice(0, 4)); });
     }
     /* Gộp với ngân hàng gốc (gồm cả phần processTopic đã mở rộng nếu có). */
     var original = t.pools || {}, origAdv = t.advPools || null;
-    var pools = {}, advanced = {};
+    var pools = {};
     ["choose", "blank", "games", "match"].forEach(function (pk) {
       pools[pk] = (mine[pk] || []).concat(original[pk] || []);
-      advanced[pk] = (mineAdv[pk] || []).concat(origAdv ? (origAdv[pk] || []) : []);
     });
-    t.pools = pools; t.advPools = advanced;
-    /* Nhãn thẻ = số câu đơn ý ĐO ĐƯỢC bằng roundQuestionKey, không còn số đặt trước 160/60. */
+    t.pools = pools;
+    /* Nhãn thẻ = số câu đơn ý ĐO ĐƯỢC bằng roundQuestionKey, không còn số đặt trước 160/60.
+       Số nâng cao đo trên ĐÚNG pool nâng cao của vỏ (processTopicAdv) — không
+       còn pool sf* tự dựng để đo nữa. */
     var nN = 0, nA = 0;
     try { nN = measurePools(pools, seed); } catch (e) {}
-    try { nA = measurePools(advanced, seed + 104729); } catch (e) {}
+    try { nA = origAdv ? measurePools(origAdv, seed + 104729) : (t.advBankB || 0); } catch (e) { nA = t.advBankB || 0; }
     t.bankB = nN; t.advBankB = nA;
     t.phaseBComplete = { singleIdea: true, facts: facts.length, normalMeasured: nN, advMeasured: nA };
     t.sub = String(t.sub).replace(/ • \d+\+ câu(?: hỏi| · \d+\+ nâng cao)?/g, "") + " • " + nN + "+ câu · " + nA + "+ nâng cao";
@@ -11287,7 +13318,10 @@ window.__ensureGrade = function (g, cb) {
          như bản cũ (Phase B chạy trọn trước Phase C) — hoàn tất đồng bộ
          tầng nâng cao của chủ đề này trước khi xét điều kiện. */
       if(grade>=6&&typeof window.__ensureAdvTopic==="function"){try{window.__ensureAdvTopic(subj,t);}catch(e){}}
-      if(grade>=6&&(!t.advPools||t.bankB<100||t.advBankB<50))createBank(data,t,{grade:grade,subjId:subj.id});
+      /* ĐỢT 0 V24 (Q7): createBank chỉ còn là cứu ngân hàng THƯỜNG — điều
+         kiện gọi chỉ xét độ mỏng của ngân hàng thường (bankB), không còn
+         xét advBankB (tầng nâng cao đã thống nhất qua processTopicAdv). */
+      if(grade>=6&&(!t.pools||!t.bankB||t.bankB<100))createBank(data,t,{grade:grade,subjId:subj.id});
       if(grade>=6) [t.pools,t.advPools].forEach(function(pools){
         if(!pools)return;['choose','blank','games'].forEach(function(pk){pools[pk]=(pools[pk]||[]).map(function(gen){return function(){
           var q=gen();if(q&&q.options&&q.options[q.answer]&&clean(q.options[q.answer].html).length>60){
