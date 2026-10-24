@@ -419,8 +419,9 @@
           <div class="sound-head">
             <span class="sound-title">🚩 Báo lỗi câu hỏi</span>
           </div>
-          <div class="sound-note">Đã ghi <b id="report-count">0</b> báo lỗi trên máy này. Khi gặp câu hỏi thiếu dữ kiện, đáp án có vẻ sai hoặc khó hiểu, em bấm nút 🚩 Báo lỗi ngay trên màn câu hỏi nhé. Báo lỗi chỉ lưu trên máy này, không tự gửi đi đâu.</div>
+          <div class="sound-note">Đã ghi <b id="report-count">0</b> báo lỗi trên máy này. Khi gặp câu hỏi thiếu dữ kiện, đáp án có vẻ sai hoặc khó hiểu, em bấm nút 🚩 Báo lỗi ngay trên màn câu hỏi nhé. Báo lỗi được gửi về bảng quản trị của thầy cô, đồng thời máy này giữ một bản. Nếu lúc báo mà mất mạng nên chưa gửi được, em bấm nút 📤 Gửi các báo lỗi chưa gửi ở đây để gửi lại.</div>
           <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <button class="sound-master" id="btn-report-send" type="button" hidden>📤 Gửi các báo lỗi chưa gửi (0)</button>
             <button class="sound-master" id="btn-report-export" type="button">📄 Xuất danh sách</button>
             <button class="sound-master" id="btn-report-clear" type="button">🗑 Xoá hết</button>
           </div>
@@ -13734,14 +13735,34 @@ window.__ensureGrade = function (g, cb) {
 /* ===== V23 — Việc D: BÁO CÂU HỎI CÓ VẤN ĐỀ (window.__reportQ) =====
    Một module dùng chung cho mọi màn câu hỏi: luyện tập (vỏ), Kiểm tra
    (feat-assess), xem lại Kiểm tra / Rung chuông vàng / Tia chớp
-   (giaitri). Chỉ LƯU TRÊN MÁY (localStorage khóa mới
-   gameHocTap_reports_v1, tối đa 200 bản ghi, quá thì bỏ cũ nhất) —
-   KHÔNG gửi đi đâu. Chống trùng: cùng một câu trong cùng một phiên
-   (sess) bấm lại thì GHI ĐÈ lý do + thời gian, không nhân đôi. */
+   (giaitri). LƯU TRÊN MÁY (localStorage khóa
+   gameHocTap_reports_v1, tối đa 200 bản ghi, quá thì bỏ cũ nhất).
+   V25: khi ghi một báo lỗi, game TỰ GỬI thêm về Google Form của thầy cô
+   (POST formResponse, mode no-cors); gửi được thì bản ghi mang cờ
+   daGui=true, mất mạng thì daGui=false và người chơi bấm gửi lại trong
+   mục Cài đặt (nút btn-report-send). Bản ghi cũ từ v24 (chưa có daGui)
+   được coi là chưa gửi. Chống trùng: cùng một câu trong cùng một phiên
+   (sess) bấm lại thì GHI ĐÈ lý do + thời gian, không nhân đôi — và gửi
+   lại bản mới nhất. */
 (function () {
   var KEY = "gameHocTap_reports_v1";
   var MAXN = 200;
   var REASONS = ["Thiếu dữ kiện", "Đáp án có vẻ sai", "Khó hiểu"];
+  /* Đầu mối Google Form nhận báo lỗi (ánh xạ trường → entry id) */
+  var FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe_ycoId7ZHdSgbxtIpyTd6r9By5wq0c3VJxUNmjumTY0oRbA/formResponse";
+  var ENTRY = {
+    lyDo: "entry.1814333701",
+    lop: "entry.542226157",
+    mon: "entry.1048903828",
+    maChuDe: "entry.827932263",
+    tenChuDe: "entry.1075318265",
+    mode: "entry.1290482234",
+    loaiCau: "entry.427101242",
+    de: "entry.1805115653",
+    luaChon: "entry.870457022",
+    dapAn: "entry.714054064",
+    thoiGian: "entry.1388605896"
+  };
   var sessToken = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
   var lastGame = null;
 
@@ -13761,16 +13782,94 @@ window.__ensureGrade = function (g, cb) {
   }
   function gameObj() { try { return typeof game !== "undefined" ? game : null; } catch (e) { return null; } }
 
+  /* Nội dung ô "Lựa chọn / Mệnh đề": câu Đ/S thì liệt kê từng mệnh đề
+     kèm Đúng/Sai, cách nhau bằng xuống dòng; còn lại nối lựa chọn bằng " | ". */
+  function choicesText(rec) {
+    if (rec.tf && rec.tf.length) {
+      return rec.tf.map(function (s2, j) { return "Mệnh đề " + (j + 1) + ": " + s2.md + " → " + (s2.dung ? "Đúng" : "Sai"); }).join("\n");
+    }
+    return (rec.luaChon || []).join(" | ");
+  }
+  function buildBody(rec) {
+    var pairs = [
+      [ENTRY.lyDo, rec.lyDo || ""],
+      [ENTRY.lop, rec.lop == null ? "" : String(rec.lop)],
+      [ENTRY.mon, rec.mon || ""],
+      [ENTRY.maChuDe, rec.maChuDe || ""],
+      [ENTRY.tenChuDe, rec.tenChuDe || ""],
+      [ENTRY.mode, rec.mode || ""],
+      [ENTRY.loaiCau, rec.loaiCau || ""],
+      [ENTRY.de, rec.de || ""],
+      [ENTRY.luaChon, choicesText(rec)],
+      [ENTRY.dapAn, rec.dapAn || ""],
+      [ENTRY.thoiGian, rec.thoiGian || ""]
+    ];
+    return pairs.map(function (p) { return encodeURIComponent(p[0]) + "=" + encodeURIComponent(p[1]); }).join("&");
+  }
+  /* Gửi 1 bản ghi về Google Form. Resolve (kể cả phản hồi mờ no-cors) =
+     coi như đã gửi; reject (mất mạng…) = chưa gửi. */
+  function sendRecord(rec) {
+    var p;
+    try {
+      p = fetch(FORM_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: buildBody(rec)
+      });
+    } catch (e) { return Promise.resolve(false); }
+    return Promise.resolve(p).then(function () { return true; }, function () { return false; });
+  }
+  function sameRec(a, b) {
+    if (!a || !b) return false;
+    if (a.sig && b.sig) return a.sig === b.sig && a.sess === b.sess;
+    return a.thoiGian === b.thoiGian && a.de === b.de && a.lyDo === b.lyDo;
+  }
+  function setSentFlag(rec, ok) {
+    var arr = load();
+    for (var i = 0; i < arr.length; i++) if (sameRec(arr[i], rec)) { arr[i].daGui = !!ok; break; }
+    saveAll(arr);
+    refreshPanel();
+  }
+  /* Gửi lần lượt mọi bản ghi chưa gửi (daGui khác true — gồm bản ghi cũ
+     từ v24 chưa có cờ). Trả promise về số bản ghi gửi được. */
+  function sendUnsent() {
+    var pending = load().filter(function (r) { return !r.daGui; });
+    if (!pending.length) { toast("Không có báo lỗi nào chưa gửi."); return Promise.resolve(0); }
+    var sent = 0;
+    var chain = Promise.resolve();
+    pending.forEach(function (rec) {
+      chain = chain.then(function () {
+        return sendRecord(rec).then(function (ok) {
+          if (ok) sent++;
+          setSentFlag(rec, ok);
+        });
+      });
+    });
+    return chain.then(function () {
+      if (sent === pending.length) toast("Đã gửi " + sent + " báo lỗi.");
+      else toast("Vẫn chưa gửi được, kiểm tra mạng giúp thầy cô nhé.");
+      return sent;
+    });
+  }
+
   function save(rec) {
     var arr = load();
     var sig = hashStr([rec.maChuDe, rec.mode, rec.de, (rec.luaChon || []).join("~"), rec.dapAn, rec.tf ? JSON.stringify(rec.tf) : ""].join("|"));
     var idx = -1;
     for (var i = 0; i < arr.length; i++) if (arr[i].sig === sig && arr[i].sess === rec.sess) { idx = i; break; }
     rec.sig = sig;
+    rec.daGui = false;
     if (idx >= 0) arr[idx] = rec; else arr.push(rec);
     while (arr.length > MAXN) arr.shift();
     saveAll(arr);
     refreshPanel();
+    /* Tự gửi ngay bản ghi vừa lưu (bản mới nhất của câu này trong phiên);
+       cờ daGui tính theo lần gửi này. Trả promise resolve true/false. */
+    return sendRecord(rec).then(function (ok) {
+      setSentFlag(rec, ok);
+      return ok;
+    });
   }
 
   /* ---------- ngữ cảnh từ vỏ (scr-game) ---------- */
@@ -13848,14 +13947,17 @@ window.__ensureGrade = function (g, cb) {
     ov.className = "rep-overlay";
     var box = document.createElement("div");
     box.className = "rep-box";
-    box.innerHTML = "<h3>🚩 Báo câu hỏi có vấn đề</h3><p>Em thấy câu hỏi này làm sao? Chọn một lý do nhé — báo lỗi chỉ lưu trên máy này để thầy cô xem lại.</p>";
+    box.innerHTML = "<h3>🚩 Báo câu hỏi có vấn đề</h3><p>Em thấy câu hỏi này làm sao? Chọn một lý do nhé. Báo lỗi sẽ được gửi cho thầy cô quản trị game và lưu một bản trên máy này.</p>";
     REASONS.forEach(function (r) {
       var b = document.createElement("button");
       b.type = "button"; b.className = "rep-reason"; b.textContent = r;
       b.addEventListener("click", function () {
-        save({ thoiGian: new Date().toISOString(), lop: c.lop, mon: c.mon || "", maChuDe: c.maChuDe || "", tenChuDe: c.tenChuDe || "", mode: c.mode || "", loaiCau: c.loaiCau || "", de: c.de || "", coHinh: !!c.coHinh, luaChon: c.luaChon || [], dapAn: c.dapAn || "", tf: c.tf || null, lyDo: r, sess: c.sess || sessToken });
+        var pr = save({ thoiGian: new Date().toISOString(), lop: c.lop, mon: c.mon || "", maChuDe: c.maChuDe || "", tenChuDe: c.tenChuDe || "", mode: c.mode || "", loaiCau: c.loaiCau || "", de: c.de || "", coHinh: !!c.coHinh, luaChon: c.luaChon || [], dapAn: c.dapAn || "", tf: c.tf || null, lyDo: r, sess: c.sess || sessToken });
         ov.remove();
-        toast("Đã ghi nhận, cảm ơn em!");
+        pr.then(function (ok) {
+          if (ok) toast("Đã gửi báo lỗi cho thầy cô. Cảm ơn em!");
+          else toast("Đã lưu trên máy (chưa gửi được — vào mục Cài đặt để gửi lại)");
+        });
       });
       box.appendChild(b);
     });
@@ -13870,8 +13972,17 @@ window.__ensureGrade = function (g, cb) {
 
   /* ---------- panel cài đặt (scr-home) ---------- */
   function refreshPanel() {
+    var arr = load();
     var c = document.getElementById("report-count");
-    if (c) c.textContent = load().length;
+    if (c) c.textContent = arr.length;
+    var unsent = 0;
+    arr.forEach(function (r) { if (!r.daGui) unsent++; });
+    var sb = document.getElementById("btn-report-send");
+    if (sb) {
+      sb.textContent = "📤 Gửi các báo lỗi chưa gửi (" + unsent + ")";
+      if (unsent > 0) sb.removeAttribute("hidden"); else sb.setAttribute("hidden", "");
+      sb.disabled = unsent === 0;
+    }
   }
   function exportAll() {
     var arr = load();
@@ -13900,6 +14011,8 @@ window.__ensureGrade = function (g, cb) {
     if (window.confirm("Xoá hết các báo lỗi câu hỏi đã ghi trên máy này?")) { saveAll([]); refreshPanel(); toast("Đã xoá hết báo lỗi đã ghi."); }
   }
   function wirePanel() {
+    var sd = document.getElementById("btn-report-send");
+    if (sd && !sd.__repWired) { sd.__repWired = true; sd.addEventListener("click", function () { sendUnsent(); }); }
     var ex = document.getElementById("btn-report-export");
     if (ex && !ex.__repWired) { ex.__repWired = true; ex.addEventListener("click", exportAll); }
     var cl = document.getElementById("btn-report-clear");
@@ -13917,6 +14030,8 @@ window.__ensureGrade = function (g, cb) {
     newSession: function () { sessToken = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); return sessToken; },
     session: function () { return sessToken; },
     count: function () { return load().length; },
+    unsentCount: function () { return load().filter(function (r) { return !r.daGui; }).length; },
+    sendUnsent: sendUnsent,
     all: load,
     exportAll: exportAll,
     clearAll: clearAll,
