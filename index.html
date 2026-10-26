@@ -1345,14 +1345,25 @@
                cùng một từ rút hai lần với cùng cách hiển thị sẽ thành hai
                mệnh đề nguyên văn giống hệt nhau trong một màn. */
             var w = pick(pw), guard = 0;
-            while (usedW[w[0]] && guard++ < 15) w = pick(pw);
-            usedW[w[0]] = 1;
+            while (usedW[String(w[0]).toLowerCase().trim()] && guard++ < 15) w = pick(pw);
+            usedW[String(w[0]).toLowerCase().trim()] = 1;
             var truth = Math.random() < 0.5;
             var shown = truth ? w : (engDistractors(w, pool, 1, { pic: true, gloss: true })[0] || w);
             items.push({ w: w, truth: truth, shown: shown, correct: w });
           }
           /* B6: cân bằng phán quyết (trước đây 3 vòng độc lập, ~25% màn đồng phán quyết) */
           tfBalanceItems(items, function (it) { return engDistractors(it.w, pool, 1, { pic: true, gloss: true })[0] || null; });
+          /* Đợt E v26 — khử trùng HIỂN THỊ (tranh + từ hiện): nhiễu của vòng
+             này có thể trùng nguyên văn với vòng khác trong cùng màn. */
+          var seenDispE = {};
+          items.forEach(function (it) {
+            var keyE = picHTML(it.w) + "|" + it.shown[0];
+            if (!seenDispE[keyE]) { seenDispE[keyE] = 1; return; }
+            var candsE = engDistractors(it.w, pool, 6, { pic: true, gloss: true });
+            var fixedE = false;
+            for (var ciE = 0; ciE < candsE.length; ciE++) { var nkE = picHTML(it.w) + "|" + candsE[ciE][0]; if (!seenDispE[nkE]) { it.shown = candsE[ciE]; it.truth = false; seenDispE[nkE] = 1; fixedE = true; break; } }
+            if (!fixedE && !seenDispE[picHTML(it.w) + "|" + it.w[0]]) { it.shown = it.w; it.truth = true; seenDispE[picHTML(it.w) + "|" + it.w[0]] = 1; }
+          });
           var rounds = items.map(function (it) { return { visual: '<div class="big-pic">' + picHTML(it.w) + '</div><div class="big-word">' + it.shown[0] + "</div>", truth: it.truth, explain: "Từ đúng là “" + it.w[0] + "”" }; });
           return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds);
         }
@@ -1361,13 +1372,23 @@
         for (var k2 = 0; k2 < 3; k2++) {
           /* V24 — khử trùng từ trong màn như nhánh có tranh ở trên. */
           var w2 = pick(pool), guard2 = 0;
-          while (usedW2[w2[0]] && guard2++ < 15) w2 = pick(pool);
-          usedW2[w2[0]] = 1;
+          while (usedW2[String(w2[0]).toLowerCase().trim()] && guard2++ < 15) w2 = pick(pool);
+          usedW2[String(w2[0]).toLowerCase().trim()] = 1;
           var truth2 = Math.random() < 0.5;
           var shown2 = truth2 ? w2 : (engDistractors(w2, pool, 1, { gloss: true })[0] || w2);
           items2.push({ w: w2, truth: truth2, shown: shown2, correct: w2 });
         }
         tfBalanceItems(items2, function (it) { return engDistractors(it.w, pool, 1, { gloss: true })[0] || null; });
+        /* Đợt E v26 — khử trùng HIỂN THỊ (từ + nghĩa hiện) như nhánh có tranh. */
+        var seenDispE2 = {};
+        items2.forEach(function (it) {
+          var keyE = it.w[0] + "|" + it.shown[2];
+          if (!seenDispE2[keyE]) { seenDispE2[keyE] = 1; return; }
+          var candsE = engDistractors(it.w, pool, 6, { gloss: true });
+          var fixedE = false;
+          for (var ciE = 0; ciE < candsE.length; ciE++) { var nkE = it.w[0] + "|" + candsE[ciE][2]; if (!seenDispE2[nkE]) { it.shown = candsE[ciE]; it.truth = false; seenDispE2[nkE] = 1; fixedE = true; break; } }
+          if (!fixedE && !seenDispE2[it.w[0] + "|" + it.w[2]]) { it.shown = it.w; it.truth = true; seenDispE2[it.w[0] + "|" + it.w[2]] = 1; }
+        });
         var rounds2 = items2.map(function (it) { return { visual: '<div class="big-word">' + it.w[0] + '</div><div class="sentence">Nghĩa là “' + it.shown[2] + "”</div>", truth: it.truth, explain: "“" + it.w[0] + "” nghĩa là “" + it.w[2] + "”" }; });
         return tfQ("Đúng hay sai? Chạm nhanh nhé!", rounds2);
       };
@@ -2907,7 +2928,19 @@ function valueKeyOf(html) {
     /* ================= KHUNG NHIỀU LỚP — helpers ================= */
     function esc(s){return String(s);}
     function mcqQ(prompt, opts, ansText, explain, visual){
-      var all = shuffle([ansText].concat(opts.filter(function(o){return o!==ansText;})));
+      /* Đợt E v26 — khử trùng lựa chọn sau CHUẨN HOÁ (NFC + chữ thường + gộp
+         trắng): nhiễu chỉ khác đáp án ở chữ hoa/thường (vd "will" cho đáp án
+         "Will") hoặc hai nhiễu trùng nhau sau chuẩn hoá là lỗi trùng giá trị
+         trong một màn — loại trước khi trộn. */
+      var ansKeyE = String(ansText == null ? "" : ansText).normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+      var seenKE = {}; seenKE[ansKeyE] = 1;
+      var keptE = (opts || []).filter(function (o) {
+        if (o === ansText) return false;
+        var kE = String(o == null ? "" : o).normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+        if (!kE || seenKE[kE]) return false;
+        seenKE[kE] = 1; return true;
+      });
+      var all = shuffle([ansText].concat(keptE));
       // ensure at least 3 options
       var q = { prompt: prompt, visual: visual||"", options: all.map(function(o){return {html:'<span class="opt-text">'+o+"</span>"};}), answer: all.indexOf(ansText), cols: all.length>=4?2:all.length, optStack: all.some(function(o){return String(o).length>16;}) };
       if (explain) q.explain = explain;
@@ -3192,7 +3225,11 @@ function valueKeyOf(html) {
     }
     function factMCQ(f, sib){ return identifyRoundFact(mcqQ(f[0], kpTypedWrongs(f, sib), f[1], f[4]||null, kpFactVis(f)), f[0]); }
     function factBlank(f, sib){
-      var all = shuffle([f[1]].concat(kpTypedWrongs(f, sib)));
+      /* Đợt E v26 — khử trùng lựa chọn điền sau chuẩn hoá như mcqQ. */
+      var ansKB = String(f[1] == null ? "" : f[1]).normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+      var seenBE = {}; seenBE[ansKB] = 1;
+      var wrongsBE = kpTypedWrongs(f, sib).filter(function (o) { var kB = String(o == null ? "" : o).normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim(); if (!kB || seenBE[kB]) return false; seenBE[kB] = 1; return true; });
+      var all = shuffle([f[1]].concat(wrongsBE));
       return { roundIdentity: { type: "fact", facts: [f[0]] }, kind:"blank", badge:"✏️ Điền vào chỗ trống", prompt: f[0], blankText: String(f[1]), explain: f[4]||null,
         visual: kpFactVis(f) + '<div class="sentence">Đáp án: ' + blankSlot() + "</div>",
         options: all.map(function(o){return {html:'<span class="opt-text">'+o+"</span>"};}), answer: all.indexOf(f[1]), cols: 3, optStack: true };
@@ -5399,14 +5436,24 @@ function engExtraPush(t, words, allWords) {
       for (var k = 0; k < 3; k++) {
         /* V24 — khử trùng từ trong một màn Đ/S (cùng họ lỗi g3TableTF). */
         var w = pick(pw), guard = 0;
-        while (usedW[w[0]] && guard++ < 15) w = pick(pw);
-        usedW[w[0]] = 1;
+        while (usedW[String(w[0]).toLowerCase().trim()] && guard++ < 15) w = pick(pw);
+        usedW[String(w[0]).toLowerCase().trim()] = 1;
         var truth = Math.random() < 0.5;
         var shown = truth ? w : (engDistractors(w, words, 1, { pic: true, gloss: true })[0] || w);
         items.push({ w: w, truth: truth, shown: shown, correct: w });
       }
       /* B6: cân bằng phán quyết (trước đây 3 vòng độc lập, ~25% màn đồng phán quyết) */
       tfBalanceItems(items, function (it) { return engDistractors(it.w, words, 1, { pic: true, gloss: true })[0] || null; });
+      /* Đợt E v26 — khử trùng HIỂN THỊ (tranh + nghĩa + từ hiện) trong màn. */
+      var seenDispE = {};
+      items.forEach(function (it) {
+        var keyE = picHTML(it.w) + "|" + it.shown[2] + "|" + it.shown[0];
+        if (!seenDispE[keyE]) { seenDispE[keyE] = 1; return; }
+        var candsE = engDistractors(it.w, words, 6, { pic: true, gloss: true });
+        var fixedE = false;
+        for (var ciE = 0; ciE < candsE.length; ciE++) { var nkE = picHTML(it.w) + "|" + candsE[ciE][2] + "|" + candsE[ciE][0]; if (!seenDispE[nkE]) { it.shown = candsE[ciE]; it.truth = false; seenDispE[nkE] = 1; fixedE = true; break; } }
+        if (!fixedE && !seenDispE[picHTML(it.w) + "|" + it.w[2] + "|" + it.w[0]]) { it.shown = it.w; it.truth = true; seenDispE[picHTML(it.w) + "|" + it.w[2] + "|" + it.w[0]] = 1; }
+      });
       var rounds = items.map(function (it) { return { visual: '<div class="big-pic">' + picHTML(it.w) + '</div><div class="sentence">Hình này là “' + it.shown[2] + "” (" + it.shown[0] + ")</div>", truth: it.truth, explain: "Đáp án đúng: “" + it.w[2] + "” (" + it.w[0] + ")" }; });
       return tfQ("Đúng hay sai? Nhìn hình và nghĩa nhé!", rounds);
     }
@@ -5414,13 +5461,23 @@ function engExtraPush(t, words, allWords) {
     for (var k2 = 0; k2 < 3; k2++) {
       /* V24 — khử trùng từ trong màn như nhánh có tranh ở trên. */
       var w2 = pick(words), guard2 = 0;
-      while (usedW2[w2[0]] && guard2++ < 15) w2 = pick(words);
-      usedW2[w2[0]] = 1;
+      while (usedW2[String(w2[0]).toLowerCase().trim()] && guard2++ < 15) w2 = pick(words);
+      usedW2[String(w2[0]).toLowerCase().trim()] = 1;
       var truth2 = Math.random() < 0.5;
       var shown2 = truth2 ? w2 : (engDistractors(w2, words, 1, { gloss: true })[0] || w2);
       items2.push({ w: w2, truth: truth2, shown: shown2, correct: w2 });
     }
     tfBalanceItems(items2, function (it) { return engDistractors(it.w, words, 1, { gloss: true })[0] || null; });
+    /* Đợt E v26 — khử trùng HIỂN THỊ (từ + nghĩa hiện) như nhánh có tranh. */
+    var seenDispE2 = {};
+    items2.forEach(function (it) {
+      var keyE = it.w[0] + "|" + it.shown[2];
+      if (!seenDispE2[keyE]) { seenDispE2[keyE] = 1; return; }
+      var candsE = engDistractors(it.w, words, 6, { gloss: true });
+      var fixedE = false;
+      for (var ciE = 0; ciE < candsE.length; ciE++) { var nkE = it.w[0] + "|" + candsE[ciE][2]; if (!seenDispE2[nkE]) { it.shown = candsE[ciE]; it.truth = false; seenDispE2[nkE] = 1; fixedE = true; break; } }
+      if (!fixedE && !seenDispE2[it.w[0] + "|" + it.w[2]]) { it.shown = it.w; it.truth = true; seenDispE2[it.w[0] + "|" + it.w[2]] = 1; }
+    });
     var rounds2 = items2.map(function (it) { return { visual: '<div class="big-word">' + it.w[0] + '</div><div class="sentence">Nghĩa là “' + it.shown[2] + "”</div>", truth: it.truth, explain: "Đáp án đúng: “" + it.w[2] + "” (" + it.w[0] + ")" }; });
     return tfQ("Đúng hay sai? Nhìn hình và nghĩa nhé!", rounds2);
   });
@@ -10358,6 +10415,21 @@ window.__ensureGrade = function (g, cb) {
         /* B1-sửa khuôn vỏ: cân bằng phán quyết cho cả màn — vòng lật sang SAI
            vẫn phải qua đúng cổng d5DonorFor (giữ nguyên an toàn đợt P0). */
         tfBalanceItems(items, function (it) { var d = d5DonorFor(stmts, it.s); return d ? (it.s.head + " " + d.val + ".") : null; });
+        /* Đợt E v26 — khử trùng khẳng định HIỂN THỊ trong một màn Đ/S: hai
+           khẳng định cùng đầu (một từ cặp, một từ dữ kiện) cùng bị lật SAI với
+           cùng một donor sẽ thành hai câu nguyên văn giống hệt nhau. Ưu tiên
+           lật vòng trùng về ĐÚNG; không được thì thay bằng khẳng định ngân
+           hàng chưa hiển thị; bất đắc dĩ mới bỏ vòng (giữ tối thiểu 2 vòng). */
+        var seenShownE = {};
+        for (var iE = 0; iE < items.length; iE++) {
+          var itE = items[iE], kE = d5NormText(itE.shown);
+          if (!seenShownE[kE]) { seenShownE[kE] = 1; continue; }
+          if (!seenShownE[d5NormText(itE.correct)]) { itE.shown = itE.correct; itE.truth = true; seenShownE[d5NormText(itE.shown)] = 1; continue; }
+          var replE = null;
+          for (var jE = 0; jE < stmts.length; jE++) { var cE = stmts[jE]; if (!seenShownE[d5NormText(cE.stmt)]) { replE = cE; break; } }
+          if (replE) { itE.s = replE; itE.correct = replE.stmt; itE.shown = replE.stmt; itE.truth = true; if (sel) sel[iE] = replE; seenShownE[d5NormText(replE.stmt)] = 1; }
+          else if (items.length > 2) { items.splice(iE, 1); iE--; }
+        }
         var rounds = items.map(function (it) {
           return { visual: '<div class="sentence" style="font-size:clamp(20px,5vw,27px)">' + escB(it.shown) + "</div>", truth: it.truth, explain: it.truth ? ("Đúng — " + it.s.stmt) : ("Sai. Đúng phải là: " + it.s.stmt) };
         });
