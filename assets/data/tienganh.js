@@ -184,7 +184,11 @@ function enTag(q, fam, v) { if (q) { q.__fam = fam; q.__var = v; } return q; }
     var gs = sample(WORD_GROUPS, 2), gA = gs[0], gB = gs[1];
     var aWords = sample(gA[2], 3);
     var aSpell = aWords.map(function (x) { return x[0]; });
-    var bPool = gB[2].filter(function (x) { return aSpell.indexOf(x[0]) === -1; });
+    /* V27: loai tu le theo CHINH TA tren TOAN BO nhom A (khong chi 3 tu da chon mau) —
+       tranh tu dong am thuoc ca hai nhom (vd "orange": trai cay/ mau cam) lam 2 dap an cung dung. */
+    var aSpellAll = gA[2].map(function (x) { return x[0]; });
+    var bPool = gB[2].filter(function (x) { return aSpellAll.indexOf(x[0]) === -1; });
+    if (!bPool.length) return null;
     var bWord = enPick(bPool);
     var q = enMCQ("Từ nào KHÁC nhóm với ba từ còn lại?", bWord[0],
       aWords.map(function (x) { return x[0]; }),
@@ -733,7 +737,12 @@ function enTag(q, fam, v) { if (q) { q.__fam = fam; q.__var = v; } return q; }
     var t = enPick(VOCAB_THEMES);
     var other = enPick(VOCAB_THEMES.filter(function (x) { return x !== t; }));
     var three = enShuffle(t.words).slice(0, 3);
-    var odd = enPick(other.words);
+    /* V27: tu le phai vang mat khoi chu de goc tinh theo CHINH TA (loc chuoi, khong
+       chi khac chu de theo tham chieu) + ba tu cung chu de phai khac chinh ta. */
+    var tSpell = t.words.map(function (x) { return x[0]; });
+    var oddPool = other.words.filter(function (x) { return tSpell.indexOf(x[0]) === -1; });
+    if (!oddPool.length) return null;
+    var odd = enPick(oddPool);
     var words = three.map(function (x) { return x[0]; });
     var q = enMCQ("Trong bốn từ ở các lựa chọn, từ nào KHÁC nhóm với ba từ còn lại?", odd[0],
       words,
