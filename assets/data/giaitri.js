@@ -402,7 +402,7 @@ var GT_CARDS = [
     qs: [
       { q: "Nhà nước đầu tiên của người Việt là nước nào?", a: "Văn Lang", w: ["Âu Lạc", "Vạn Xuân", "Đại Cồ Việt"], ex: "Các vua Hùng dựng nước Văn Lang — nhà nước đầu tiên của người Việt, đóng đô ở Phong Châu." },
       { q: "An Dương Vương lập ra nước nào?", a: "Âu Lạc", w: ["Văn Lang", "Vạn Xuân", "Đại Việt"], ex: "An Dương Vương (Thục Phán) lập nước Âu Lạc và xây thành Cổ Loa." },
-      { q: "Thành Cổ Loa nay thuộc địa phương nào?", a: "Đông Anh, Hà Nội", w: ["Phú Thọ", "Ninh Bình", "Bắc Ninh"], ex: "Cổ Loa nay thuộc huyện Đông Anh, thành phố Hà Nội." },
+      { q: "Thành Cổ Loa nay thuộc địa phương nào?", a: "Đông Anh, Hà Nội", w: ["Phú Thọ", "Ninh Bình", "Bắc Ninh"], ex: "Cổ Loa nay thuộc xã Đông Anh, thành phố Hà Nội." },
       { q: "Giỗ Tổ Hùng Vương được tổ chức vào ngày nào?", a: "Mùng 10 tháng 3 âm lịch", w: ["Mùng 1 tháng 1 âm lịch", "Rằm tháng 8 âm lịch", "Mùng 5 tháng 5 âm lịch"], ex: "Giỗ Tổ Hùng Vương diễn ra vào mùng 10 tháng 3 âm lịch tại Đền Hùng, Phú Thọ." }
     ] },
   { id: "gt-the-haibatrung", icon: "⚔️", title: "Hai Bà Trưng phất cờ khởi nghĩa",
@@ -1062,6 +1062,49 @@ function rcvIsListening(q) {
   if (/^nghe\b/i.test(p) || /vừa nghe/i.test(p)) return true;
   return false;
 }
+/* V28: kho đáp án-đúng theo chủ đề để "vay" 1 lựa chọn thứ 4 cho câu bank
+   chỉ có 3 lựa chọn (câu bank 3 lựa chọn bị cổng 4 lựa chọn của RCV loại gần
+   hết — nguyên nhân fallback nấc thấp lớp 7, xem kiem-chung-v28/gates/
+   rcv-diag-b7.json + rcv-reasons). Thang vay: trong cùng chủ đề (cùng nguyên
+   tắc thang phạm vi đáp án nhiễu v20), chỉ lấy đáp án đúng của câu khác cùng
+   chủ đề, khác mọi lựa chọn hiện có. Lấy mẫu từ chính các bộ sinh của chủ
+   đề, lưu đệm theo lớp+chủ đề. */
+var rcvDistrCache = {};
+function rcvDistrPool(grade, topic) {
+  var ck = grade + "|" + topic.id;
+  if (rcvDistrCache[ck]) return rcvDistrCache[ck];
+  var seen = {}, pool = [];
+  ["pools", "advPools"].forEach(function (pk) {
+    var gens = (topic[pk] && topic[pk].choose) || [];
+    for (var gi = 0; gi < gens.length && pool.length < 60; gi++) {
+      for (var k = 0; k < 3 && pool.length < 60; k++) {
+        var q = null;
+        try { q = gens[gi](); } catch (e) { continue; }
+        if (!q || q.pairs || q.items || q.rounds || !q.options || typeof q.answer !== "number" || !q.options[q.answer]) continue;
+        var raw = q.options[q.answer];
+        var txt = rcvTextOf(raw && raw.html != null ? String(raw.html) : String(raw == null ? "" : raw));
+        if (!txt || txt.length > 60 || seen[txt]) continue;
+        seen[txt] = 1;
+        pool.push({ raw: raw, text: txt });
+      }
+    }
+  });
+  rcvDistrCache[ck] = pool;
+  return pool;
+}
+function rcvBorrowFourth(q, meta) {
+  if (!meta || !meta.topic || !q.options || q.options.length !== 3) return;
+  var pool = rcvDistrPool(meta.grade, meta.topic);
+  if (!pool.length) return;
+  var have = {};
+  q.options.forEach(function (o) {
+    var t = rcvTextOf(o && o.html != null ? String(o.html) : String(o == null ? "" : o));
+    if (t) have[t] = 1;
+  });
+  for (var i = 0; i < pool.length; i++) {
+    if (!have[pool[i].text]) { q.options = q.options.concat([pool[i].raw]); return; }
+  }
+}
 /* Chuyển 1 câu của engine thành câu RCV: chỉ choose, qua cổng
    prepareRoundQuestion, đúng 4 lựa chọn, đáp án đúng ≤60 ký tự. */
 function rcvConvert(q, meta) {
@@ -1069,6 +1112,7 @@ function rcvConvert(q, meta) {
   if (q.kind === "blank" || q.blankText) return null;
   if (!q.options || typeof q.answer !== "number" || !q.options[q.answer]) return null;
   if (rcvIsListening(q)) return null;
+  rcvBorrowFourth(q, meta);
   if (typeof prepareRoundQuestion !== "function" || !prepareRoundQuestion(q)) return null;
   if (!q.options || q.options.length < 4 || typeof q.answer !== "number" || !q.options[q.answer]) return null;
   var optsHtml = q.options.map(function (o) { return o && o.html != null ? String(o.html) : String(o == null ? "" : o); });

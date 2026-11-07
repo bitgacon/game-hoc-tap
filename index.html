@@ -12019,6 +12019,16 @@ window.__ensureGrade = function (g, cb) {
     };
   }
   function adv4TFGen24(items) {
+    /* V28 — khử trùng mệnh đề trong bank TF: hai mục cùng nguyên văn mệnh đề
+       có thể cùng lọt vào một màn Đ/S (dupsim GĐ4 phát hiện 21 mục trùng do
+       các đoạn nội dung nối thêm vào bank gốc). Giữ mục đầu tiên theo dạng
+       đã chuẩn hoá; các mục trùng bị loại khỏi bộ sinh này. */
+    var seenS24 = Object.create(null);
+    items = items.filter(function (x) {
+      var k = String(x && x.s != null ? x.s : "").normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+      if (!k || seenS24[k]) return false;
+      seenS24[k] = 1; return true;
+    });
     return function () {
       var trues = shuffle(items.filter(function (x) { return x.t; }).slice());
       var falses = shuffle(items.filter(function (x) { return !x.t; }).slice());
